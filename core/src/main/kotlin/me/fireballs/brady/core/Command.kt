@@ -60,6 +60,14 @@ class CommandBuilder(
     var executor: CommandExecutor = { error("&c⚠ This command doesn't do anything".cc()) }
     var tabCompleter: CommandCompleter = { listOf() }
 
+    fun executor(block: CommandExecutor) {
+        executor = block
+    }
+
+    fun tabCompleter(block: CommandCompleter) {
+        tabCompleter = block
+    }
+
     fun subcommand(
         name: String,
         permission: String? = null,
