@@ -1,0 +1,9 @@
+name: core
+load: STARTUP
+depends:
+  - deps
+loadbefore:
+  - bot
+  - tools
+main: me.fireballs.brady.core.Core
+version: 1.0.0

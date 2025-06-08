@@ -1,0 +1,5 @@
+name: bot
+depends:
+  - core
+main: me.fireballs.brady.bot.Bot
+version: 1.0.0

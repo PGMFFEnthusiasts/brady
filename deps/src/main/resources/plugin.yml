@@ -1,0 +1,8 @@
+name: deps
+load: STARTUP
+loadbefore:
+  - Community
+  - PGM
+  - core
+main: me.fireballs.brady.deps.Hello
+version: 1.0.0
