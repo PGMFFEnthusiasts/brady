@@ -1,0 +1,8 @@
+main: me.fireballs.share.SharePlugin
+version: 1.0.0
+name: Share
+description: "Share brady stats"
+authors:
+  - applepies
+depend:
+  - packetevents
