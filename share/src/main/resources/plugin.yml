@@ -4,5 +4,3 @@ name: Share
 description: "Share brady stats"
 authors:
   - applepies
-depend:
-  - packetevents
