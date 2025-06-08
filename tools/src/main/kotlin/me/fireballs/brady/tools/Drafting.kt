@@ -172,6 +172,7 @@ class Drafting : Listener, KoinComponent {
 
         if (draftEnrolledPlayers.size < 2) {
             match.sendMessage("&6⚄ &fFailed to find enough players participating in the draft!".cc())
+            clearDraft(true)
             return
         }
 
