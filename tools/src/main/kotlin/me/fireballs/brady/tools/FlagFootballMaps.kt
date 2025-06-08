@@ -1,15 +1,13 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.command
-import me.fireballs.brady.core.forWhom
-import me.fireballs.brady.core.itembox
-import me.fireballs.brady.core.menubox
+import me.fireballs.brady.core.*
 import org.bukkit.Material
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.PGM
 import tc.oc.pgm.api.map.MapOrder
 import tc.oc.pgm.cycle.CycleMatchModule
+import tc.oc.pgm.util.StringUtils
 import tc.oc.pgm.util.named.MapNameStyle
 
 class FlagFootballMaps : KoinComponent {
@@ -27,16 +25,16 @@ class FlagFootballMaps : KoinComponent {
         title = "Flag Football Maps"
         cancelClicks()
         ffMaps.value.forEachIndexed { index, map ->
-            val item = itembox(Material.PAPER)
+            val item = itembox(if (map.name.contains("Bowl")) Material.BOWL else Material.PAPER)
                 .name(map.getStyledName(MapNameStyle.COLOR))
                 .loreComponentLines(map.authors.map { it.name.forWhom(player) })
                 .build()
             addClickItem(index, item) {
                 mapOrder.nextMap = map
                 pgm.matchManager
-                    .getMatch(viewer)
-                    ?.needModule(CycleMatchModule::class.java)
-                    ?.cycleNow()
+                    .currentMatch()
+                    .needModule(CycleMatchModule::class.java)
+                    .cycleNow()
                 close()
             }
         }
@@ -44,7 +42,26 @@ class FlagFootballMaps : KoinComponent {
 
     init {
         command("ff", permission = "brady.ff", aliases = arrayOf("ffm")) {
-            executor = {
+            tabCompleter {
+                StringUtils.complete(
+                    StringUtils.textToSuggestion(subArgs.joinToString(" ")),
+                    ffMaps.value.map { StringUtils.textToSuggestion(it.name) }
+                )
+            }
+
+            executor {
+                if (subArgs.isNotEmpty()) {
+                    val query = StringUtils.suggestionToText(subArgs.joinToString(" "))
+                    val map = StringUtils.bestFuzzyMatch(query, ffMaps.value) { it.name }
+                    if (map == null) err("Map not found!")
+                    mapOrder.nextMap = map
+                    pgm.matchManager
+                        .currentMatch()
+                        .needModule(CycleMatchModule::class.java)
+                        .cycleNow()
+                    return@executor
+                }
+
                 menu.open(player())
             }
         }
