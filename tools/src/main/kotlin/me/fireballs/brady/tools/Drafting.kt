@@ -47,7 +47,7 @@ class Drafting : Listener, KoinComponent {
     init {
         plugin.registerEvents(this)
         command("draft", "begin a draft", "brady.draft") {
-            executor = {
+            executor {
                 val player = player()
                 if (draftActive) err(
                     "A draft has already begun. To cancel it, use ".cc() + "&9&n/draft cancel".cc()
@@ -78,7 +78,7 @@ class Drafting : Listener, KoinComponent {
             }
 
             subcommand("cancel") {
-                executor = {
+                executor {
                     if (!draftActive) err("There is no active draft to cancel")
                     clearDraft(true)
 
@@ -92,7 +92,7 @@ class Drafting : Listener, KoinComponent {
         }
 
         command("enlist", "enlist in the draft", aliases = arrayOf("enroll")) {
-            executor = {
+            executor {
                 val player = player()
 
                 if (!draftActive) err("There is no active draft to enlist in")
@@ -106,7 +106,7 @@ class Drafting : Listener, KoinComponent {
         }
 
         command("unenlist", "unenlist in the draft", aliases = arrayOf("unenroll")) {
-            executor = {
+            executor {
                 val player = player()
 
                 if (!draftActive) err("There is no active draft to unenlist in")
@@ -147,7 +147,7 @@ class Drafting : Listener, KoinComponent {
         clearDraft()
     }
 
-    private val preDraftTime = 10
+    private val preDraftTime = 30
     private suspend fun draftingSequence(
         match: Match,
     ) {
