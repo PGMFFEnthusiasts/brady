@@ -1,5 +1,6 @@
 package me.fireballs.share.util;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public enum Action {
@@ -8,15 +9,17 @@ public enum Action {
     PASSES(""),
     CATCHES("^⚠ .*?(\\w+) caught the Football!"),
     STRIPS("^⚠ .*?(\\w+) stripped the Flag!"),
-    TOUCHDOWNS("^ » .*?(\\w+) takes it to the end zone!"),
+    TOUCHDOWNS("^ » .*?(\\w+) takes it to the end zone!", "^ » .*?(\\w+) scores a touchdown!"),
     TOUCHDOWN_PASSES("");
-    private final Pattern pattern;
+    private final Pattern[] patterns;
 
-    Action(String regex) {
-        this.pattern = Pattern.compile(regex);
+    Action(String... regexes) {
+        this.patterns = Arrays.stream(regexes)
+                .map(Pattern::compile)
+                .toArray(Pattern[]::new);
     }
 
-    public Pattern getPattern() {
-        return pattern;
+    public Pattern[] getPatterns() {
+        return patterns;
     }
 }

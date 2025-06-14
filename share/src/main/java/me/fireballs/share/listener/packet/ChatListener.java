@@ -10,8 +10,8 @@ import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.util.Audience;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ChatListener {
     private final StatManager statManager;
@@ -27,30 +27,34 @@ public class ChatListener {
         String message = ChatColor.stripColor(messageIn);
         if (message.isEmpty() || (message.charAt(0) != '⚠' && message.charAt(0) != ' ')) return;
 
-        Arrays.stream(Action.values())
-                .filter(action -> !action.getPattern().pattern().isEmpty())
-                .forEach(action -> {
-                    Matcher matcher = action.getPattern().matcher(message);
-                    if (matcher.find()) {
-                        Player player = Bukkit.getPlayer(matcher.group(1));
-                        statManager.incrementStat(player.getUniqueId(), action);
+        for (Action action : Action.values()) {
+            for (Pattern pattern : action.getPatterns()) {
+                if (pattern.pattern().isEmpty()) continue;
 
-                        switch (action) {
-                            case THROWS -> lastThrower = PGM.get().getMatchManager().getPlayer(player);
-                            case CATCHES -> {
-                                MatchPlayer mp = PGM.get().getMatchManager().getPlayer(player);
-                                if (mp != null && lastThrower != null && mp.getCompetitor() == lastThrower.getCompetitor()) {
-                                    statManager.incrementStat(lastThrower.getId(), Action.PASSES);
-                                }
+                Matcher matcher = pattern.matcher(message);
+                if (matcher.find()) {
+                    Player player = Bukkit.getPlayer(matcher.group(1));
+                    statManager.incrementStat(player.getUniqueId(), action);
+
+                    switch (action) {
+                        case THROWS -> lastThrower = PGM.get().getMatchManager().getPlayer(player);
+                        case CATCHES -> {
+                            MatchPlayer mp = PGM.get().getMatchManager().getPlayer(player);
+                            if (mp != null && lastThrower != null && mp.getCompetitor() == lastThrower.getCompetitor()) {
+                                statManager.incrementStat(lastThrower.getId(), Action.PASSES);
                             }
-                            case TOUCHDOWNS -> {
-                                MatchPlayer mp = PGM.get().getMatchManager().getPlayer(player);
-                                if (mp != null && lastThrower != null && mp.getCompetitor() == lastThrower.getCompetitor()) {
-                                    statManager.incrementStat(lastThrower.getId(), Action.TOUCHDOWN_PASSES);
-                                }
+                        }
+                        case TOUCHDOWNS -> {
+                            MatchPlayer mp = PGM.get().getMatchManager().getPlayer(player);
+                            if (mp != null && lastThrower != null && mp.getCompetitor() == lastThrower.getCompetitor()) {
+                                statManager.incrementStat(lastThrower.getId(), Action.TOUCHDOWN_PASSES);
                             }
                         }
                     }
-                });
+
+                    return;
+                }
+            }
+        }
     }
 }
