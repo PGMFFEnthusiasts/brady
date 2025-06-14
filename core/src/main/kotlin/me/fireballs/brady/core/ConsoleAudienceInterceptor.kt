@@ -21,7 +21,7 @@ private val alreadyInjectedAudiences = mutableMapOf<BukkitAudiences, DummyConsol
 @Suppress("UnstableApiUsage")
 fun addConsoleForwarding(provider: BukkitAudiences, onMessage: Consumer<String>) {
     val dummy = alreadyInjectedAudiences.getOrPut(provider) {
-        @Suppress("UNCHECKED_CAST", "UNCHECKED_CAST")
+        @Suppress("UNCHECKED_CAST")
         val audienceProvider = provider as FacetAudienceProvider<CommandSender, *>
         val console = DummyConsoleSender()
 
