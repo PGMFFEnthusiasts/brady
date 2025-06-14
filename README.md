@@ -5,6 +5,8 @@ the monorepo!
 ## required patch
 
 do note there is a required API patch for MCCoroutine to work on SportPaper. You can find it in `patches/`!
+you can find a SportPaper with this in it [here](https://github.com/PGMFFEnthusiasts/SportPaper) that's
+specifically for brady.
 
 ## adding more plugins
 

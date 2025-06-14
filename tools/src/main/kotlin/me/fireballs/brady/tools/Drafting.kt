@@ -2,10 +2,13 @@ package me.fireballs.brady.tools
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import me.fireballs.brady.core.*
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.title.Title
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -18,13 +21,19 @@ import tc.oc.pgm.api.map.MapOrder
 import tc.oc.pgm.api.match.Match
 import tc.oc.pgm.api.match.MatchPhase
 import tc.oc.pgm.api.match.event.MatchLoadEvent
+import tc.oc.pgm.api.player.MatchPlayer
 import tc.oc.pgm.cycle.CycleMatchModule
 import tc.oc.pgm.join.JoinMatchModule
 import tc.oc.pgm.join.JoinRequest
 import tc.oc.pgm.start.StartMatchModule
 import tc.oc.pgm.teams.Team
 import tc.oc.pgm.teams.TeamMatchModule
+import tc.oc.pgm.timelimit.TimeLimitMatchModule
+import tc.oc.pgm.variables.VariablesMatchModule
+import tc.oc.pgm.variables.types.DummyVariable
+import tc.oc.pgm.variables.types.TeamVariableAdapter
 import java.time.Duration
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
@@ -66,7 +75,6 @@ class Drafting : Listener, KoinComponent {
 
                 val joinMatchModule = match.needModule(JoinMatchModule::class.java)
                 val teamModule = match.needModule(TeamMatchModule::class.java)
-                val startMatchModule = match.needModule(StartMatchModule::class.java)
                 if (teamModule.teams.size != 2) err("This match isn't #2teams")
                 teamModule.teams.forEach { team ->
                     team.players.forEach { joinMatchModule.leave(it, JoinRequest.force()) }
@@ -217,17 +225,14 @@ class Drafting : Listener, KoinComponent {
             team.setMaxSize(1, 0)
             match.needModule(JoinMatchModule::class.java)
                 .forceJoin(match.getPlayer(chosen), team)
-            match.needModule(TeamMatchModule::class.java).balanceTeams()
 
-            match.forEachAudience {
-                it.showTitle(
-                    Title.title(
-                        "&a» ".cc() + chosen.component() + " &a«",
-                        "&7is the ".cc() + team.name + " &7captain",
-                        titleTimes(0.seconds, 3.seconds, 1.seconds)
-                    )
+            match.showTitle(
+                Title.title(
+                    "&a» ".cc() + chosen.component() + " &a«",
+                    "&7is the ".cc() + team.name + " &7captain",
+                    titleTimes(0.seconds, 3.seconds, 1.seconds)
                 )
-            }
+            )
 
             delay((3 * 20).ticks)
             return chosen
@@ -239,23 +244,85 @@ class Drafting : Listener, KoinComponent {
         val startModule = match.needModule(StartMatchModule::class.java)
         startModule.setAutoStart(false)
 
-        rollCaptain(teamList[0])
-        rollCaptain(teamList[1])
+        val capOne = rollCaptain(teamList.find { it.id == "team-one" }!!)
+        val capTwo = rollCaptain(teamList.find { it.id == "team-two" }!!)
+
+        val capOneMP = match.getPlayer(capOne)
+        val capTwoMP = match.getPlayer(capTwo)
 
         match.sendMessage("&6⚄ &fStarting match coin flip...".cc())
 
         startModule.forceStartCountdown(5.seconds.toJavaDuration(), Duration.ZERO)
         draftCoinFlipMatchHappening = true
 
-//        val variableModule = match.needModule(VariablesMatchModule::class.java)
-//        variableModule.variables.forEach {
-//            match.sendMessage("discovered variable: ${it.key} ${it.value.definitionType.name}".cc())
-////            it.value
-//        }
+        match.getModule(TimeLimitMatchModule::class.java)?.timeLimit = null
 
-//        while (match.phase == MatchPhase.RUNNING) {
-//            delay(1.ticks)
-//        }
+        val variableModule = match.needModule(VariablesMatchModule::class.java)
+        val variableMap = variableModule.variables.map { it.key to it.value }.toList().toMap()
+
+        val stateVariable = variableMap["player_state"] as DummyVariable<*>
+        val teamOneScore = variableMap["team_one_score"] as TeamVariableAdapter
+        val teamTwoScore = variableMap["team_two_score"] as TeamVariableAdapter
+
+        delay(5.seconds + 0.5.seconds)
+
+        match.sendMessage(Component.empty())
+        match.sendMessage("&6⚄ &fMatch coin flip".cc())
+        match.sendMessage("&6⚄ &fTo win a match coin flip, a team captain should catch any ball.".cc())
+        match.sendMessage(Component.empty())
+
+        suspend fun checkDisqualification(
+            variable: TeamVariableAdapter,
+            opposingTeamVariable: TeamVariableAdapter,
+            captain: MatchPlayer
+        ) {
+            if (variable.getValue(match).roundToInt() == 0) return
+            variable.setValue(match, 0.0)
+            opposingTeamVariable.setValue(match, 1.0)
+            match.finish()
+            match.sendMessage("&6⚄ &fShame to ".cc() + captain.name + "&f! You were &c&lNOT &fsupposed to score!!! &c&lYOU LOSE!")
+            delay(3.seconds)
+            throw IllegalStateException()
+        }
+
+        class ScoreTracker(
+            val captain: MatchPlayer,
+            val variable: TeamVariableAdapter,
+            var previousScore: Int = 0,
+        )
+
+        val stateOne = ScoreTracker(capOneMP!!, teamOneScore)
+        val stateTwo = ScoreTracker(capTwoMP!!, teamTwoScore)
+
+        suspend fun checkWin(tracker: ScoreTracker) {
+            val currentState = stateVariable.getValue(tracker.captain).roundToInt()
+            if (tracker.previousScore == 2 && currentState == 1) {
+                tracker.variable.setValue(match, 1.0)
+                match.finish()
+                match.sendMessage("&6⚄ &fThe player ".cc() + tracker.captain.name + " has won the coin toss!")
+                delay(3.seconds)
+                throw IllegalStateException()
+            }
+            tracker.previousScore = currentState
+        }
+
+        withContext(plugin.minecraftDispatcher) {
+            while (match.phase == MatchPhase.RUNNING) {
+                delay(1.ticks)
+
+                if (!capOne.isOnline || !capTwo.isOnline) {
+                    match.sendMessage("&6⚄ &fDraft has been cancelled due to a team captain quitting.".cc())
+                    clearDraft(true)
+                    return@withContext
+                }
+
+                checkDisqualification(teamOneScore, teamTwoScore, capOneMP)
+                checkDisqualification(teamTwoScore, teamOneScore, capTwoMP)
+
+                checkWin(stateOne)
+                checkWin(stateTwo)
+            }
+        }
     }
 
     private fun playerEnrolled(player: Player) {
@@ -277,10 +344,9 @@ class Drafting : Listener, KoinComponent {
     }
 
     @EventHandler
-    fun onLoad(event: MatchLoadEvent) {
-        if (draftActive) {
-            Core.adventure.all().sendMessage("&6⚄ &fDraft has been cancelled due to cycle.".cc())
-            clearDraft()
-        }
+    private fun onLoad(event: MatchLoadEvent) {
+        if (!draftActive) return
+        Core.adventure.all().sendMessage("&6⚄ &fDraft has been cancelled due to cycle.".cc())
+        clearDraft()
     }
 }
