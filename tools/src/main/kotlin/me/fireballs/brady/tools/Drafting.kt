@@ -9,18 +9,24 @@ import me.fireballs.brady.core.*
 import net.kyori.adventure.title.Title
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerQuitEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.map.MapOrder
 import tc.oc.pgm.api.match.Match
 import tc.oc.pgm.api.match.MatchPhase
+import tc.oc.pgm.api.match.event.MatchLoadEvent
 import tc.oc.pgm.cycle.CycleMatchModule
 import tc.oc.pgm.join.JoinMatchModule
 import tc.oc.pgm.join.JoinRequest
+import tc.oc.pgm.start.StartMatchModule
 import tc.oc.pgm.teams.Team
 import tc.oc.pgm.teams.TeamMatchModule
+import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 private val draftBeginSound = soundbox()
     .add(Sound.NOTE_PIANO, 1.25f)
@@ -43,6 +49,7 @@ class Drafting : Listener, KoinComponent {
     private var draftEnrolledPlayers = mutableSetOf<Player>()
     private var draftEnrolledUnpickedPlayers = mutableSetOf<Player>()
     private var draftMatch: Match? = null
+    private var draftCoinFlipMatchHappening = false
 
     init {
         plugin.registerEvents(this)
@@ -59,6 +66,7 @@ class Drafting : Listener, KoinComponent {
 
                 val joinMatchModule = match.needModule(JoinMatchModule::class.java)
                 val teamModule = match.needModule(TeamMatchModule::class.java)
+                val startMatchModule = match.needModule(StartMatchModule::class.java)
                 if (teamModule.teams.size != 2) err("This match isn't #2teams")
                 teamModule.teams.forEach { team ->
                     team.players.forEach { joinMatchModule.leave(it, JoinRequest.force()) }
@@ -91,13 +99,13 @@ class Drafting : Listener, KoinComponent {
             }
         }
 
-        command("enlist", "enlist in the draft", aliases = arrayOf("enroll")) {
+        command("enlist", "enlist in the draft", aliases = arrayOf("enroll", "participate")) {
             executor {
                 val player = player()
 
                 if (!draftActive) err("There is no active draft to enlist in")
                 if (draftEnrolledPlayers.contains(player)) err(
-                    "You're already enrolled! Use ".cc() + "&9&n/unenlist".cc().command("/unenlist") + " to unenlist."
+                    "You're already enlisted! Use ".cc() + "&9&n/unenlist".cc().command("/unenlist") + " to unenlist."
                 ) else {
                     playerEnrolled(player)
                     okay.play(sender)
@@ -113,7 +121,7 @@ class Drafting : Listener, KoinComponent {
                 if (draftEnrolledPlayers.contains(player)) {
                     playerUnenrolled(player)
                     okay.play(sender)
-                } else err("You aren't enrolled in the draft currently")
+                } else err("You aren't enlisted in the draft currently")
             }
         }
     }
@@ -125,6 +133,7 @@ class Drafting : Listener, KoinComponent {
         draftJob?.cancel()
         val oldMatch = draftMatch
         draftMatch = null
+        draftCoinFlipMatchHappening = false
 
         if (reset && oldMatch != null) plugin.launch {
             delay(20.ticks)
@@ -159,8 +168,8 @@ class Drafting : Listener, KoinComponent {
                 match.sendMessage("&6⚄ &fTeam captains will be chosen in &b${preDraftTime - t}s&f.".cc())
                 unenlisted.forEach {
                     it.send(
-                        "&6⚄ &fYou're not enlisted! Use ".cc() + "&b&n/enlist".cc()
-                            .command("/enlist") + " to participate in the draft."
+                        "&6⚄ &fYou're not enlisted! Use ".cc() + "&b&n/participate".cc()
+                            .command("/participate") + " to participate in the draft."
                     )
                     it.send()
                 }
@@ -227,8 +236,26 @@ class Drafting : Listener, KoinComponent {
         val teamModule = match.needModule(TeamMatchModule::class.java)
         val teamList = teamModule.teams.toList()
 
+        val startModule = match.needModule(StartMatchModule::class.java)
+        startModule.setAutoStart(false)
+
         rollCaptain(teamList[0])
         rollCaptain(teamList[1])
+
+        match.sendMessage("&6⚄ &fStarting match coin flip...".cc())
+
+        startModule.forceStartCountdown(5.seconds.toJavaDuration(), Duration.ZERO)
+        draftCoinFlipMatchHappening = true
+
+//        val variableModule = match.needModule(VariablesMatchModule::class.java)
+//        variableModule.variables.forEach {
+//            match.sendMessage("discovered variable: ${it.key} ${it.value.definitionType.name}".cc())
+////            it.value
+//        }
+
+//        while (match.phase == MatchPhase.RUNNING) {
+//            delay(1.ticks)
+//        }
     }
 
     private fun playerEnrolled(player: Player) {
@@ -243,28 +270,17 @@ class Drafting : Listener, KoinComponent {
         )
         draftEnrolledUnpickedPlayers.remove(player)
     }
-//
-//    @EventHandler
-//    private fun onLeave(event: PlayerQuitEvent) {
-//        playerUnenrolled(event.player)
-//    }
-//
-//    @EventHandler
-//    private fun onCycle(event: MatchAfterLoadEvent) {
-//
-//    }
-//
-//    @EventHandler
-//    private fun onFlagPickup(event: FlagPickupEvent) {
-//    }
-//
-//    @EventHandler
-//    private fun onFlagCapture(event: FlagCaptureEvent) {
-//        event.carrier.name
-//    }
-//
-//    @EventHandler
-//    private fun onFlagWhat(event: FlagStateChangeEvent) {
-//
-//    }
+
+    @EventHandler
+    private fun onLeave(event: PlayerQuitEvent) {
+        playerUnenrolled(event.player)
+    }
+
+    @EventHandler
+    fun onLoad(event: MatchLoadEvent) {
+        if (draftActive) {
+            Core.adventure.all().sendMessage("&6⚄ &fDraft has been cancelled due to cycle.".cc())
+            clearDraft()
+        }
+    }
 }
