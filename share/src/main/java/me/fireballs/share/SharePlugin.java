@@ -36,11 +36,8 @@ public class SharePlugin extends JavaPlugin {
         saveDefaultConfig();
 
         StatManager statManager = new StatManager();
+        new ChatListener(statManager);
 
-        ChatListener chatListener = new ChatListener(statManager);
-        PacketEvents.getAPI().getEventManager().registerListener(chatListener, PacketListenerPriority.MONITOR);
-
-        Bukkit.getPluginManager().registerEvents(chatListener, this);
         Bukkit.getPluginManager().registerEvents(new MatchStatsListener(this, statManager), this);
         Bukkit.getPluginManager().registerEvents(new MatchCycleListener(statManager), this);
 

@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    compileOnlyApi(project(":deps"))
+    compileOnlyApi(project(":core"))
 }
