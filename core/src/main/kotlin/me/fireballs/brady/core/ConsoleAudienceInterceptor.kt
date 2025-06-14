@@ -22,11 +22,11 @@ private val alreadyInjectedAudiences = mutableMapOf<BukkitAudiences, DummyConsol
 fun addConsoleForwarding(provider: BukkitAudiences, onMessage: Consumer<String>) {
     val dummy = alreadyInjectedAudiences.getOrPut(provider) {
         @Suppress("UNCHECKED_CAST", "UNCHECKED_CAST")
-        val fap = provider as FacetAudienceProvider<CommandSender, *>
+        val audienceProvider = provider as FacetAudienceProvider<CommandSender, *>
         val console = DummyConsoleSender()
 
-        fap.removeViewer(Bukkit.getServer().consoleSender)
-        fap.addViewer(console)
+        audienceProvider.removeViewer(Bukkit.getServer().consoleSender)
+        audienceProvider.addViewer(console)
 
         console
     }
