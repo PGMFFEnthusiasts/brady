@@ -26,5 +26,6 @@ dependencies {
     api(libs.nbtapi)
 
     api(libs.jda)
+    api(libs.jda.ktx)
     api(libs.logback)
 }

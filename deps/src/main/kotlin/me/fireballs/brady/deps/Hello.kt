@@ -1,11 +1,14 @@
 package me.fireballs.brady.deps
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.settings.PacketEventsSettings
 import de.tr7zw.changeme.nbtapi.NBT
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import org.slf4j.LoggerFactory
 
 @PluginAnnotation
 class Hello : JavaPlugin() {
@@ -37,6 +40,8 @@ class Hello : JavaPlugin() {
             return
         }
 
+        val rootLogger = LoggerFactory.getLogger("ROOT")
+        if (rootLogger is Logger) rootLogger.level = Level.INFO
         logger.info("Dependencies loaded!")
     }
 }

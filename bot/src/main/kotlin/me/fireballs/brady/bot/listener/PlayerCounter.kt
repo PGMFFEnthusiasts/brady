@@ -4,6 +4,7 @@ import me.fireballs.brady.bot.Bot
 import me.fireballs.brady.core.registerEvents
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
+import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
@@ -20,22 +21,18 @@ class PlayerCounter : Listener, KoinComponent {
         onPlayerCountChange()
     }
 
-    var counter = 0
-        private set
-
     @EventHandler
     private fun onJoin(event: PlayerJoinEvent) {
-        ++counter
         onPlayerCountChange()
     }
 
     @EventHandler
     private fun onLeave(event: PlayerQuitEvent) {
-        --counter
         onPlayerCountChange()
     }
 
     private fun onPlayerCountChange() {
+        val counter = Bukkit.getOnlinePlayers().size
         // that moment when NO abstraction
         jda.presence.activity = Activity.of(
             Activity.ActivityType.PLAYING,

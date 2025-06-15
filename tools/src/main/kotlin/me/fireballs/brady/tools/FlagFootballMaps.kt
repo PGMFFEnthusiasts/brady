@@ -33,8 +33,8 @@ class FlagFootballMaps : KoinComponent {
                 mapOrder.nextMap = map
                 pgm.matchManager
                     .currentMatch()
-                    .needModule(CycleMatchModule::class.java)
-                    .cycleNow()
+                    ?.needModule(CycleMatchModule::class.java)
+                    ?.cycleNow()
                 close()
             }
         }
@@ -57,8 +57,8 @@ class FlagFootballMaps : KoinComponent {
                     mapOrder.nextMap = map
                     pgm.matchManager
                         .currentMatch()
-                        .needModule(CycleMatchModule::class.java)
-                        .cycleNow()
+                        ?.needModule(CycleMatchModule::class.java)
+                        ?.cycleNow()
                     return@executor
                 }
 
