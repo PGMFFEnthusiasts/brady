@@ -1,21 +1,16 @@
 package me.fireballs.brady.bot
 
-import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.Logger
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
 import dev.minn.jda.ktx.jdabuilder.default
-import dev.minn.jda.ktx.util.SLF4J
 import me.fireballs.brady.bot.listener.CommandListener
 import me.fireballs.brady.bot.listener.PlayerCounter
 import me.fireballs.brady.bot.utils.InfoBoard
 import me.fireballs.brady.core.loadModule
 import me.fireballs.brady.deps.PluginAnnotation
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.internal.utils.JDALogger
 import org.bukkit.Bukkit
 import org.koin.dsl.module
-import org.slf4j.LoggerFactory
 
 @PluginAnnotation
 class Bot : SuspendingJavaPlugin() {
@@ -38,6 +33,7 @@ class Bot : SuspendingJavaPlugin() {
             single<InfoBoard> { InfoBoard() }
             single<Billboard>(createdAtStart = true) { Billboard() }
             single<JDA> { jda }
+            single<ChatMessageFlusher>(createdAtStart = true) { ChatMessageFlusher() }
         }
 
         jda.addEventListener(CommandListener())
