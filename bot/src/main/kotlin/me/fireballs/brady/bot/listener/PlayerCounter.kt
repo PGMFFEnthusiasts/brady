@@ -18,25 +18,24 @@ class PlayerCounter : Listener, KoinComponent {
 
     init {
         plugin.registerEvents(this)
-        onPlayerCountChange()
+        onPlayerCountChange(Bukkit.getOnlinePlayers().size)
     }
 
     @EventHandler
     private fun onJoin(event: PlayerJoinEvent) {
-        onPlayerCountChange()
+        onPlayerCountChange(Bukkit.getOnlinePlayers().size)
     }
 
     @EventHandler
     private fun onLeave(event: PlayerQuitEvent) {
-        onPlayerCountChange()
+        onPlayerCountChange(Bukkit.getOnlinePlayers().size - 1)
     }
 
-    private fun onPlayerCountChange() {
-        val counter = Bukkit.getOnlinePlayers().size
+    private fun onPlayerCountChange(n: Int) {
         // that moment when NO abstraction
         jda.presence.activity = Activity.of(
             Activity.ActivityType.PLAYING,
-            "TB | ${if (counter > 0) "$counter online" else "Nobody :("}",
+            "TB | ${if (n > 0) "$n online" else "Nobody :("}",
         )
     }
 }

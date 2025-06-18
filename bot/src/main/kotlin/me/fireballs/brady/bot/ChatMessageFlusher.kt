@@ -5,6 +5,7 @@ import dev.minn.jda.ktx.coroutines.await
 import kotlinx.coroutines.delay
 import me.fireballs.brady.bot.utils.ansify
 import me.fireballs.brady.core.cc
+import me.fireballs.brady.core.component
 import me.fireballs.brady.core.plus
 import me.fireballs.brady.core.registerEvents
 import net.dv8tion.jda.api.JDA
@@ -14,13 +15,13 @@ import net.dv8tion.jda.api.entities.WebhookClient
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.event.ChannelMessageEvent
-import tc.oc.pgm.api.player.MatchPlayer
 import tc.oc.pgm.channels.AdminChannel
 import tc.oc.pgm.channels.GlobalChannel
-import tc.oc.pgm.channels.PrivateMessageChannel
 import tc.oc.pgm.channels.TeamChannel
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.seconds
@@ -71,9 +72,23 @@ class ChatMessageFlusher : Listener, KoinComponent {
             is AdminChannel -> "&f[&6A&f] ".cc() + sender.name + ": " + event.component
             is TeamChannel -> sender.party.chatPrefix + sender.name + ": " + event.component
             is GlobalChannel -> "<".cc() + sender.name + "> " + event.component
-            is PrivateMessageChannel -> sender.name + " &7→ " + (event.target as MatchPlayer).name + ": " + event.component
+            // disabled for privacy concerns
+            // is PrivateMessageChannel -> sender.name + " &7→ " + (event.target as MatchPlayer).name + ": " + event.component
             else -> null
         } ?: return
-        queue.offer(ansify(componentOut))
+        queue.offer(
+            ansify(componentOut)
+                .replace("```", "`\u00AD`\u00AD`")
+        )
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun onJoin(event: PlayerJoinEvent) {
+        queue.offer(ansify(event.player.component() + " joined the game"))
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun onQuit(event: PlayerQuitEvent) {
+        queue.offer(ansify(event.player.component() + " left the game"))
     }
 }
