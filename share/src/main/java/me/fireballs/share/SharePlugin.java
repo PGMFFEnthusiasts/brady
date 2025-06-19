@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.google.gson.stream.JsonReader;
 
+import me.fireballs.brady.core.event.BradyShareEvent;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -76,6 +77,7 @@ public class SharePlugin extends JavaPlugin {
                 if (reader.nextName().equals("key")) {
                     String key = reader.nextString();
 
+                    Bukkit.getPluginManager().callEvent(new BradyShareEvent(URL + key));
                     Bukkit.broadcast(
                             new ComponentBuilder("\n» ")
                                     .event(new ClickEvent(ClickEvent.Action.OPEN_URL, URL + key))

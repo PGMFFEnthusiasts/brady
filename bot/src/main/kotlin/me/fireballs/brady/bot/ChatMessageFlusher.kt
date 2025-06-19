@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import me.fireballs.brady.bot.utils.ansify
 import me.fireballs.brady.core.cc
 import me.fireballs.brady.core.component
+import me.fireballs.brady.core.event.BradyShareEvent
 import me.fireballs.brady.core.plus
 import me.fireballs.brady.core.registerEvents
 import net.dv8tion.jda.api.JDA
@@ -90,5 +91,11 @@ class ChatMessageFlusher : Listener, KoinComponent {
     @EventHandler(priority = EventPriority.MONITOR)
     private fun onQuit(event: PlayerQuitEvent) {
         queue.offer(ansify(event.player.component() + " left the game"))
+    }
+
+    @EventHandler
+    private fun onShare(event: BradyShareEvent) {
+        // yes, I know it's not clickable. deal with it!
+        queue.offer(ansify("&f» &6Match stats: &9&n${event.link}".cc()))
     }
 }
