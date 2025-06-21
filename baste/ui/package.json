@@ -1,0 +1,23 @@
+{
+  "name": "ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.10",
+    "solid-js": "^1.9.5",
+    "tailwindcss": "^4.1.10"
+  },
+  "devDependencies": {
+    "@hiddenability/opinionated-defaults": "^0.0.12",
+    "jiti": "^2.4.2",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-solid": "^2.11.6"
+  }
+}

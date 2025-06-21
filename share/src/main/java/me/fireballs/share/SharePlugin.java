@@ -27,7 +27,7 @@ import java.io.StringReader;
 import java.util.logging.Level;
 
 public class SharePlugin extends JavaPlugin {
-    private static final String URL = "https://pastes.dev/";
+    private static final String URL = "https://tombrady.fireballs.me/stats/";
 
     private final ClientDataManager clientDataManager = new ClientDataManager();
     private final ShadowManager shadowManager = new ShadowManager(this);

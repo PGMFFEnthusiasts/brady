@@ -1,17 +1,18 @@
 package me.fireballs.share.util;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.stream.Stream;
 
-public class HTTPUtil {
-    private static final String SERVICE = "https://api.pastes.dev/post";
+public final class HTTPUtil {
+//    private static final String SERVICE = "https://tombrady.fireballs.me/stats/post";
+    private static final String SERVICE = "http://10.21.0.3:3000/post";
     private static final URL URL;
 
     static {
@@ -21,9 +22,8 @@ public class HTTPUtil {
             throw new RuntimeException(e);
         }
     }
-
     public static Stream<String> post(String body) throws IOException {
-        HttpsURLConnection conn = (HttpsURLConnection) URL.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) URL.openConnection();
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", "text/plain");

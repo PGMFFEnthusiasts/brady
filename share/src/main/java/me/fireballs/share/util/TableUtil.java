@@ -10,15 +10,17 @@ import tc.oc.pgm.util.named.Named;
 
 import java.util.*;
 
-public class TableUtil {
+public final class TableUtil {
     private static final String HEADER_FORMAT = "%-10s %-16s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
+    private static final String CSV_HEADER_FORMAT = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n";
     private static final String ROW_FORMAT = "%-10s %-16s %-10d %-10d %-10d %-10d %-10.1f %-10.1f %-10d %-10d %-10d %-10d %-10d %-10d %-10d\n";
+    private static final String CSV_ROW_FORMAT = "%s,%s,%d,%d,%d,%d,%.1f,%.1f,%d,%d,%d,%d,%d,%d,%d\n";
 
     private static final String[] HEADERS = {"TEAM", "USERNAME", "KILLS", "DEATHS", "ASSISTS", "STREAK",
             "DMG_DEALT", "DMG_RCVD",
             "PICKUPS", "THROWS", "PASSES", "CATCHES", "STRIPS", "TOUCHDOWNS", "TD_PASSES"};
 
-    public static String assembleTable(Map<UUID, PlayerStats> statsMap, StatManager statManager) {
+    private static List<Statline> collectStats(Map<UUID, PlayerStats> statsMap, StatManager statManager) {
         List<Statline> statlines = new ArrayList<>();
 
         statsMap.forEach((uuid, stats) -> {
@@ -56,26 +58,25 @@ public class TableUtil {
 
         Collections.sort(statlines);
 
+        return statlines;
+    }
+
+    public static String assembleTable(Map<UUID, PlayerStats> statsMap, StatManager statManager) {
+        List<Statline> statlines = collectStats(statsMap, statManager);
+
         StringBuilder message = new StringBuilder();
         message.append(String.format(HEADER_FORMAT, (Object[]) HEADERS));
+        statlines.forEach(statline -> message.append(statline.feed(ROW_FORMAT)));
 
-        statlines.forEach(statline -> message.append(String.format(ROW_FORMAT,
-                statline.team(),
-                statline.username(),
-                statline.kills(),
-                statline.deaths(),
-                statline.assists(),
-                statline.streak(),
-                statline.damageDealt(),
-                statline.damageReceived(),
-                statline.pickups(),
-                statline.throwz(),
-                statline.passes(),
-                statline.catches(),
-                statline.strips(),
-                statline.touchdowns(),
-                statline.touchdownPasses()
-        )));
+        return message.toString();
+    }
+
+    public static String assembleCSVTable(Map<UUID, PlayerStats> statsMap, StatManager statManager) {
+        List<Statline> statlines = collectStats(statsMap, statManager);
+
+        StringBuilder message = new StringBuilder();
+        message.append(String.format(CSV_HEADER_FORMAT, (Object[]) HEADERS));
+        statlines.forEach(statline -> message.append(statline.feed(CSV_ROW_FORMAT)));
 
         return message.toString();
     }
@@ -87,6 +88,26 @@ public class TableUtil {
         @Override
         public int compareTo(Statline other) {
             return Integer.compare(other.kills, this.kills);
+        }
+
+        public String feed(String format) {
+            return String.format(format,
+                    team,
+                    username,
+                    kills,
+                    deaths,
+                    assists,
+                    streak,
+                    damageDealt,
+                    damageReceived,
+                    pickups,
+                    throwz,
+                    passes,
+                    catches,
+                    strips,
+                    touchdowns,
+                    touchdownPasses
+            );
         }
     }
 }
