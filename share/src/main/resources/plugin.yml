@@ -2,5 +2,6 @@ main: me.fireballs.share.SharePlugin
 version: 1.0.0
 name: share
 description: "Share brady stats"
+depend: [PGM]
 authors:
   - applepies

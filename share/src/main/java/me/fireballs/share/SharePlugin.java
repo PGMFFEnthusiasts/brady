@@ -53,9 +53,13 @@ public class SharePlugin extends JavaPlugin {
             Bukkit.getPluginManager().registerEvents(shadowListener, this);
             Bukkit.getPluginManager().registerEvents(new MatchJoinListener(this), this);
 
-            Bukkit.getScheduler().runTaskTimer(this, () ->
-                    Bukkit.getOnlinePlayers()
-                            .forEach(this::refreshCPS), 0L, 1L);
+            Bukkit.getScheduler().runTaskTimer(this, () -> {
+                try {
+                    Bukkit.getOnlinePlayers().forEach(this::refreshCPS);
+                } catch (NullPointerException ex) {
+                    getLogger().log(Level.WARNING, ex.getMessage(), ex);
+                }
+            }, 0L, 1L);
         }
     }
 
