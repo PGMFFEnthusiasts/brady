@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.google.gson.stream.JsonReader;
 
 import me.fireballs.brady.core.event.BradyShareEvent;
+import me.fireballs.share.storage.Database;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -19,6 +20,7 @@ import me.fireballs.share.manager.ClientDataManager;
 import me.fireballs.share.manager.ShadowManager;
 import me.fireballs.share.manager.StatManager;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,7 +41,21 @@ public class SharePlugin extends JavaPlugin {
         StatManager statManager = new StatManager();
         new ChatListener(statManager);
 
-        Bukkit.getPluginManager().registerEvents(new MatchStatsListener(this, statManager), this);
+        final String serverName = getConfig().getString("server-name", "unknown");
+        Database database = null;
+        final ConfigurationSection databaseConfig = getConfig().getConfigurationSection("database");
+        if (databaseConfig != null) {
+            final String path = databaseConfig.getString("path");
+            final String username = databaseConfig.getString("username");
+            final String password = databaseConfig.getString("password");
+            database = new Database(getLogger());
+            database.init(path, username, password);
+        }
+
+        Bukkit.getPluginManager().registerEvents(
+            new MatchStatsListener(this, statManager, serverName, database),
+            this
+        );
         Bukkit.getPluginManager().registerEvents(new MatchCycleListener(statManager), this);
 
         if (getConfig().getBoolean("cps-tags")) {
