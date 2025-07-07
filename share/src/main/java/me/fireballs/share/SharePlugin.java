@@ -33,6 +33,7 @@ public class SharePlugin extends JavaPlugin {
 
     private final ClientDataManager clientDataManager = new ClientDataManager();
     private final ShadowManager shadowManager = new ShadowManager(this);
+    private Database database;
 
     @Override
     public void onEnable() {
@@ -42,14 +43,11 @@ public class SharePlugin extends JavaPlugin {
         new ChatListener(statManager);
 
         final String serverName = getConfig().getString("server-name", "unknown");
-        Database database = null;
         final ConfigurationSection databaseConfig = getConfig().getConfigurationSection("database");
         if (databaseConfig != null) {
             final String path = databaseConfig.getString("path");
-            final String username = databaseConfig.getString("username");
-            final String password = databaseConfig.getString("password");
-            database = new Database(getLogger());
-            database.init(path, username, password);
+            this.database = new Database(getLogger());
+            this.database.init(path);
         }
 
         Bukkit.getPluginManager().registerEvents(
@@ -76,6 +74,13 @@ public class SharePlugin extends JavaPlugin {
                     getLogger().log(Level.WARNING, ex.getMessage(), ex);
                 }
             }, 0L, 1L);
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.database != null) {
+            this.database.close();
         }
     }
 

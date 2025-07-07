@@ -28,5 +28,4 @@ dependencies {
     api(libs.jda)
     api(libs.jda.ktx)
     api(libs.logback)
-    api(libs.h2db)
 }
