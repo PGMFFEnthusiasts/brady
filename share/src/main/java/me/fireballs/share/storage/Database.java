@@ -66,9 +66,10 @@ public class Database {
             preparedStatement.setString(7, matchData.map());
             preparedStatement.setBoolean(8, matchData.isTourney());
             if (preparedStatement.executeUpdate() == 1) {
-                final ResultSet rs = preparedStatement.getGeneratedKeys();
-                rs.next();
-                return rs.getInt(1);
+                try (final ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                    rs.next();
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
