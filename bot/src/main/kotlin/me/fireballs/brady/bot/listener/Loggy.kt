@@ -1,18 +1,15 @@
-package me.fireballs.brady.bot
+package me.fireballs.brady.bot.listener
 
+import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
-import dev.minn.jda.ktx.coroutines.await
+import io.nats.client.Nats
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import me.fireballs.brady.bot.Bot
 import me.fireballs.brady.bot.utils.ansify
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.component
+import me.fireballs.brady.core.*
 import me.fireballs.brady.core.event.BradyShareEvent
-import me.fireballs.brady.core.plus
-import me.fireballs.brady.core.registerEvents
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.IncomingWebhookClient
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.WebhookClient
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -24,45 +21,41 @@ import tc.oc.pgm.api.event.ChannelMessageEvent
 import tc.oc.pgm.channels.AdminChannel
 import tc.oc.pgm.channels.GlobalChannel
 import tc.oc.pgm.channels.TeamChannel
+import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.time.Duration.Companion.seconds
 
-class ChatMessageFlusher : Listener, KoinComponent {
+class Loggy : Listener, KoinComponent {
     private val bot by inject<Bot>()
-    private val jda by inject<JDA>()
 
     private val queue = ConcurrentLinkedQueue<String>()
-    private var client: IncomingWebhookClient? = null
+    private val prefix = ansify("&8(${System.getenv("BRADY_SERVER")}) ".cc())
 
     init {
         bot.registerEvents(this)
-        val webhookUrl = System.getenv("LOGGING_WEBHOOK")
-        if (!webhookUrl.isNullOrEmpty()) client = WebhookClient.createClient(jda, webhookUrl)
-        bot.launch {
+
+        bot.launch(bot.asyncDispatcher) {
             while (true) {
-                delay(3.seconds)
-                try {
-                    flush()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                delay(100L)
+                logExceptions { flush() }
             }
         }
     }
 
-    suspend fun flush() {
+    private suspend fun flush() {
         val linesToFlush = mutableListOf<String>()
         var line: String?
 
-        while (queue.poll().also { line = it } != null) linesToFlush.add(line!!)
+        while (queue.poll().also { line = it } != null) linesToFlush.add(prefix + line!!)
         if (linesToFlush.isEmpty()) return
 
-        client?.sendMessage("```ansi\n${linesToFlush.joinToString("\n")}\n```")
-            ?.setAvatarUrl("https://i.kunet.dev/log.png")
-            ?.setUsername("Loggy")
-            ?.setSuppressedNotifications(true)
-            ?.setAllowedMentions(emptySet<Message.MentionType>())
-            ?.await()
+        withContext(Dispatchers.IO) {
+            runCatching {
+                Nats.connect().use {
+                    it.publish("loggy", linesToFlush.joinToString("\n").encodeToByteArray())
+                    it.flush(Duration.ofSeconds(5L))
+                }
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

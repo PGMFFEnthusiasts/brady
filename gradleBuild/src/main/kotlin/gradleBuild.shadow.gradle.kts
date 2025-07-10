@@ -16,6 +16,7 @@ tasks {
         relocate("com.github.retrooper", "me.fireballs.packetevents.api")
         relocate("io.github.retrooper", "me.fireballs.packetevents.impl")
         relocate("de.tr7zw.changeme.nbtapi", "me.fireballs.nbtapi")
+        relocate("io.nats.client", "me.fireballs.nats.client")
 
         exclude("META-INF/INDEX.LIST", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
         exclude("META-INF/LICENSE*", "META-INF/NOTICE*")

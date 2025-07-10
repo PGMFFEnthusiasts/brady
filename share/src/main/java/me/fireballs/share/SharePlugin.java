@@ -60,7 +60,7 @@ public class SharePlugin extends JavaPlugin {
             ClickListener clickListener = new ClickListener(clientDataManager);
             ShadowListener shadowListener = new ShadowListener(this, shadowManager);
 
-            PacketEvents.getAPI().getEventManager().registerListener(clickListener, PacketListenerPriority.MONITOR);
+            PacketEvents.getAPI().getEventManager().registerListener(clickListener, PacketListenerPriority.NORMAL);
             PacketEvents.getAPI().getEventManager().registerListener(shadowListener, PacketListenerPriority.MONITOR);
 
             Bukkit.getPluginManager().registerEvents(clickListener, this);

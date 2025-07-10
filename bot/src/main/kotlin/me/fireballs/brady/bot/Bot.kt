@@ -2,8 +2,7 @@ package me.fireballs.brady.bot
 
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
 import dev.minn.jda.ktx.jdabuilder.default
-import me.fireballs.brady.bot.listener.CommandListener
-import me.fireballs.brady.bot.listener.PlayerCounter
+import me.fireballs.brady.bot.listener.Loggy
 import me.fireballs.brady.bot.utils.InfoBoard
 import me.fireballs.brady.core.loadModule
 import me.fireballs.brady.deps.PluginAnnotation
@@ -17,7 +16,7 @@ class Bot : SuspendingJavaPlugin() {
     private var jda: JDA? = null
 
     override fun onEnable() {
-        val botToken = System.getenv("BOT_TOKEN")
+        val botToken = System.getenv("BRADY_BOT_TOKEN")
         if (botToken.isNullOrEmpty()) {
             logger.severe("no bot token, shutting down")
             Bukkit.getPluginManager().disablePlugin(this)
@@ -29,14 +28,13 @@ class Bot : SuspendingJavaPlugin() {
 
         val botModule = module {
             single<Bot> { this@Bot }
-            single<PlayerCounter>(createdAtStart = true) { PlayerCounter() }
+//            single<PlayerCounter>(createdAtStart = true) { PlayerCounter() }
             single<InfoBoard> { InfoBoard() }
             single<Billboard>(createdAtStart = true) { Billboard() }
             single<JDA> { jda }
-            single<ChatMessageFlusher>(createdAtStart = true) { ChatMessageFlusher() }
+            single<Loggy>(createdAtStart = true) { Loggy() }
         }
 
-        jda.addEventListener(CommandListener())
         this.jda = jda
 
         loadModule(botModule)

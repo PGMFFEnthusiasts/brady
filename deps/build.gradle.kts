@@ -8,7 +8,6 @@ dependencies {
 
     api(libs.kotlinx.coroutines.core)
     api(libs.koin.core)
-    api(libs.kotlinx.coroutines.core)
 
     compileOnlyApi(libs.adventure.api)
     compileOnlyApi(libs.adventure.platform.bukkit)
@@ -28,4 +27,6 @@ dependencies {
     api(libs.jda)
     api(libs.jda.ktx)
     api(libs.logback)
+
+    api(libs.nats)
 }
