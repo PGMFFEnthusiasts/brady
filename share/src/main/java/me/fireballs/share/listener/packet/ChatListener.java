@@ -2,7 +2,7 @@ package me.fireballs.share.listener.packet;
 
 import me.fireballs.brady.core.ConsoleAudienceInterceptorKt;
 import me.fireballs.share.manager.StatManager;
-import me.fireballs.share.util.Action;
+import me.fireballs.share.util.FootballStatistic;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -27,27 +27,27 @@ public class ChatListener {
         String message = ChatColor.stripColor(messageIn);
         if (message.isEmpty() || (message.charAt(0) != '⚠' && message.charAt(0) != ' ')) return;
 
-        for (Action action : Action.values()) {
-            for (Pattern pattern : action.getPatterns()) {
+        for (FootballStatistic footballStatistic : FootballStatistic.values()) {
+            for (Pattern pattern : footballStatistic.getChatPatterns()) {
                 if (pattern.pattern().isEmpty()) continue;
 
                 Matcher matcher = pattern.matcher(message);
                 if (matcher.find()) {
                     Player player = Bukkit.getPlayer(matcher.group(1));
-                    statManager.incrementStat(player.getUniqueId(), action);
+                    statManager.incrementStat(player.getUniqueId(), footballStatistic);
 
-                    switch (action) {
+                    switch (footballStatistic) {
                         case THROWS -> lastThrower = PGM.get().getMatchManager().getPlayer(player);
                         case CATCHES -> {
                             MatchPlayer mp = PGM.get().getMatchManager().getPlayer(player);
                             if (mp != null && lastThrower != null && mp.getCompetitor() == lastThrower.getCompetitor()) {
-                                statManager.incrementStat(lastThrower.getId(), Action.PASSES);
+                                statManager.incrementStat(lastThrower.getId(), FootballStatistic.PASSES);
                             }
                         }
                         case TOUCHDOWNS -> {
                             MatchPlayer mp = PGM.get().getMatchManager().getPlayer(player);
                             if (mp != null && lastThrower != null && mp.getCompetitor() == lastThrower.getCompetitor()) {
-                                statManager.incrementStat(lastThrower.getId(), Action.TOUCHDOWN_PASSES);
+                                statManager.incrementStat(lastThrower.getId(), FootballStatistic.TOUCHDOWN_PASSES);
                             }
                         }
                     }

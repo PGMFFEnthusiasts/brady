@@ -5,7 +5,12 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.google.gson.stream.JsonReader;
 
 import me.fireballs.brady.core.event.BradyShareEvent;
+import me.fireballs.share.command.FootballDebugCommand;
+import me.fireballs.share.listener.pgm.ActionNodeTriggerListener;
 import me.fireballs.share.storage.Database;
+import me.fireballs.share.util.FootballDebugChannel;
+import me.fireballs.share.util.FootballStatistic;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -20,12 +25,18 @@ import me.fireballs.share.manager.ClientDataManager;
 import me.fireballs.share.manager.ShadowManager;
 import me.fireballs.share.manager.StatManager;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+import tc.oc.pgm.spawns.Spawn;
+import tc.oc.pgm.spawns.SpawnMatchModule;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.DecimalFormat;
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class SharePlugin extends JavaPlugin {
@@ -33,6 +44,7 @@ public class SharePlugin extends JavaPlugin {
 
     private final ClientDataManager clientDataManager = new ClientDataManager();
     private final ShadowManager shadowManager = new ShadowManager(this);
+    private ActionNodeTriggerListener actionNodeTriggerListener;
     private Database database;
 
     @Override
@@ -55,6 +67,63 @@ public class SharePlugin extends JavaPlugin {
             this
         );
         Bukkit.getPluginManager().registerEvents(new MatchCycleListener(statManager), this);
+        // hardcoding action IDs for now hopefully they don't change! why would they!
+        this.actionNodeTriggerListener = new ActionNodeTriggerListener(
+            "flag-pickup-event",
+            "flag-receive-event",
+            "snowball-thrown",
+            "flag-steal-event",
+            "carrier-died-event",
+            "increment-round",
+            "reset-flag"
+        );
+        Bukkit.getPluginManager().registerEvents(this.actionNodeTriggerListener, this);
+        this.actionNodeTriggerListener.addObserver((completedThrow) -> {
+            if (!completedThrow.catcher().getParty().equals(completedThrow.thrower().getParty())) {
+                FootballDebugChannel.sendMessage(Component.text("team mismatch ignore"));
+                return;
+            }
+            final SpawnMatchModule spawnMatchModule =
+                completedThrow.thrower().getMatch().getModule(SpawnMatchModule.class);
+            if (spawnMatchModule == null) {
+                FootballDebugChannel.sendMessage(Component.text("SpawnMatchModule was null for some reason"));
+                return;
+            }
+            final Optional<Spawn> validSpawn =
+                spawnMatchModule.getSpawns().stream().filter((spawn) -> spawn.allows(completedThrow.thrower()))
+                    .findFirst();
+            if (validSpawn.isEmpty()) {
+                FootballDebugChannel.sendMessage(Component.text("Spawn was empty for some reason"));
+                return;
+            }
+            final Location spawnLocation = validSpawn.get().getSpawn(completedThrow.thrower());
+            int magnitude = 1;
+            // if the spot the catcher lost the ball at is closer to spawn, that's an overall negative yardage
+            if (completedThrow.lossOfControlLocation().distanceSquared(spawnLocation)
+                < completedThrow.throwLocation().distanceSquared(spawnLocation)) {
+                magnitude = -1;
+            }
+
+            final DecimalFormat df = new DecimalFormat();
+            df.setMaximumFractionDigits(1);
+            double distance =
+                Math.abs(completedThrow.lossOfControlLocation().distance(completedThrow.throwLocation())) * magnitude;
+            FootballDebugChannel.sendMessage(
+                Component.text(
+                    "(" + df.format(distance) + " blocks) " +
+                        completedThrow.thrower() + " to " +
+                        completedThrow.catcher()
+                )
+            );
+            statManager.mergeStat(
+                completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.MAX_PASSING_BLOCKS,
+                (int) distance, Math::max
+            );
+            statManager.mergeStat(
+                completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.MAX_RECEIVING_BLOCKS,
+                (int) distance, Math::max
+            );
+        });
 
         if (getConfig().getBoolean("cps-tags")) {
             ClickListener clickListener = new ClickListener(clientDataManager);
@@ -75,6 +144,8 @@ public class SharePlugin extends JavaPlugin {
                 }
             }, 0L, 1L);
         }
+        FootballDebugChannel.init(this);
+        this.getCommand("tbdebug").setExecutor(new FootballDebugCommand());
     }
 
     @Override
@@ -82,6 +153,8 @@ public class SharePlugin extends JavaPlugin {
         if (this.database != null) {
             this.database.close();
         }
+        FootballDebugChannel.unload();
+        HandlerList.unregisterAll(this.actionNodeTriggerListener);
     }
 
     public void refreshCPS(Player player) {

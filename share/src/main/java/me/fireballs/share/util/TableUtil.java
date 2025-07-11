@@ -11,12 +11,13 @@ import tc.oc.pgm.util.named.Named;
 import java.util.*;
 
 public class TableUtil {
-    private static final String HEADER_FORMAT = "%-10s %-16s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
-    private static final String ROW_FORMAT = "%-10s %-16s %-10d %-10d %-10d %-10d %-10.1f %-10.1f %-10d %-10d %-10d %-10d %-10d %-10d %-10d\n";
+    private static final String HEADER_FORMAT = "%-10s %-16s %-4s %-4s %-4s %-5s %-8s %-9s %-8s %-5s %-5s %-6s %-6s %-3s %-8s %-11s %-11s\n";
+    private static final String ROW_FORMAT = "%-10s %-16s %-4d %-4d %-4d %-5d %-8.1f %-9.1f %-8d %-5d %-5d %-6d %-6d %-3d %-8d %-11d %-11d\n";
 
-    private static final String[] HEADERS = {"TEAM", "USERNAME", "KILLS", "DEATHS", "ASSISTS", "STREAK",
-            "DMG_DEALT", "DMG_RCVD",
-            "PICKUPS", "THROWS", "PASSES", "CATCHES", "STRIPS", "TOUCHDOWNS", "TD_PASSES"};
+    private static final String[] HEADERS = {"TEAM", "USERNAME", "K", "D", "AST", "STRK",
+            "DMG_DLT", "DMG_RCVD",
+            "PICKUPS", "THRW", "PASS", "CATCH", "STRIP", "TD", "TD_PASS",
+            "PASS_BLOX", "RCV_BLOX"};
 
     public static String assembleTable(Map<UUID, PlayerStats> statsMap, StatManager statManager) {
         List<Statline> statlines = new ArrayList<>();
@@ -44,13 +45,15 @@ public class TableUtil {
                     stats.getMaxKillstreak(),
                     stats.getDamageDone() / 2,
                     stats.getDamageTaken() / 2,
-                    statManager.getStat(uuid, Action.PICKUPS),
-                    statManager.getStat(uuid, Action.THROWS),
-                    statManager.getStat(uuid, Action.PASSES),
-                    statManager.getStat(uuid, Action.CATCHES),
-                    statManager.getStat(uuid, Action.STRIPS),
-                    statManager.getStat(uuid, Action.TOUCHDOWNS),
-                    statManager.getStat(uuid, Action.TOUCHDOWN_PASSES)
+                    statManager.getStat(uuid, FootballStatistic.PICKUPS),
+                    statManager.getStat(uuid, FootballStatistic.THROWS),
+                    statManager.getStat(uuid, FootballStatistic.PASSES),
+                    statManager.getStat(uuid, FootballStatistic.CATCHES),
+                    statManager.getStat(uuid, FootballStatistic.STRIPS),
+                    statManager.getStat(uuid, FootballStatistic.TOUCHDOWNS),
+                    statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES),
+                    statManager.getStat(uuid, FootballStatistic.MAX_PASSING_BLOCKS),
+                    statManager.getStat(uuid, FootballStatistic.MAX_RECEIVING_BLOCKS)
             ));
         });
 
@@ -74,7 +77,9 @@ public class TableUtil {
                 statline.catches(),
                 statline.strips(),
                 statline.touchdowns(),
-                statline.touchdownPasses()
+                statline.touchdownPasses(),
+                statline.maxPassingBlocks(),
+                statline.maxReceivingBlocks()
         )));
 
         return message.toString();
@@ -82,7 +87,8 @@ public class TableUtil {
 
     private record Statline(String team, String username, int kills, int deaths, int assists, int streak,
                            double damageDealt, double damageReceived,
-                           int pickups, int throwz, int passes, int catches, int strips, int touchdowns, int touchdownPasses) implements Comparable<Statline> {
+                           int pickups, int throwz, int passes, int catches, int strips, int touchdowns, int touchdownPasses,
+                           int maxPassingBlocks, int maxReceivingBlocks) implements Comparable<Statline> {
 
         @Override
         public int compareTo(Statline other) {

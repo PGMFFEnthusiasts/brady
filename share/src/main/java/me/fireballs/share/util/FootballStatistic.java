@@ -3,23 +3,25 @@ package me.fireballs.share.util;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-public enum Action {
+public enum FootballStatistic {
     PICKUPS("^⚠ .*?(\\w+) picked up the Flag!"),
     THROWS("^⚠ .*?(\\w+) threw the Football!"),
     PASSES(""),
     CATCHES("^⚠ .*?(\\w+) caught the Football!"),
     STRIPS("^⚠ .*?(\\w+) stripped the Flag!"),
     TOUCHDOWNS("^ » .*?(\\w+) takes it to the end zone!", "^ » .*?(\\w+) scores a touchdown!"),
-    TOUCHDOWN_PASSES("");
-    private final Pattern[] patterns;
+    TOUCHDOWN_PASSES(""),
+    MAX_PASSING_BLOCKS,
+    MAX_RECEIVING_BLOCKS;
+    private final Pattern[] chatPatterns;
 
-    Action(String... regexes) {
-        this.patterns = Arrays.stream(regexes)
+    FootballStatistic(String... regexes) {
+        this.chatPatterns = Arrays.stream(regexes)
                 .map(Pattern::compile)
                 .toArray(Pattern[]::new);
     }
 
-    public Pattern[] getPatterns() {
-        return patterns;
+    public Pattern[] getChatPatterns() {
+        return chatPatterns;
     }
 }

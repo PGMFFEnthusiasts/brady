@@ -5,7 +5,7 @@ import com.google.common.collect.HashBiMap;
 import me.fireballs.share.SharePlugin;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
-import me.fireballs.share.util.Action;
+import me.fireballs.share.util.FootballStatistic;
 import me.fireballs.share.util.HTTPUtil;
 import me.fireballs.share.util.MatchData;
 import me.fireballs.share.util.PlayerFootballStats;
@@ -13,7 +13,6 @@ import me.fireballs.share.util.TableUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -21,12 +20,10 @@ import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.event.MatchStatsEvent;
 import tc.oc.pgm.api.party.Competitor;
-import tc.oc.pgm.api.player.Username;
 import tc.oc.pgm.score.ScoreMatchModule;
 import tc.oc.pgm.stats.PlayerStats;
 import tc.oc.pgm.stats.StatsMatchModule;
 import tc.oc.pgm.util.Pair;
-import tc.oc.pgm.util.named.Named;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -127,13 +124,13 @@ public class MatchStatsListener implements Listener {
                 stats.getMaxKillstreak(),
                 stats.getDamageDone() / 2,
                 stats.getDamageTaken() / 2,
-                statManager.getStat(uuid, Action.PICKUPS),
-                statManager.getStat(uuid, Action.THROWS),
-                statManager.getStat(uuid, Action.PASSES),
-                statManager.getStat(uuid, Action.CATCHES),
-                statManager.getStat(uuid, Action.STRIPS),
-                statManager.getStat(uuid, Action.TOUCHDOWNS),
-                statManager.getStat(uuid, Action.TOUCHDOWN_PASSES)
+                statManager.getStat(uuid, FootballStatistic.PICKUPS),
+                statManager.getStat(uuid, FootballStatistic.THROWS),
+                statManager.getStat(uuid, FootballStatistic.PASSES),
+                statManager.getStat(uuid, FootballStatistic.CATCHES),
+                statManager.getStat(uuid, FootballStatistic.STRIPS),
+                statManager.getStat(uuid, FootballStatistic.TOUCHDOWNS),
+                statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES)
             );
             return new Pair<>(uuid, footballStats);
         }).filter(Objects::nonNull).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));

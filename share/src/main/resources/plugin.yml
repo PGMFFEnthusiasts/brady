@@ -5,5 +5,8 @@ description: "Share brady stats"
 depend:
   - PGM
   - core
+commands:
+  tbdebug:
+    permission: tb.debug
 authors:
   - applepies
