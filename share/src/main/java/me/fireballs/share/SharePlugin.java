@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 public class SharePlugin extends JavaPlugin {
@@ -89,6 +91,31 @@ public class SharePlugin extends JavaPlugin {
                 FootballDebugChannel.sendMessage(Component.text("SpawnMatchModule was null for some reason"));
                 return;
             }
+            // horrendous code incoming!
+            if (spawnMatchModule.getSpawns().size() < 2) {
+                FootballDebugChannel.sendMessage(Component.text("Less than 2 spawns?"));
+                return;
+            }
+            final Spawn spawn1 = spawnMatchModule.getSpawns().get(0);
+            final Spawn spawn2 = spawnMatchModule.getSpawns().get(1);
+            // really this shouldn't be needed if spawns aligned on the cross axis but who knows!
+            final double epsilon = 1.1;
+            final Location referencePoint1 = spawn1.getSpawn(completedThrow.thrower());
+            final Location referencePoint2 = spawn2.getSpawn(completedThrow.thrower());
+            final Location theDiff = referencePoint2.clone().subtract(referencePoint1);
+            final boolean crossAxisIsZ = Math.abs(theDiff.getX()) > epsilon;
+            final Function<Location, Location> postProcessLocation = (location) -> {
+                Location newLocation = location.clone();
+                newLocation.setY(0);
+                if (crossAxisIsZ) {
+                    newLocation.setZ(0);
+                } else {
+                    newLocation.setX(0);
+                }
+                return newLocation;
+            };
+
+            // calculate +/-
             final Optional<Spawn> validSpawn =
                 spawnMatchModule.getSpawns().stream().filter((spawn) -> spawn.allows(completedThrow.thrower()))
                     .findFirst();
@@ -107,7 +134,10 @@ public class SharePlugin extends JavaPlugin {
             final DecimalFormat df = new DecimalFormat();
             df.setMaximumFractionDigits(1);
             double distance =
-                Math.abs(completedThrow.lossOfControlLocation().distance(completedThrow.throwLocation())) * magnitude;
+                Math.abs(
+                    postProcessLocation.apply(completedThrow.lossOfControlLocation()).distance(
+                        postProcessLocation.apply(completedThrow.throwLocation())
+                    )) * magnitude;
             FootballDebugChannel.sendMessage(
                 Component.text(
                     "(" + df.format(distance) + " blocks) " +
@@ -117,11 +147,11 @@ public class SharePlugin extends JavaPlugin {
             );
             statManager.mergeStat(
                 completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.MAX_PASSING_BLOCKS,
-                (int) distance, Math::max
+                (int) distance, Integer::sum
             );
             statManager.mergeStat(
                 completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.MAX_RECEIVING_BLOCKS,
-                (int) distance, Math::max
+                (int) distance, Integer::sum
             );
         });
 
