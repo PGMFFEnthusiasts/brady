@@ -14,11 +14,19 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import static me.fireballs.share.storage.Statements.CREATE_MATCH_DATA_TABLE;
+import static me.fireballs.share.storage.Statements.CREATE_PASSING_BLOCKS_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_MATCH_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_TABLE;
+import static me.fireballs.share.storage.Statements.CREATE_RECEIVE_BLOCKS_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_TEAM_ONE_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_TEAM_TWO_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.INSERT_MATCH_DATA_ROW;
 import static me.fireballs.share.storage.Statements.INSERT_PLAYER_MATCH_DATA_ROW;
+import static me.fireballs.share.storage.Statements.PASSING_BLOCKS_COLUMN;
+import static me.fireballs.share.storage.Statements.RECEIVE_BLOCKS_COLUMN;
+import static me.fireballs.share.storage.Statements.TEAM_ONE_NAME_COLUMN;
+import static me.fireballs.share.storage.Statements.TEAM_TWO_NAME_COLUMN;
 
 public class Database {
     private final Logger logger;
@@ -47,6 +55,12 @@ public class Database {
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_MATCH_INDEX);
             statement.executeBatch();
+            statement.clearBatch();
+
+            createColumnIfNotExists(statement, "match_data", TEAM_ONE_NAME_COLUMN, CREATE_TEAM_ONE_COLUMN_QUERY);
+            createColumnIfNotExists(statement,"match_data",  TEAM_TWO_NAME_COLUMN, CREATE_TEAM_TWO_COLUMN_QUERY);
+            createColumnIfNotExists(statement, "player_match_data", PASSING_BLOCKS_COLUMN, CREATE_PASSING_BLOCKS_COLUMN_QUERY);
+            createColumnIfNotExists(statement, "player_match_data", RECEIVE_BLOCKS_COLUMN, CREATE_RECEIVE_BLOCKS_COLUMN_QUERY);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -65,6 +79,8 @@ public class Database {
             preparedStatement.setInt(6, matchData.teamTwoScore());
             preparedStatement.setString(7, matchData.map());
             preparedStatement.setBoolean(8, matchData.isTourney());
+            preparedStatement.setString(9, matchData.teamOneName());
+            preparedStatement.setString(10, matchData.teamTwoName());
             if (preparedStatement.executeUpdate() == 1) {
                 try (final ResultSet rs = preparedStatement.getGeneratedKeys()) {
                     rs.next();
@@ -103,6 +119,8 @@ public class Database {
                 preparedStatement.setInt(14, playerStats.strips());
                 preparedStatement.setInt(15, playerStats.touchdowns());
                 preparedStatement.setInt(16, playerStats.touchdownPasses());
+                preparedStatement.setInt(17, playerStats.totalPassingBlocks());
+                preparedStatement.setInt(18, playerStats.totalReceivingBlocks());
                 preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
@@ -115,6 +133,21 @@ public class Database {
         if (this.connection != null) {
             try {
                 this.connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void createColumnIfNotExists(
+        final Statement statement,
+        final String tableName,
+        final String columnName,
+        final String alterQuery
+    ) {
+        if (!Statements.columnExists(statement, tableName, columnName)) {
+            try {
+                statement.execute(alterQuery);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

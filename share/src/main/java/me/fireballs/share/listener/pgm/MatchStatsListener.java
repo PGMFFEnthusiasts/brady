@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import me.fireballs.share.SharePlugin;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
+import me.fireballs.share.util.FootballDebugChannel;
 import me.fireballs.share.util.FootballStatistic;
 import me.fireballs.share.util.HTTPUtil;
 import me.fireballs.share.util.MatchData;
@@ -71,9 +72,16 @@ public class MatchStatsListener implements Listener {
                 plugin.getLogger().log(Level.WARNING, ex.getMessage(), ex);
             }
 
+            FootballDebugChannel.sendMessage(Component.text("Attempting to write match data to database"));
             if (database != null && playerAndMatchData != null) {
                 final int matchId = database.addMatchData(playerAndMatchData.matchData);
+                FootballDebugChannel.sendMessage(Component.text(
+                    "Successfully wrote match data, match #" + matchId
+                ));
                 database.batchAddPlayerMatchData(matchId, playerAndMatchData.stats);
+                FootballDebugChannel.sendMessage(Component.text(
+                    "Wrote player match data"
+                ));
             }
         });
     }
@@ -102,7 +110,8 @@ public class MatchStatsListener implements Listener {
         final String map = match.getMap().getNormalizedName();
         final boolean isTourney = false;
         final MatchData matchData = new MatchData(
-            serverName, startTime, duration, winner, teamOneScore, teamTwoScore, map, isTourney
+            serverName, startTime, duration, winner, teamOneScore, teamTwoScore, map, isTourney,
+            competitors.get(0).getNameLegacy(), competitors.get(1).getNameLegacy()
         );
 
         final Map<UUID, PlayerStats> statsMap = statsModule.getStats();
@@ -130,7 +139,9 @@ public class MatchStatsListener implements Listener {
                 statManager.getStat(uuid, FootballStatistic.CATCHES),
                 statManager.getStat(uuid, FootballStatistic.STRIPS),
                 statManager.getStat(uuid, FootballStatistic.TOUCHDOWNS),
-                statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES)
+                statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES),
+                statManager.getStat(uuid, FootballStatistic.TOTAL_PASSING_BLOCKS),
+                statManager.getStat(uuid, FootballStatistic.TOTAL_RECEIVING_BLOCKS)
             );
             return new Pair<>(uuid, footballStats);
         }).filter(Objects::nonNull).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));

@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -146,11 +145,11 @@ public class SharePlugin extends JavaPlugin {
                 )
             );
             statManager.mergeStat(
-                completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.MAX_PASSING_BLOCKS,
+                completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_PASSING_BLOCKS,
                 (int) distance, Integer::sum
             );
             statManager.mergeStat(
-                completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.MAX_RECEIVING_BLOCKS,
+                completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.TOTAL_RECEIVING_BLOCKS,
                 (int) distance, Integer::sum
             );
         });

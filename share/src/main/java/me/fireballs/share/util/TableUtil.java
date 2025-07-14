@@ -52,8 +52,8 @@ public class TableUtil {
                     statManager.getStat(uuid, FootballStatistic.STRIPS),
                     statManager.getStat(uuid, FootballStatistic.TOUCHDOWNS),
                     statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES),
-                    statManager.getStat(uuid, FootballStatistic.MAX_PASSING_BLOCKS),
-                    statManager.getStat(uuid, FootballStatistic.MAX_RECEIVING_BLOCKS)
+                    statManager.getStat(uuid, FootballStatistic.TOTAL_PASSING_BLOCKS),
+                    statManager.getStat(uuid, FootballStatistic.TOTAL_RECEIVING_BLOCKS)
             ));
         });
 

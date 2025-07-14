@@ -14,6 +14,7 @@ import tc.oc.pgm.events.PlayerLeaveMatchEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ActionNodeTriggerListener implements Listener {
     private final String flagPickupActionId;
@@ -23,6 +24,7 @@ public class ActionNodeTriggerListener implements Listener {
     private final String carrierDiedActionId;
     private final String roundIncrementActionId;
     private final String resetFlagActionId;
+    private final Set<String> relevantActions;
     private final List<FootballCompletedThrowListener> observers = new ArrayList<>();
 
     private MatchPlayer thrower;
@@ -47,6 +49,10 @@ public class ActionNodeTriggerListener implements Listener {
         this.carrierDiedActionId = carrierDiedActionId;
         this.roundIncrementActionId = roundIncrementActionId;
         this.resetFlagActionId = resetFlagActionId;
+        this.relevantActions = Set.of(
+            flagPickupActionId, flagReceiveActionId, ballThrownActionId, flagStealActionId, carrierDiedActionId,
+            roundIncrementActionId, resetFlagActionId
+        );
     }
 
     public void addObserver(final FootballCompletedThrowListener observer) {
@@ -55,6 +61,7 @@ public class ActionNodeTriggerListener implements Listener {
 
     @EventHandler
     public void onActionNodeTrigger(final ActionNodeTriggerEvent event) {
+        if (!relevantActions.contains(event.nodeId)) return;
         if (event.nodeId.equals(resetFlagActionId)) { // whenever the flag is reset we should have a clean state
             FootballDebugChannel.sendMessage(Component.text("Flag reset action detected"));
             resetState();
@@ -129,11 +136,11 @@ public class ActionNodeTriggerListener implements Listener {
 
     @EventHandler
     public void onMatchQuitEvent(final PlayerLeaveMatchEvent event) {
-        if (catcher != null) {
+        if (event.getPlayer().equals(catcher)) {
             lossOfControlLocation = catcher.getLocation();
             emitThrow();
             resetState();
-        } else if (thrower != null) {
+        } else if (event.getPlayer().equals(thrower)) {
             resetState();
         }
     }

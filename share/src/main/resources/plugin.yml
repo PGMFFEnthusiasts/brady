@@ -4,7 +4,7 @@ name: share
 description: "Share brady stats"
 depend:
   - PGM
-  - core
+  - Core
 commands:
   tbdebug:
     permission: tb.debug

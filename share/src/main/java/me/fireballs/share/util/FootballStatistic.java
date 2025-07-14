@@ -11,8 +11,8 @@ public enum FootballStatistic {
     STRIPS("^⚠ .*?(\\w+) stripped the Flag!"),
     TOUCHDOWNS("^ » .*?(\\w+) takes it to the end zone!", "^ » .*?(\\w+) scores a touchdown!"),
     TOUCHDOWN_PASSES(""),
-    MAX_PASSING_BLOCKS,
-    MAX_RECEIVING_BLOCKS;
+    TOTAL_PASSING_BLOCKS,
+    TOTAL_RECEIVING_BLOCKS;
     private final Pattern[] chatPatterns;
 
     FootballStatistic(String... regexes) {
