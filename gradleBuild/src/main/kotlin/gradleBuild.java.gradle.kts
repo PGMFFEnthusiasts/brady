@@ -12,7 +12,7 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
-group = "me.fireballs"
+group = "me.fireballs.brady"
 version = "1.0"
 
 java.sourceCompatibility = JavaVersion.VERSION_21

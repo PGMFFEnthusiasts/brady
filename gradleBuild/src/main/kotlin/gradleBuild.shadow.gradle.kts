@@ -3,6 +3,13 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("gradleBuild.java")
     id("com.gradleup.shadow")
+    `maven-publish`
+}
+
+publishing.publications {
+    register<MavenPublication>("Release") {
+        from(components["java"])
+    }
 }
 
 tasks {

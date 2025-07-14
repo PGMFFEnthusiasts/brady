@@ -26,6 +26,9 @@ class Core : SuspendingJavaPlugin() {
         startKoin {
             modules(appModule)
         }
+
+        DebuggingSubscriber()
+        StandardBradyListener()
     }
 
     override fun onDisable() {

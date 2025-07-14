@@ -1,8 +1,8 @@
 main: me.fireballs.share.SharePlugin
 version: 1.0.0
-name: share
+name: Share
 description: "Share brady stats"
-depend:
+softdepend:
   - PGM
   - Core
 commands:

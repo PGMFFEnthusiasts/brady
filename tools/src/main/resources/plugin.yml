@@ -1,5 +1,5 @@
-name: tools
-depends:
-  - core
+name: Tools
+softdepend:
+  - Core
 main: me.fireballs.brady.tools.Tools
 version: 1.0.0

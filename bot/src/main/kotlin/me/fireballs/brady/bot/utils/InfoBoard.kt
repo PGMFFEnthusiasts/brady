@@ -1,10 +1,6 @@
 package me.fireballs.brady.bot.utils
 
-import me.fireballs.brady.core.c
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.currentMatch
-import me.fireballs.brady.core.forWhom
-import me.fireballs.brady.core.plus
+import me.fireballs.brady.core.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.format.NamedTextColor

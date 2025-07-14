@@ -26,6 +26,7 @@ dependencies {
 
     api(libs.jda)
     api(libs.jda.ktx)
+    api(libs.discord.webhooks)
     api(libs.logback)
 
     api(libs.nats)

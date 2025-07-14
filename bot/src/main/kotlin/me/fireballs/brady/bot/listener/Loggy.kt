@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.bot.Bot
-import me.fireballs.brady.bot.utils.ansify
+import me.fireballs.brady.core.ansify
 import me.fireballs.brady.core.*
 import me.fireballs.brady.core.event.BradyShareEvent
 import org.bukkit.event.EventHandler
@@ -58,7 +58,7 @@ class Loggy : Listener, KoinComponent {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private fun channelMessageEvent(event: ChannelMessageEvent<*>) {
         val channel = event.channel
         val sender = event.sender

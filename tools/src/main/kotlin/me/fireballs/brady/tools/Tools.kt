@@ -12,6 +12,7 @@ class Tools : SuspendingJavaPlugin() {
             single<Tools> { this@Tools }
             single<Drafting>(createdAtStart = true) { Drafting() }
             single<FlagFootballMaps>(createdAtStart = true) { FlagFootballMaps() }
+            single<Splat>(createdAtStart = true) { Splat() }
         }
 
         loadModule(toolModule)

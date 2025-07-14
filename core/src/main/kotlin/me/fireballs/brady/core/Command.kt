@@ -118,18 +118,15 @@ private class CommandHandler(val javaPlugin: SuspendingJavaPlugin, val commandBu
 
         var depth = 0
         var head = commandBuilder
-        var flag = false
 
-        while (depth < args.size && !flag) {
-            val subcommand = getSubcommand(head, args[depth])
-            if (subcommand != null) {
-                head = subcommand
-                if (!testPerm(sender, head.permission)) return true
-            } else flag = true
+        for (arg in args) {
+            val subcommand = getSubcommand(head, arg) ?: break
+            head = subcommand
             ++depth
+            if (!testPerm(sender, head.permission)) return true
         }
 
-        val subArgs = args.copyOfRange(max(depth - 1, 0), args.size)
+        val subArgs = args.copyOfRange(max(depth, 0), args.size)
         val commandContext = CommandExecution(sender, args, subArgs)
         javaPlugin.launch {
             try {

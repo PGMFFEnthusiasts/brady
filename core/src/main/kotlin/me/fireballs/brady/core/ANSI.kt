@@ -1,6 +1,5 @@
-package me.fireballs.brady.bot.utils
+package me.fireballs.brady.core
 
-import me.fireballs.brady.core.forWhom
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer

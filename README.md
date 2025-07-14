@@ -8,6 +8,11 @@ do note there is a required API patch for MCCoroutine to work on SportPaper. You
 you can find a SportPaper with this in it [here](https://github.com/PGMFFEnthusiasts/SportPaper) that's
 specifically for brady.
 
+## pgm fork
+
+the code in here requires a fork of pgm you can find [here](https://github.com/PGMFFEnthusiasts/PGM/tree/tb-patches),
+just publish to maven local and you're good!
+
 ## adding more plugins
 
 you probably actually want your code to rely on the `deps` plugin or the `core` plugin. `deps` is nice since

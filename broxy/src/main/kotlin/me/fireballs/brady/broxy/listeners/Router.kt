@@ -9,11 +9,12 @@ class Router(
 ) {
     @Subscribe
     fun onRoute(event: PlayerChooseInitialServerEvent) {
-        if (plugin.server.allServers.all { it.playersConnected.isEmpty() }) return
+//        if (plugin.server.allServers.all { it.playersConnected.isEmpty() }) return
         event.setInitialServer(
             plugin.server.allServers
                 // primary -> secondary -> tertiary
                 .sortedBy { it.serverInfo.name }
+//                .reversed()
                 .maxByOrNull { it.playersConnected.size }
         )
     }
