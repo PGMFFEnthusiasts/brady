@@ -3,41 +3,33 @@ package me.fireballs.share;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.google.gson.stream.JsonReader;
-
 import me.fireballs.brady.core.event.BradyShareEvent;
 import me.fireballs.share.command.FootballDebugCommand;
+import me.fireballs.share.football.FootballListenerImpl;
+import me.fireballs.share.listener.packet.ChatListener;
+import me.fireballs.share.listener.packet.ClickListener;
+import me.fireballs.share.listener.packet.ShadowListener;
 import me.fireballs.share.listener.pgm.ActionNodeTriggerListener;
+import me.fireballs.share.listener.pgm.MatchCycleListener;
+import me.fireballs.share.listener.pgm.MatchJoinListener;
+import me.fireballs.share.listener.pgm.MatchStatsListener;
+import me.fireballs.share.manager.ClientDataManager;
+import me.fireballs.share.manager.ShadowManager;
+import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
 import me.fireballs.share.util.FootballDebugChannel;
-import me.fireballs.share.util.FootballStatistic;
-import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
-import me.fireballs.share.listener.packet.ChatListener;
-import me.fireballs.share.listener.pgm.MatchCycleListener;
-import me.fireballs.share.listener.pgm.MatchJoinListener;
-import me.fireballs.share.listener.pgm.MatchStatsListener;
-import me.fireballs.share.listener.packet.ClickListener;
-import me.fireballs.share.listener.packet.ShadowListener;
-import me.fireballs.share.manager.ClientDataManager;
-import me.fireballs.share.manager.ShadowManager;
-import me.fireballs.share.manager.StatManager;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import tc.oc.pgm.spawns.Spawn;
-import tc.oc.pgm.spawns.SpawnMatchModule;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.text.DecimalFormat;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.logging.Level;
 
 public class SharePlugin extends JavaPlugin {
@@ -47,6 +39,7 @@ public class SharePlugin extends JavaPlugin {
     private final ShadowManager shadowManager = new ShadowManager(this);
     private ActionNodeTriggerListener actionNodeTriggerListener;
     private Database database;
+    private FootballListenerImpl footballListener;
 
     @Override
     public void onEnable() {
@@ -79,80 +72,9 @@ public class SharePlugin extends JavaPlugin {
             "reset-flag"
         );
         Bukkit.getPluginManager().registerEvents(this.actionNodeTriggerListener, this);
-        this.actionNodeTriggerListener.addObserver((completedThrow) -> {
-            if (!completedThrow.catcher().getParty().equals(completedThrow.thrower().getParty())) {
-                FootballDebugChannel.sendMessage(Component.text("team mismatch ignore"));
-                return;
-            }
-            final SpawnMatchModule spawnMatchModule =
-                completedThrow.thrower().getMatch().getModule(SpawnMatchModule.class);
-            if (spawnMatchModule == null) {
-                FootballDebugChannel.sendMessage(Component.text("SpawnMatchModule was null for some reason"));
-                return;
-            }
-            // horrendous code incoming!
-            if (spawnMatchModule.getSpawns().size() < 2) {
-                FootballDebugChannel.sendMessage(Component.text("Less than 2 spawns?"));
-                return;
-            }
-            final Spawn spawn1 = spawnMatchModule.getSpawns().get(0);
-            final Spawn spawn2 = spawnMatchModule.getSpawns().get(1);
-            // really this shouldn't be needed if spawns aligned on the cross axis but who knows!
-            final double epsilon = 1.1;
-            final Location referencePoint1 = spawn1.getSpawn(completedThrow.thrower());
-            final Location referencePoint2 = spawn2.getSpawn(completedThrow.thrower());
-            final Location theDiff = referencePoint2.clone().subtract(referencePoint1);
-            final boolean crossAxisIsZ = Math.abs(theDiff.getX()) > epsilon;
-            final Function<Location, Location> postProcessLocation = (location) -> {
-                Location newLocation = location.clone();
-                newLocation.setY(0);
-                if (crossAxisIsZ) {
-                    newLocation.setZ(0);
-                } else {
-                    newLocation.setX(0);
-                }
-                return newLocation;
-            };
-
-            // calculate +/-
-            final Optional<Spawn> validSpawn =
-                spawnMatchModule.getSpawns().stream().filter((spawn) -> spawn.allows(completedThrow.thrower()))
-                    .findFirst();
-            if (validSpawn.isEmpty()) {
-                FootballDebugChannel.sendMessage(Component.text("Spawn was empty for some reason"));
-                return;
-            }
-            final Location spawnLocation = validSpawn.get().getSpawn(completedThrow.thrower());
-            int magnitude = 1;
-            // if the spot the catcher lost the ball at is closer to spawn, that's an overall negative yardage
-            if (completedThrow.lossOfControlLocation().distanceSquared(spawnLocation)
-                < completedThrow.throwLocation().distanceSquared(spawnLocation)) {
-                magnitude = -1;
-            }
-
-            final DecimalFormat df = new DecimalFormat();
-            df.setMaximumFractionDigits(1);
-            double distance =
-                Math.abs(
-                    postProcessLocation.apply(completedThrow.lossOfControlLocation()).distance(
-                        postProcessLocation.apply(completedThrow.throwLocation())
-                    )) * magnitude;
-            FootballDebugChannel.sendMessage(
-                Component.text(
-                    "(" + df.format(distance) + " blocks) " +
-                        completedThrow.thrower() + " to " +
-                        completedThrow.catcher()
-                )
-            );
-            statManager.mergeStat(
-                completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_PASSING_BLOCKS,
-                (int) distance, Integer::sum
-            );
-            statManager.mergeStat(
-                completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.TOTAL_RECEIVING_BLOCKS,
-                (int) distance, Integer::sum
-            );
-        });
+        this.footballListener = new FootballListenerImpl(statManager);
+        Bukkit.getPluginManager().registerEvents(this.footballListener, this);
+        this.actionNodeTriggerListener.addObserver(this.footballListener);
 
         if (getConfig().getBoolean("cps-tags")) {
             ClickListener clickListener = new ClickListener(clientDataManager);
@@ -184,6 +106,9 @@ public class SharePlugin extends JavaPlugin {
         }
         FootballDebugChannel.unload();
         HandlerList.unregisterAll(this.actionNodeTriggerListener);
+        if (this.footballListener != null) {
+            HandlerList.unregisterAll(this.footballListener);
+        }
     }
 
     public void refreshCPS(Player player) {

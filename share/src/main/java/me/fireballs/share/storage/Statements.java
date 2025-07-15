@@ -31,8 +31,8 @@ public class Statements {
     public static final String INSERT_PLAYER_MATCH_DATA_ROW =
         "INSERT INTO player_match_data (player, match, team, kills, deaths, assists, killstreak, dmg_dealt, " +
         "dmg_taken, pickups, throws, passes, catches, strips, touchdowns, touchdown_passes, " +
-        "passing_blocks, receive_blocks) VALUES " +
-        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "passing_blocks, receive_blocks, defensive_interceptions, pass_interceptions, damage_carrier) VALUES " +
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
     public static String pragmaTableInfo(String tableName) {
@@ -70,4 +70,13 @@ public class Statements {
     public static final String RECEIVE_BLOCKS_COLUMN = "receive_blocks";
     public static final String CREATE_RECEIVE_BLOCKS_COLUMN_QUERY =
         "ALTER TABLE player_match_data ADD COLUMN 'receive_blocks' REAL DEFAULT 0.0;";
+    public static final String DEFENSIVE_INTERCEPTIONS_COLUMN = "defensive_interceptions";
+    public static final String CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY =
+        "ALTER TABLE player_match_data ADD COLUMN 'defensive_interceptions' REAL DEFAULT 0.0;";
+    public static final String PASS_INTERCEPTIONS_COLUMN = "pass_interceptions";
+    public static final String CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY =
+        "ALTER TABLE player_match_data ADD COLUMN 'pass_interceptions' REAL DEFAULT 0.0;";
+    public static final String DAMAGE_CARRIER_COLUMN = "damage_carrier";
+    public static final String CREATE_DAMAGE_CARRIER_COLUMN_QUERY =
+        "ALTER TABLE player_match_data ADD COLUMN 'damage_carrier' REAL DEFAULT 0.0;";
 }

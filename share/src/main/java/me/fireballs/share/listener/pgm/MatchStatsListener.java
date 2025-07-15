@@ -133,15 +133,18 @@ public class MatchStatsListener implements Listener {
                 stats.getMaxKillstreak(),
                 stats.getDamageDone() / 2,
                 stats.getDamageTaken() / 2,
-                statManager.getStat(uuid, FootballStatistic.PICKUPS),
-                statManager.getStat(uuid, FootballStatistic.THROWS),
-                statManager.getStat(uuid, FootballStatistic.PASSES),
-                statManager.getStat(uuid, FootballStatistic.CATCHES),
-                statManager.getStat(uuid, FootballStatistic.STRIPS),
-                statManager.getStat(uuid, FootballStatistic.TOUCHDOWNS),
-                statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES),
-                statManager.getStat(uuid, FootballStatistic.TOTAL_PASSING_BLOCKS),
-                statManager.getStat(uuid, FootballStatistic.TOTAL_RECEIVING_BLOCKS)
+                (int) statManager.getStat(uuid, FootballStatistic.PICKUPS),
+                (int) statManager.getStat(uuid, FootballStatistic.THROWS),
+                (int) statManager.getStat(uuid, FootballStatistic.PASSES),
+                (int) statManager.getStat(uuid, FootballStatistic.CATCHES),
+                (int) statManager.getStat(uuid, FootballStatistic.STRIPS),
+                (int) statManager.getStat(uuid, FootballStatistic.TOUCHDOWNS),
+                (int) statManager.getStat(uuid, FootballStatistic.TOUCHDOWN_PASSES),
+                (int) statManager.getStat(uuid, FootballStatistic.TOTAL_PASSING_BLOCKS),
+                (int) statManager.getStat(uuid, FootballStatistic.TOTAL_RECEIVING_BLOCKS),
+                (int) statManager.getStat(uuid, FootballStatistic.DEFENSE_INTERCEPTIONS),
+                (int) statManager.getStat(uuid, FootballStatistic.PASS_INTERCEPTIONS),
+                statManager.getStat(uuid, FootballStatistic.DMG_CARRIER) / 2.0
             );
             return new Pair<>(uuid, footballStats);
         }).filter(Objects::nonNull).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));

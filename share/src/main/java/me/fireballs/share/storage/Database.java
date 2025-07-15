@@ -13,17 +13,23 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import static me.fireballs.share.storage.Statements.CREATE_DAMAGE_CARRIER_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_MATCH_DATA_TABLE;
 import static me.fireballs.share.storage.Statements.CREATE_PASSING_BLOCKS_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_MATCH_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_TABLE;
 import static me.fireballs.share.storage.Statements.CREATE_RECEIVE_BLOCKS_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_TEAM_ONE_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_TEAM_TWO_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.DAMAGE_CARRIER_COLUMN;
+import static me.fireballs.share.storage.Statements.DEFENSIVE_INTERCEPTIONS_COLUMN;
 import static me.fireballs.share.storage.Statements.INSERT_MATCH_DATA_ROW;
 import static me.fireballs.share.storage.Statements.INSERT_PLAYER_MATCH_DATA_ROW;
 import static me.fireballs.share.storage.Statements.PASSING_BLOCKS_COLUMN;
+import static me.fireballs.share.storage.Statements.PASS_INTERCEPTIONS_COLUMN;
 import static me.fireballs.share.storage.Statements.RECEIVE_BLOCKS_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_ONE_NAME_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_TWO_NAME_COLUMN;
@@ -61,6 +67,9 @@ public class Database {
             createColumnIfNotExists(statement,"match_data",  TEAM_TWO_NAME_COLUMN, CREATE_TEAM_TWO_COLUMN_QUERY);
             createColumnIfNotExists(statement, "player_match_data", PASSING_BLOCKS_COLUMN, CREATE_PASSING_BLOCKS_COLUMN_QUERY);
             createColumnIfNotExists(statement, "player_match_data", RECEIVE_BLOCKS_COLUMN, CREATE_RECEIVE_BLOCKS_COLUMN_QUERY);
+            createColumnIfNotExists(statement, "player_match_data", DEFENSIVE_INTERCEPTIONS_COLUMN, CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY);
+            createColumnIfNotExists(statement, "player_match_data", PASS_INTERCEPTIONS_COLUMN, CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY);
+            createColumnIfNotExists(statement, "player_match_data", DAMAGE_CARRIER_COLUMN, CREATE_DAMAGE_CARRIER_COLUMN_QUERY);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -121,6 +130,9 @@ public class Database {
                 preparedStatement.setInt(16, playerStats.touchdownPasses());
                 preparedStatement.setInt(17, playerStats.totalPassingBlocks());
                 preparedStatement.setInt(18, playerStats.totalReceivingBlocks());
+                preparedStatement.setInt(19, playerStats.defensiveInterceptions());
+                preparedStatement.setInt(20, playerStats.passingInterceptions());
+                preparedStatement.setDouble(21, playerStats.damageCarrier());
                 preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();

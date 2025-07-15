@@ -1,7 +1,7 @@
 package me.fireballs.share.listener.pgm;
 
 import me.fireballs.share.football.CompletedFootballThrow;
-import me.fireballs.share.football.FootballCompletedThrowListener;
+import me.fireballs.share.football.FootballListener;
 import me.fireballs.share.util.FootballDebugChannel;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
@@ -25,7 +25,7 @@ public class ActionNodeTriggerListener implements Listener {
     private final String roundIncrementActionId;
     private final String resetFlagActionId;
     private final Set<String> relevantActions;
-    private final List<FootballCompletedThrowListener> observers = new ArrayList<>();
+    private final List<FootballListener> observers = new ArrayList<>();
 
     private MatchPlayer thrower;
     private Location throwLocation;
@@ -55,7 +55,7 @@ public class ActionNodeTriggerListener implements Listener {
         );
     }
 
-    public void addObserver(final FootballCompletedThrowListener observer) {
+    public void addObserver(final FootballListener observer) {
         observers.add(observer);
     }
 
@@ -68,6 +68,11 @@ public class ActionNodeTriggerListener implements Listener {
             return;
         }
         if (!(event.scope instanceof MatchPlayer matchPlayer)) return;
+        if (isReceiveControlAction(event.nodeId)) {
+            for (final FootballListener observer : observers) {
+                observer.onCarrierChange(matchPlayer);
+            }
+        }
         if (thrower == null) {
             // when a potential thrower obtains the ball
             if (isReceiveControlAction(event.nodeId)) {
@@ -94,6 +99,9 @@ public class ActionNodeTriggerListener implements Listener {
                 FootballDebugChannel.sendMessage(Component.text("Thrower completed the pass!"));
                 catcher = matchPlayer;
                 catchLocation = matchPlayer.getLocation();
+                for (final FootballListener observer : observers) {
+                    observer.onPass(thrower, catcher);
+                }
                 return;
             } else if (event.nodeId.equals(flagPickupActionId)) { // i dont rlly know why i have to do this
                 return;
@@ -150,8 +158,8 @@ public class ActionNodeTriggerListener implements Listener {
             thrower, throwLocation,
             catcher, catchLocation, lossOfControlLocation
         );
-        for (final FootballCompletedThrowListener observer : observers) {
-            observer.onThrowCompletion(completedThrow);
+        for (final FootballListener observer : observers) {
+            observer.onPassPossessionCompletion(completedThrow);
         }
     }
 

@@ -12,7 +12,10 @@ public enum FootballStatistic {
     TOUCHDOWNS("^ » .*?(\\w+) takes it to the end zone!", "^ » .*?(\\w+) scores a touchdown!"),
     TOUCHDOWN_PASSES(""),
     TOTAL_PASSING_BLOCKS,
-    TOTAL_RECEIVING_BLOCKS;
+    TOTAL_RECEIVING_BLOCKS,
+    PASS_INTERCEPTIONS,
+    DEFENSE_INTERCEPTIONS,
+    DMG_CARRIER;
     private final Pattern[] chatPatterns;
 
     FootballStatistic(String... regexes) {
