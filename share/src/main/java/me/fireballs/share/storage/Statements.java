@@ -21,6 +21,8 @@ public class Statements {
         "strips INTEGER NOT NULL, " +
         "touchdowns INTEGER NOT NULL, touchdown_passes INTEGER NOT NULL, PRIMARY KEY (player, match), " +
         "FOREIGN KEY (match) REFERENCES match_data(match))";
+    public static final String CREATE_PLAYER_IDENTITY_TABLE =
+        "CREATE TABLE IF NOT EXISTS player_identities (uuid BLOB NOT NUll, name TEXT NOT NULL, PRIMARY KEY (uuid))";
     public static final String CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX =
         "CREATE INDEX IF NOT EXISTS idx_md_player ON player_match_data (player)";
     public static final String CREATE_PLAYER_MATCH_DATA_MATCH_INDEX =
@@ -33,6 +35,8 @@ public class Statements {
         "dmg_taken, pickups, throws, passes, catches, strips, touchdowns, touchdown_passes, " +
         "passing_blocks, receive_blocks, defensive_interceptions, pass_interceptions, damage_carrier) VALUES " +
         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String UPDATE_PLAYER_IDENTITY_QUERY =
+        "INSERT OR REPLACE INTO player_identities(uuid, name) VALUES (?, ?)";
 
 
     public static String pragmaTableInfo(String tableName) {

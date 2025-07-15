@@ -72,7 +72,7 @@ public class SharePlugin extends JavaPlugin {
             "reset-flag"
         );
         Bukkit.getPluginManager().registerEvents(this.actionNodeTriggerListener, this);
-        this.footballListener = new FootballListenerImpl(statManager);
+        this.footballListener = new FootballListenerImpl(this, statManager, database);
         Bukkit.getPluginManager().registerEvents(this.footballListener, this);
         this.actionNodeTriggerListener.addObserver(this.footballListener);
 

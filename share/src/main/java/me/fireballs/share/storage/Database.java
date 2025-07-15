@@ -2,6 +2,7 @@ package me.fireballs.share.storage;
 
 import me.fireballs.share.util.MatchData;
 import me.fireballs.share.util.PlayerFootballStats;
+import org.bukkit.entity.Player;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,6 +19,7 @@ import static me.fireballs.share.storage.Statements.CREATE_DEFENSIVE_INTERCEPTIO
 import static me.fireballs.share.storage.Statements.CREATE_MATCH_DATA_TABLE;
 import static me.fireballs.share.storage.Statements.CREATE_PASSING_BLOCKS_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_PLAYER_IDENTITY_TABLE;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_MATCH_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_TABLE;
@@ -33,6 +35,7 @@ import static me.fireballs.share.storage.Statements.PASS_INTERCEPTIONS_COLUMN;
 import static me.fireballs.share.storage.Statements.RECEIVE_BLOCKS_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_ONE_NAME_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_TWO_NAME_COLUMN;
+import static me.fireballs.share.storage.Statements.UPDATE_PLAYER_IDENTITY_QUERY;
 
 public class Database {
     private final Logger logger;
@@ -58,6 +61,7 @@ public class Database {
         try (final Statement statement = connection.createStatement()) {
             statement.addBatch(CREATE_MATCH_DATA_TABLE);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_TABLE);
+            statement.addBatch(CREATE_PLAYER_IDENTITY_TABLE);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_MATCH_INDEX);
             statement.executeBatch();
@@ -136,6 +140,16 @@ public class Database {
                 preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updatePlayerIdentity(Player player) {
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PLAYER_IDENTITY_QUERY)) {
+            preparedStatement.setObject(1, player.getUniqueId());
+            preparedStatement.setString(2, player.getName());
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

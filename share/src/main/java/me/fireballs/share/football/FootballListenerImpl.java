@@ -1,9 +1,11 @@
 package me.fireballs.share.football;
 
 import me.fireballs.share.manager.StatManager;
+import me.fireballs.share.storage.Database;
 import me.fireballs.share.util.FootballDebugChannel;
 import me.fireballs.share.util.FootballStatistic;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,6 +13,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -24,12 +28,16 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class FootballListenerImpl implements FootballListener, Listener {
+    private final JavaPlugin plugin;
     private final StatManager statManager;
+    private final Database database;
     private Match match;
     private Player carrier;
 
-    public FootballListenerImpl(StatManager statManager) {
+    public FootballListenerImpl(JavaPlugin plugin, StatManager statManager, Database database) {
+        this.plugin = plugin;
         this.statManager = statManager;
+        this.database = database;
     }
 
     @Override
@@ -146,5 +154,12 @@ public class FootballListenerImpl implements FootballListener, Listener {
                 );
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            database.updatePlayerIdentity(event.getPlayer());
+        });
     }
 }
