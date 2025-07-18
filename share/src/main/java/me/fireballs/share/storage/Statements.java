@@ -22,7 +22,7 @@ public class Statements {
         "touchdowns INTEGER NOT NULL, touchdown_passes INTEGER NOT NULL, PRIMARY KEY (player, match), " +
         "FOREIGN KEY (match) REFERENCES match_data(match))";
     public static final String CREATE_PLAYER_IDENTITY_TABLE =
-        "CREATE TABLE IF NOT EXISTS player_identities (uuid BLOB NOT NUll, name TEXT NOT NULL, PRIMARY KEY (uuid))";
+        "CREATE TABLE IF NOT EXISTS player_identities (uuid BLOB NOT NULL, name TEXT NOT NULL, PRIMARY KEY (uuid))";
     public static final String CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX =
         "CREATE INDEX IF NOT EXISTS idx_md_player ON player_match_data (player)";
     public static final String CREATE_PLAYER_MATCH_DATA_MATCH_INDEX =

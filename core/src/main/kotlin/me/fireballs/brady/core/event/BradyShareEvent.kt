@@ -4,6 +4,7 @@ import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
 class BradyShareEvent(
+    val prefix: String,
     val link: String,
 ) : Event() {
     override fun getHandlers(): HandlerList {

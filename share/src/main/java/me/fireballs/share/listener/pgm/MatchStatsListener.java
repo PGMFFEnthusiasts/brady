@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MatchStatsListener implements Listener {
+    private static final String WEBSITE_MATCH_FORMAT = "https://tombrady.fireballs.me/matches/%s";
     private final SharePlugin plugin;
     private final StatManager statManager;
     private final String serverName;
@@ -67,11 +68,12 @@ public class MatchStatsListener implements Listener {
             try {
                 Stream<String> lines = HTTPUtil.post(table);
                 lines.findFirst().ifPresent(response ->
-                        Bukkit.getScheduler().runTask(plugin, () -> plugin.sendStats(response)));
+                        Bukkit.getScheduler().runTask(plugin, () -> plugin.sendStatsPaste(response)));
             } catch (IOException ex) {
                 plugin.getLogger().log(Level.WARNING, ex.getMessage(), ex);
             }
-
+        });
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             FootballDebugChannel.sendMessage(Component.text("Attempting to write match data to database"));
             if (database != null && playerAndMatchData != null) {
                 final int matchId = database.addMatchData(playerAndMatchData.matchData);
@@ -82,6 +84,7 @@ public class MatchStatsListener implements Listener {
                 FootballDebugChannel.sendMessage(Component.text(
                     "Wrote player match data"
                 ));
+                plugin.sendStats("Website", String.format(WEBSITE_MATCH_FORMAT, matchId));
             }
         });
     }

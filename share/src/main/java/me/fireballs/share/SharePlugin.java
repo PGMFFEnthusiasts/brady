@@ -33,7 +33,7 @@ import java.io.StringReader;
 import java.util.logging.Level;
 
 public class SharePlugin extends JavaPlugin {
-    private static final String URL = "https://pastes.dev/";
+    private static final String PASTES_DEV_URL = "https://pastes.dev/";
 
     private final ClientDataManager clientDataManager = new ClientDataManager();
     private final ShadowManager shadowManager = new ShadowManager(this);
@@ -122,29 +122,32 @@ public class SharePlugin extends JavaPlugin {
                 }));
     }
 
-    public void sendStats(String response) {
+    public void sendStatsPaste(String response) {
         try (JsonReader reader = new JsonReader(new StringReader(response))) {
             reader.beginObject();
             while (reader.hasNext()) {
                 if (reader.nextName().equals("key")) {
                     String key = reader.nextString();
-
-                    Bukkit.getPluginManager().callEvent(new BradyShareEvent(URL + key));
-                    Bukkit.broadcast(
-                            new ComponentBuilder("\n» ")
-                                    .event(new ClickEvent(ClickEvent.Action.OPEN_URL, URL + key))
-                                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here to view the match stats!")
-                                            .color(ChatColor.AQUA)
-                                            .create()))
-                                    .append("Match Stats: ").color(ChatColor.GOLD).bold(true)
-                                    .append(URL + key).color(ChatColor.BLUE).bold(false)
-                                    .create()
-                    );
+                    sendStats("Match Stats", PASTES_DEV_URL + key);
                     break;
                 }
             }
         } catch (IOException ex) {
             getLogger().log(Level.WARNING, ex.getMessage(), ex);
         }
+    }
+
+    public void sendStats(String prefix, String link) {
+        Bukkit.getPluginManager().callEvent(new BradyShareEvent(prefix, link));
+        Bukkit.broadcast(
+            new ComponentBuilder("\n» ")
+                .event(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here to view the match stats!")
+                    .color(ChatColor.AQUA)
+                    .create()))
+                .append(prefix + ": ").color(ChatColor.GOLD).bold(true)
+                .append(link).color(ChatColor.BLUE).bold(false)
+                .create()
+        );
     }
 }

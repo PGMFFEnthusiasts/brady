@@ -89,6 +89,6 @@ class Loggy : Listener, KoinComponent {
     @EventHandler
     private fun onShare(event: BradyShareEvent) {
         // yes, I know it's not clickable. deal with it!
-        queue.offer(ansify("&f» &6Match stats: &9&n${event.link}".cc()))
+        queue.offer(ansify("&f» &6${event.prefix}: &9&n${event.link}".cc()))
     }
 }
