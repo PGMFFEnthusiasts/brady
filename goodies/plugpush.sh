@@ -22,6 +22,14 @@ function plug_push() {
   rsync -tz "$TARGET"/build/libs/"$TARGET"-1.0.jar tb:"$SERVER"/plugins/"$TARGET"-1.0.jar
 }
 
+function normal_push() {
+  TARGET=$1
+  SERVER=$2
+
+  echo "Pushing $TARGET to $SERVER"
+  rsync -tz "$TARGET"/build/libs/"$TARGET"-1.0.jar tb:"$SERVER"/"$TARGET".jar
+}
+
 function backend_plug_push() {
   SERVER=$1
   plug_push "deps" "$SERVER"
@@ -64,8 +72,15 @@ case "$1" in
     backend_plug_push "primary"
     backend_plug_push "secondary"
     ;;
+  cdn)
+    normal_push "deps" "caddy/cdn/deps"
+    normal_push "core" "caddy/cdn/deps"
+    normal_push "bot" "caddy/cdn/deps"
+    normal_push "share" "caddy/cdn/deps"
+    normal_push "tools" "caddy/cdn/deps"
+    ;;
   *)
-    echo "usage: $0 [proxy|backend|deps|dev|all]"
+    echo "usage: $0 [proxy|backend|deps|dev|all|cdn]"
     ;;
 esac
 

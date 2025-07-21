@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.bot.Bot
-import me.fireballs.brady.core.ansify
 import me.fireballs.brady.core.*
 import me.fireballs.brady.core.event.BradyShareEvent
 import org.bukkit.event.EventHandler
@@ -29,6 +28,7 @@ class Loggy : Listener, KoinComponent {
 
     private val queue = ConcurrentLinkedQueue<String>()
     private val prefix = ansify("&8(${System.getenv("BRADY_SERVER")}) ".cc())
+    private val natsClient = runCatching { Nats.connect() }.getOrNull()
 
     init {
         bot.registerEvents(this)
@@ -50,10 +50,8 @@ class Loggy : Listener, KoinComponent {
 
         withContext(Dispatchers.IO) {
             runCatching {
-                Nats.connect().use {
-                    it.publish("loggy", linesToFlush.joinToString("\n").encodeToByteArray())
-                    it.flush(Duration.ofSeconds(5L))
-                }
+                natsClient?.publish("loggy", linesToFlush.joinToString("\n").encodeToByteArray())
+                natsClient?.flush(Duration.ofSeconds(5L))
             }
         }
     }

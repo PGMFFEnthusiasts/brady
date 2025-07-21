@@ -158,8 +158,7 @@ public class FootballListenerImpl implements FootballListener, Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            database.updatePlayerIdentity(event.getPlayer());
-        });
+        if (database == null) return;
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> database.updatePlayerIdentity(event.getPlayer()));
     }
 }

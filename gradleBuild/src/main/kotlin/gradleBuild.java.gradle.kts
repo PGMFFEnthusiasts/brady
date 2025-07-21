@@ -4,8 +4,8 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
     mavenLocal()
+    mavenCentral()
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://repo.pgm.fyi/snapshots")

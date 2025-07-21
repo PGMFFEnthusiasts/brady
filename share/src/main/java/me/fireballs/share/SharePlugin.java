@@ -48,7 +48,7 @@ public class SharePlugin extends JavaPlugin {
         StatManager statManager = new StatManager();
         new ChatListener(statManager);
 
-        final String serverName = getConfig().getString("server-name", "unknown");
+        final String serverName = System.getenv().getOrDefault("BRADY_SERVER", "unknown");
         final ConfigurationSection databaseConfig = getConfig().getConfigurationSection("database");
         if (databaseConfig != null) {
             final String path = databaseConfig.getString("path");
