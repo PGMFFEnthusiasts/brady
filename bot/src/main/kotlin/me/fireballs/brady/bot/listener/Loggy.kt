@@ -3,6 +3,7 @@ package me.fireballs.brady.bot.listener
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
 import io.nats.client.Nats
+import io.nats.client.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -28,7 +29,9 @@ class Loggy : Listener, KoinComponent {
 
     private val queue = ConcurrentLinkedQueue<String>()
     private val prefix = ansify("&8(${System.getenv("BRADY_SERVER")}) ".cc())
-    private val natsClient = runCatching { Nats.connect() }.getOrNull()
+    private val natsClient = runCatching {
+        Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
+    }.getOrNull()
 
     init {
         bot.registerEvents(this)

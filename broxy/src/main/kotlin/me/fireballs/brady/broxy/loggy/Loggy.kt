@@ -39,7 +39,7 @@ class Loggy(
                 logExceptions {
                     Nats.connect(
                         Options.builder()
-                            .server(Options.DEFAULT_URL)
+                            .server(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
                             .reconnectWait(Duration.ofSeconds(10))
                             .maxReconnects(-1)
                             .build()

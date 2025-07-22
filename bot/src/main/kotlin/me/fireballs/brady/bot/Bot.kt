@@ -3,6 +3,7 @@ package me.fireballs.brady.bot
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
 import dev.minn.jda.ktx.jdabuilder.default
 import me.fireballs.brady.bot.listener.Loggy
+import me.fireballs.brady.bot.listener.StatusPush
 import me.fireballs.brady.bot.utils.InfoBoard
 import me.fireballs.brady.core.loadModule
 import me.fireballs.brady.deps.PluginAnnotation
@@ -33,6 +34,7 @@ class Bot : SuspendingJavaPlugin() {
             single<Billboard>(createdAtStart = true) { Billboard() }
             single<JDA> { jda }
             single<Loggy>(createdAtStart = true) { Loggy() }
+            single<StatusPush>(createdAtStart = true) { StatusPush() }
         }
 
         this.jda = jda

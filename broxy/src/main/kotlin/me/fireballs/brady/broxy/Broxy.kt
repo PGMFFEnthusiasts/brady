@@ -11,6 +11,7 @@ import com.velocitypowered.api.plugin.PluginContainer
 import dev.minn.jda.ktx.jdabuilder.default
 import me.fireballs.brady.broxy.listeners.Router
 import me.fireballs.brady.broxy.listeners.Status
+import me.fireballs.brady.broxy.listeners.StatusPull
 import me.fireballs.brady.broxy.loggy.Loggy
 import net.dv8tion.jda.internal.utils.JDALogger
 import org.slf4j.Logger
@@ -39,6 +40,9 @@ class Broxy {
     fun onProxyInitialization(event: ProxyInitializeEvent) {
         server.eventManager.register(this, BetterMOTD(this))
         server.eventManager.register(this, Router(this))
+
+        val status = StatusPull(this)
+        server.eventManager.register(this, status)
 
         val botToken = System.getenv("BRADY_BOT_TOKEN")
         if (botToken.isNullOrEmpty()) {
