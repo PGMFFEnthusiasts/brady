@@ -88,8 +88,12 @@ class InfoBoard : KoinComponent {
 
     fun generateInGameInfoBoard(): String {
         val currentMatch = matchManager.currentMatch() ?: return ""
-        return matchInformation().forWhom().coloredText() +
-                "\n" + currentMatch.map.getStyledName(MapNameStyle.HIGHLIGHT_WITH_AUTHORS).forWhom().coloredText() +
-                "\n\n${playerListing(false).forWhom().coloredText()}"
+        var info = currentMatch.map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS).forWhom().coloredText() +
+                "\n" + matchInformation().forWhom().coloredText()
+
+        if (Bukkit.getServer().onlinePlayers.isNotEmpty())
+            info += "\n\n${playerListing(false).forWhom().coloredText()}"
+
+        return info
     }
 }

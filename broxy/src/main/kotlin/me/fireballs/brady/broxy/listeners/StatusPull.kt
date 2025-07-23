@@ -52,15 +52,17 @@ class StatusPull(
                 .sortedBy { it.serverInfo.name }
                 .forEach {
                     statusMap["status.${it.serverInfo.name}"]?.let { status ->
-                        event.player.sendMessage("&6» &6&n${it.serverInfo.name.uppercase()}&7 (${it.playersConnected.size} online)".cc())
-                        event.player.sendMessage("".c())
+                        event.player.sendMessage("&6» &6${it.serverInfo.name.uppercase()}&7 (${it.playersConnected.size} online)".cc())
                         event.player.sendMessage(status.cc(false))
                         event.player.sendMessage("".c())
                     }
                 }
 
             event.player.sendMessage(
-                "&6» You are currently on &l${event.player.currentServer.getOrNull()?.serverInfo?.name}&6.".cc() + " &7&o(psst... check out our ".cc() + "&9&nDISCORD".cc()
+                "&6» &7You are currently on &6${event.player.currentServer.getOrNull()?.serverInfo?.name}&7.".cc()
+            )
+            event.player.sendMessage(
+                "&7» &o(psst... check out our ".cc() + "&9&o&nDiscord".cc()
                     .url("https://tombrady.fireballs.me/discord") + "&7&o)"
             )
         }
