@@ -52,8 +52,10 @@ public class SharePlugin extends JavaPlugin {
         final ConfigurationSection databaseConfig = getConfig().getConfigurationSection("database");
         if (databaseConfig != null) {
             final String path = databaseConfig.getString("path");
+            final String username = databaseConfig.getString("username");
+            final String password = databaseConfig.getString("password");
             this.database = new Database(getLogger());
-            this.database.init(path);
+            this.database.init(username, password, path);
         }
 
         Bukkit.getPluginManager().registerEvents(

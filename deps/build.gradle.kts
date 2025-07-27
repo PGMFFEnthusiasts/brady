@@ -30,4 +30,5 @@ dependencies {
     api(libs.logback)
 
     api(libs.nats)
+    api(libs.postgres)
 }

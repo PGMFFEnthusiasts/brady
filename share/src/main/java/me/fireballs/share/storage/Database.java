@@ -4,7 +4,9 @@ import me.fireballs.share.util.MatchData;
 import me.fireballs.share.util.PlayerFootballStats;
 import org.bukkit.entity.Player;
 
+import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,6 +18,7 @@ import java.util.logging.Logger;
 
 import static me.fireballs.share.storage.Statements.CREATE_DAMAGE_CARRIER_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_MATCH_DATA_START_TIME_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_MATCH_DATA_TABLE;
 import static me.fireballs.share.storage.Statements.CREATE_PASSING_BLOCKS_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY;
@@ -45,14 +48,19 @@ public class Database {
         this.logger = logger;
     }
 
-    public void init(final String dbLocation) {
+    public void init(
+        final String username,
+        final String password,
+        final String dbLocation
+    ) {
         try {
-            Class.forName("org.sqlite.JDBC");
+            Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(
                 String.format(
-                    "jdbc:sqlite:%s",
+                    "jdbc:postgresql://%s",
                     dbLocation
-                )
+                ),
+                username, password
             );
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -62,21 +70,23 @@ public class Database {
             statement.addBatch(CREATE_MATCH_DATA_TABLE);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_TABLE);
             statement.addBatch(CREATE_PLAYER_IDENTITY_TABLE);
+            statement.addBatch(CREATE_MATCH_DATA_START_TIME_INDEX);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_MATCH_INDEX);
             statement.executeBatch();
             statement.clearBatch();
-
-            createColumnIfNotExists(statement, "match_data", TEAM_ONE_NAME_COLUMN, CREATE_TEAM_ONE_COLUMN_QUERY);
-            createColumnIfNotExists(statement,"match_data",  TEAM_TWO_NAME_COLUMN, CREATE_TEAM_TWO_COLUMN_QUERY);
-            createColumnIfNotExists(statement, "player_match_data", PASSING_BLOCKS_COLUMN, CREATE_PASSING_BLOCKS_COLUMN_QUERY);
-            createColumnIfNotExists(statement, "player_match_data", RECEIVE_BLOCKS_COLUMN, CREATE_RECEIVE_BLOCKS_COLUMN_QUERY);
-            createColumnIfNotExists(statement, "player_match_data", DEFENSIVE_INTERCEPTIONS_COLUMN, CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY);
-            createColumnIfNotExists(statement, "player_match_data", PASS_INTERCEPTIONS_COLUMN, CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY);
-            createColumnIfNotExists(statement, "player_match_data", DAMAGE_CARRIER_COLUMN, CREATE_DAMAGE_CARRIER_COLUMN_QUERY);
+            final DatabaseMetaData databaseMetadata = connection.getMetaData();
+            createColumnIfNotExists(databaseMetadata, statement, "match_data", TEAM_ONE_NAME_COLUMN, CREATE_TEAM_ONE_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement,"match_data",  TEAM_TWO_NAME_COLUMN, CREATE_TEAM_TWO_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement, "player_match_data", PASSING_BLOCKS_COLUMN, CREATE_PASSING_BLOCKS_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement, "player_match_data", RECEIVE_BLOCKS_COLUMN, CREATE_RECEIVE_BLOCKS_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement, "player_match_data", DEFENSIVE_INTERCEPTIONS_COLUMN, CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement, "player_match_data", PASS_INTERCEPTIONS_COLUMN, CREATE_PASS_INTERCEPTIONS_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement, "player_match_data", DAMAGE_CARRIER_COLUMN, CREATE_DAMAGE_CARRIER_COLUMN_QUERY);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         logger.warning("Created stat tables");
     }
 
@@ -116,7 +126,7 @@ public class Database {
             for (final Map.Entry<UUID, PlayerFootballStats> entry : stats.entrySet()) {
                 final UUID player = entry.getKey();
                 final PlayerFootballStats playerStats = entry.getValue();
-                preparedStatement.setObject(1, player);
+                preparedStatement.setObject(1, uuidToBytes(player));
                 preparedStatement.setInt(2, matchId);
                 preparedStatement.setInt(3, playerStats.team());
                 preparedStatement.setInt(4, playerStats.kills());
@@ -147,12 +157,19 @@ public class Database {
 
     public void updatePlayerIdentity(Player player) {
         try (final PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PLAYER_IDENTITY_QUERY)) {
-            preparedStatement.setObject(1, player.getUniqueId());
+            preparedStatement.setObject(1, uuidToBytes(player.getUniqueId()));
             preparedStatement.setString(2, player.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static byte[] uuidToBytes(UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
     }
 
     public void close() {
@@ -166,12 +183,13 @@ public class Database {
     }
 
     private void createColumnIfNotExists(
+        final DatabaseMetaData databaseMetadata,
         final Statement statement,
         final String tableName,
         final String columnName,
         final String alterQuery
     ) {
-        if (!Statements.columnExists(statement, tableName, columnName)) {
+        if (!Statements.columnExists(databaseMetadata, tableName, columnName)) {
             try {
                 statement.execute(alterQuery);
             } catch (SQLException e) {
