@@ -27,7 +27,9 @@ import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_MAT
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX;
 import static me.fireballs.share.storage.Statements.CREATE_PLAYER_MATCH_DATA_TABLE;
 import static me.fireballs.share.storage.Statements.CREATE_RECEIVE_BLOCKS_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_TEAM_ONE_COLOR_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_TEAM_ONE_COLUMN_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_TEAM_TWO_COLOR_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.CREATE_TEAM_TWO_COLUMN_QUERY;
 import static me.fireballs.share.storage.Statements.DAMAGE_CARRIER_COLUMN;
 import static me.fireballs.share.storage.Statements.DEFENSIVE_INTERCEPTIONS_COLUMN;
@@ -36,7 +38,9 @@ import static me.fireballs.share.storage.Statements.INSERT_PLAYER_MATCH_DATA_ROW
 import static me.fireballs.share.storage.Statements.PASSING_BLOCKS_COLUMN;
 import static me.fireballs.share.storage.Statements.PASS_INTERCEPTIONS_COLUMN;
 import static me.fireballs.share.storage.Statements.RECEIVE_BLOCKS_COLUMN;
+import static me.fireballs.share.storage.Statements.TEAM_ONE_COLOR_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_ONE_NAME_COLUMN;
+import static me.fireballs.share.storage.Statements.TEAM_TWO_COLOR_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_TWO_NAME_COLUMN;
 import static me.fireballs.share.storage.Statements.UPDATE_PLAYER_IDENTITY_QUERY;
 
@@ -78,6 +82,8 @@ public class Database {
             final DatabaseMetaData databaseMetadata = connection.getMetaData();
             createColumnIfNotExists(databaseMetadata, statement, "match_data", TEAM_ONE_NAME_COLUMN, CREATE_TEAM_ONE_COLUMN_QUERY);
             createColumnIfNotExists(databaseMetadata, statement,"match_data",  TEAM_TWO_NAME_COLUMN, CREATE_TEAM_TWO_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement,"match_data",  TEAM_ONE_COLOR_COLUMN, CREATE_TEAM_ONE_COLOR_COLUMN_QUERY);
+            createColumnIfNotExists(databaseMetadata, statement,"match_data",  TEAM_TWO_COLOR_COLUMN, CREATE_TEAM_TWO_COLOR_COLUMN_QUERY);
             createColumnIfNotExists(databaseMetadata, statement, "player_match_data", PASSING_BLOCKS_COLUMN, CREATE_PASSING_BLOCKS_COLUMN_QUERY);
             createColumnIfNotExists(databaseMetadata, statement, "player_match_data", RECEIVE_BLOCKS_COLUMN, CREATE_RECEIVE_BLOCKS_COLUMN_QUERY);
             createColumnIfNotExists(databaseMetadata, statement, "player_match_data", DEFENSIVE_INTERCEPTIONS_COLUMN, CREATE_DEFENSIVE_INTERCEPTIONS_COLUMN_QUERY);
@@ -104,6 +110,8 @@ public class Database {
             preparedStatement.setBoolean(8, matchData.isTourney());
             preparedStatement.setString(9, matchData.teamOneName());
             preparedStatement.setString(10, matchData.teamTwoName());
+            preparedStatement.setInt(11, matchData.teamOneColor());
+            preparedStatement.setInt(12, matchData.teamTwoColor());
             if (preparedStatement.executeUpdate() == 1) {
                 try (final ResultSet rs = preparedStatement.getGeneratedKeys()) {
                     rs.next();

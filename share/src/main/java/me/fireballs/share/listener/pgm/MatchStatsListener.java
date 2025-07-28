@@ -110,11 +110,14 @@ public class MatchStatsListener implements Listener {
         }
         final int teamOneScore = (int) scoreModule.getScore(competitorIdentities.inverse().get(1));
         final int teamTwoScore = (int) scoreModule.getScore(competitorIdentities.inverse().get(2));
+        final int teamOneColor = competitors.get(0).getColor().ordinal();
+        final int teamTwoColor = competitors.get(1).getColor().ordinal();
         final String map = match.getMap().getNormalizedName();
         final boolean isTourney = false;
         final MatchData matchData = new MatchData(
             serverName, startTime, duration, winner, teamOneScore, teamTwoScore, map, isTourney,
-            competitors.get(0).getNameLegacy(), competitors.get(1).getNameLegacy()
+            competitors.get(0).getNameLegacy(), competitors.get(1).getNameLegacy(),
+            teamOneColor, teamTwoColor
         );
 
         final Map<UUID, PlayerStats> statsMap = statsModule.getStats();

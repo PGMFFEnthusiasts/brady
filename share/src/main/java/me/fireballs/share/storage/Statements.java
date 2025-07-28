@@ -27,7 +27,8 @@ public class Statements {
         "CREATE INDEX IF NOT EXISTS idx_md_match ON player_match_data (match)";
     public static final String INSERT_MATCH_DATA_ROW =
         "INSERT INTO match_data (server, start_time, duration, winner, team_one_score, team_two_score, map, " +
-        "is_tourney, team_one_name, team_two_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "is_tourney, team_one_name, team_two_name, team_one_color, team_two_color) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_PLAYER_MATCH_DATA_ROW =
         "INSERT INTO player_match_data (player, match, team, kills, deaths, assists, killstreak, dmg_dealt, " +
         "dmg_taken, pickups, throws, passes, catches, strips, touchdowns, touchdown_passes, " +
@@ -54,6 +55,12 @@ public class Statements {
     public static final String TEAM_TWO_NAME_COLUMN = "team_two_name";
     public static final String CREATE_TEAM_TWO_COLUMN_QUERY =
         "ALTER TABLE match_data ADD COLUMN IF NOT EXISTS team_two_name TEXT DEFAULT 'Unknown';";
+    public static final String TEAM_ONE_COLOR_COLUMN = "team_one_color";
+    public static final String CREATE_TEAM_ONE_COLOR_COLUMN_QUERY =
+        "ALTER TABLE match_data ADD COLUMN IF NOT EXISTS team_one_color INTEGER DEFAULT NULL;";
+    public static final String TEAM_TWO_COLOR_COLUMN = "team_two_color";
+    public static final String CREATE_TEAM_TWO_COLOR_COLUMN_QUERY =
+        "ALTER TABLE match_data ADD COLUMN IF NOT EXISTS team_two_color INTEGER DEFAULT NULL;";
     public static final String PASSING_BLOCKS_COLUMN = "passing_blocks";
     public static final String CREATE_PASSING_BLOCKS_COLUMN_QUERY =
         "ALTER TABLE player_match_data ADD COLUMN IF NOT EXISTS passing_blocks DOUBLE PRECISION DEFAULT 0.0;";
