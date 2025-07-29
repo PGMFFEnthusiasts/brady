@@ -2,6 +2,8 @@ package me.fireballs.brady.tools
 
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
 import me.fireballs.brady.core.loadModule
+import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.core.registerPacketEvents
 import me.fireballs.brady.deps.PluginAnnotation
 import org.koin.dsl.module
 
@@ -16,5 +18,7 @@ class Tools : SuspendingJavaPlugin() {
         }
 
         loadModule(toolModule)
+
+        registerPacketEvents(TabListResize())
     }
 }
