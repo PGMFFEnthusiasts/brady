@@ -106,6 +106,9 @@ public class FootballListenerImpl implements FootballListener, Listener {
                     completedThrow.catcher()
             )
         );
+        if (distance < 0.0) {
+            distance = 0.0;
+        }
         statManager.mergeStat(
             completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_PASSING_BLOCKS,
             distance, Double::sum
