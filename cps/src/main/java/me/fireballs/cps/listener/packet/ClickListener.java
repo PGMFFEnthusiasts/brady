@@ -13,12 +13,10 @@ import me.fireballs.cps.CPSPlugin;
 import me.fireballs.cps.manager.ClientDataManager;
 import me.fireballs.cps.util.BlockUtil;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
 import java.util.Set;
 
-public class ClickListener implements PacketListener, Listener {
+public class ClickListener implements PacketListener {
     private final CPSPlugin plugin;
     private final ClientDataManager clientDataManager;
 
@@ -55,12 +53,12 @@ public class ClickListener implements PacketListener, Listener {
         });
     }
 
-    @EventHandler
+    @Override
     public void onUserLogin(UserLoginEvent event) {
         clientDataManager.add(event.getUser());
     }
 
-    @EventHandler
+    @Override
     public void onUserDisconnect(UserDisconnectEvent event) {
         clientDataManager.remove(event.getUser());
     }

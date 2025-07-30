@@ -37,7 +37,6 @@ public class CPSPlugin extends JavaPlugin {
         PacketEvents.getAPI().getEventManager().registerListener(clickListener, PacketListenerPriority.NORMAL);
         PacketEvents.getAPI().getEventManager().registerListener(shadowListener, PacketListenerPriority.MONITOR);
 
-        Bukkit.getPluginManager().registerEvents(clickListener, this);
         Bukkit.getPluginManager().registerEvents(shadowListener, this);
         Bukkit.getPluginManager().registerEvents(new MatchJoinListener(this), this);
 
@@ -55,6 +54,8 @@ public class CPSPlugin extends JavaPlugin {
 
     public void refreshShadows(Player player) {
         User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
+        //noinspection ConstantValue
+        if (user == null) return;
 
         clientDataManager.getData(user).ifPresent(clientData ->
                 shadowManager.getData(player.getEntityId()).ifPresent(shadowData -> {
