@@ -1,4 +1,4 @@
-package me.fireballs.share.listener.packet;
+package me.fireballs.cps.listener.packet;
 
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
@@ -9,15 +9,14 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import me.fireballs.share.SharePlugin;
-import me.fireballs.share.manager.ShadowManager;
+import me.fireballs.cps.CPSPlugin;
+import me.fireballs.cps.manager.ShadowManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -30,18 +29,18 @@ import java.util.*;
 public class ShadowListener implements PacketListener, Listener {
     private static final double HEIGHT_OFFSET = 2.065;
 
-    private final SharePlugin plugin;
+    private final CPSPlugin plugin;
     private final ShadowManager shadowManager;
 
-    public ShadowListener(SharePlugin plugin, ShadowManager shadowManager) {
+    public ShadowListener(CPSPlugin plugin, ShadowManager shadowManager) {
         this.plugin = plugin;
         this.shadowManager = shadowManager;
     }
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
-        if (event.getPlayer() == null) return;
         PacketTypeCommon type = event.getPacketType();
+        if (!(type instanceof PacketType.Play.Server)) return;
 
         if (type == PacketType.Play.Server.SPAWN_PLAYER) {
             var packet = new WrapperPlayServerSpawnPlayer(event);
@@ -143,12 +142,12 @@ public class ShadowListener implements PacketListener, Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         shadowManager.add(event.getPlayer().getEntityId());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Bukkit.getScheduler().runTaskLater(plugin, () ->
                 shadowManager.remove(event.getPlayer().getEntityId()), 1L);

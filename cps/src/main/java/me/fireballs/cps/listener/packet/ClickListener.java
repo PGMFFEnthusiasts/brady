@@ -1,47 +1,52 @@
-package me.fireballs.share.listener.packet;
+package me.fireballs.cps.listener.packet;
 
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.event.UserDisconnectEvent;
+import com.github.retrooper.packetevents.event.UserLoginEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.google.common.collect.ImmutableSet;
-import me.fireballs.share.manager.ClientDataManager;
-import me.fireballs.share.util.BlockUtil;
+import me.fireballs.cps.CPSPlugin;
+import me.fireballs.cps.manager.ClientDataManager;
+import me.fireballs.cps.util.BlockUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.Set;
 
 public class ClickListener implements PacketListener, Listener {
+    private final CPSPlugin plugin;
     private final ClientDataManager clientDataManager;
 
-    public ClickListener(ClientDataManager clientDataManager) {
+    public ClickListener(CPSPlugin plugin, ClientDataManager clientDataManager) {
+        this.plugin = plugin;
         this.clientDataManager = clientDataManager;
     }
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
-        if (event.getPlayer() == null) return;
+        PacketTypeCommon type = event.getPacketType();
+        if (!(type instanceof PacketType.Play.Client)) return;
 
+        User user = event.getUser();
         Player player = event.getPlayer();
 
-        clientDataManager.getData(player.getUniqueId()).ifPresent(data -> {
-            if (PacketCollection.MOVEMENT_PACKETS.contains(event.getPacketType())) {
+        clientDataManager.getData(user).ifPresent(data -> {
+            if (PacketCollection.MOVEMENT_PACKETS.contains(type)) {
                 data.handleTick();
             }
 
-            else if (event.getPacketType() == PacketType.Play.Client.ANIMATION) {
+            else if (type == PacketType.Play.Client.ANIMATION) {
                 if (!BlockUtil.hasTargetedBlock(player)) {
                     data.handleClick();
                 }
             }
 
-            else if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
+            else if (type == PacketType.Play.Client.INTERACT_ENTITY) {
                 var packet = new WrapperPlayClientInteractEntity(event);
                 if (packet.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK && BlockUtil.hasTargetedBlock(player)) {
                     data.handleClick();
@@ -50,14 +55,14 @@ public class ClickListener implements PacketListener, Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onJoin(PlayerJoinEvent event) {
-        clientDataManager.add(event.getPlayer().getUniqueId());
+    @EventHandler
+    public void onUserLogin(UserLoginEvent event) {
+        clientDataManager.add(event.getUser());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onQuit(PlayerQuitEvent event) {
-        clientDataManager.remove(event.getPlayer().getUniqueId());
+    @EventHandler
+    public void onUserDisconnect(UserDisconnectEvent event) {
+        clientDataManager.remove(event.getUser());
     }
 
     private static class PacketCollection {

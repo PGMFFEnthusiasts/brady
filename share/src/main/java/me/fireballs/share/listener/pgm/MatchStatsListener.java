@@ -62,17 +62,20 @@ public class MatchStatsListener implements Listener {
         if (statsModule.getStats().isEmpty()) return;
         final PlayerAndMatchData playerAndMatchData = getPlayerAndMatchData(match);
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String table = TableUtil.assembleTable(statsModule.getStats(), statManager);
+        if (plugin.uploadPaste) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                String table = TableUtil.assembleTable(statsModule.getStats(), statManager);
 
-            try {
-                Stream<String> lines = HTTPUtil.post(table);
-                lines.findFirst().ifPresent(response ->
-                        Bukkit.getScheduler().runTask(plugin, () -> plugin.sendStatsPaste(response)));
-            } catch (IOException ex) {
-                plugin.getLogger().log(Level.WARNING, ex.getMessage(), ex);
-            }
-        });
+                try {
+                    Stream<String> lines = HTTPUtil.post(table);
+                    lines.findFirst().ifPresent(response ->
+                            Bukkit.getScheduler().runTask(plugin, () -> plugin.sendStatsPaste(response)));
+                } catch (IOException ex) {
+                    plugin.getLogger().log(Level.WARNING, ex.getMessage(), ex);
+                }
+            });
+        }
+
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             FootballDebugChannel.sendMessage(Component.text("Attempting to write match data to database"));
             if (database != null && playerAndMatchData != null) {

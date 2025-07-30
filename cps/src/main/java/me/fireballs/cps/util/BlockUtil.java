@@ -1,4 +1,4 @@
-package me.fireballs.share.util;
+package me.fireballs.cps.util;
 
 import net.minecraft.server.v1_8_R3.MovingObjectPosition;
 import net.minecraft.server.v1_8_R3.Vec3D;

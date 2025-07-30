@@ -16,7 +16,7 @@ koin-bom = "4.0.4"
 
 app-ashcon-sportpaper = "1.8.8-R0.1-SNAPSHOT"
 tc-oc-pgm-core = "0.16-SNAPSHOT"
-com-github-retrooper-packetevents-spigot = "2.8.0"
+com-github-retrooper-packetevents-spigot = "2.9.4"
 
 velocity-api = "3.4.0-SNAPSHOT"
 nats = "2.21.4"

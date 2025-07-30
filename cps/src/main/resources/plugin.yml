@@ -1,0 +1,7 @@
+main: me.fireballs.cps.CPSPlugin
+version: 1.0.0
+name: cps
+description: "Displays CPS"
+softdepend:
+  - PGM
+  - Core

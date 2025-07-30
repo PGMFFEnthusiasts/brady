@@ -37,6 +37,7 @@ function backend_plug_push() {
   plug_push "bot" "$SERVER"
   plug_push "share" "$SERVER"
   plug_push "tools" "$SERVER"
+  plug_push "cps" "$SERVER"
 }
 
 if [ "$#" -eq 2 ]; then
@@ -65,6 +66,7 @@ case "$1" in
     plug_push "bot" "primary"
     plug_push "share" "primary"
     plug_push "tools" "primary"
+    plug_push "cps" "primary"
     ;;
   all)
     plug_push "broxy" "proxy"
@@ -78,6 +80,7 @@ case "$1" in
     normal_push "bot" "caddy/cdn/deps"
     normal_push "share" "caddy/cdn/deps"
     normal_push "tools" "caddy/cdn/deps"
+    normal_push "cps" "caddy/cdn/deps"
     normal_push "broxy" "caddy/cdn/deps"
     ssh tb "cd caddy/cdn/deps && ~/bin/gen-manifest.sh https://tombrady.fireballs.me/cdn/deps"
     ;;

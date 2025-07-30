@@ -1,4 +1,4 @@
-package me.fireballs.share.data;
+package me.fireballs.cps.data;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -7,7 +7,7 @@ public class ClientData {
     private final Queue<Integer> clicks = new LinkedList<>();
 
     private int tick;
-    private int lastDispatch;
+    private int lastSent;
 
     public void handleClick() {
         clicks.add(tick);
@@ -18,12 +18,12 @@ public class ClientData {
         while (!clicks.isEmpty() && clicks.peek() < threshold) clicks.poll();
     }
 
-    public int getLastDispatch() {
-        return lastDispatch;
+    public int getLastSent() {
+        return lastSent;
     }
 
-    public void setLastDispatch(int lastDispatch) {
-        this.lastDispatch = lastDispatch;
+    public void setLastSent(int lastSent) {
+        this.lastSent = lastSent;
     }
 
     public int getCPS() {

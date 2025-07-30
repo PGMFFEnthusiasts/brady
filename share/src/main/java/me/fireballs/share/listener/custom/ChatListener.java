@@ -1,4 +1,4 @@
-package me.fireballs.share.listener.packet;
+package me.fireballs.share.listener.custom;
 
 import me.fireballs.brady.core.ConsoleAudienceInterceptorKt;
 import me.fireballs.share.manager.StatManager;

@@ -1,14 +1,14 @@
-package me.fireballs.share.data;
+package me.fireballs.cps.data;
 
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.nms.NMSHacks;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ShadowData {
     private final int id = NMSHacks.NMS_HACKS.allocateEntityId();
-    private final List<Player> viewers = new ArrayList<>();
+    private final List<Player> viewers = new CopyOnWriteArrayList<>();
 
     public int getId() {
         return id;
