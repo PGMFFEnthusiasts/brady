@@ -32,16 +32,16 @@ function normal_push() {
 
 function backend_plug_push() {
   SERVER=$1
-  plug_push "deps" "$SERVER"
-  plug_push "core" "$SERVER"
-  plug_push "bot" "$SERVER"
-  plug_push "share" "$SERVER"
-  plug_push "tools" "$SERVER"
-  plug_push "cps" "$SERVER"
+  normal_push "deps" "$SERVER"
+  normal_push "core" "$SERVER"
+  normal_push "bot" "$SERVER"
+  normal_push "share" "$SERVER"
+  normal_push "tools" "$SERVER"
+  normal_push "cps" "$SERVER"
 }
 
 if [ "$#" -eq 2 ]; then
-    plug_push "$1" "$2"
+    normal_push "$1" "$2"
     exit 0
 fi
 
@@ -52,27 +52,11 @@ case "$1" in
     ;;
   backend)
     echo "Pushing backend:"
-    backend_plug_push "primary"
-    backend_plug_push "secondary"
-    ;;
-  deps)
-    echo "Pushing deps:"
-    plug_push "deps" "primary"
-    plug_push "deps" "secondary"
-    ;;
-  dev)
-    echo "Pushing dev:"
-    plug_push "core" "primary"
-    plug_push "bot" "primary"
-    plug_push "share" "primary"
-    plug_push "tools" "primary"
-    plug_push "cps" "primary"
+    backend_plug_push "merge/plugins"
     ;;
   all)
     plug_push "broxy" "proxy"
-
-    backend_plug_push "primary"
-    backend_plug_push "secondary"
+    backend_plug_push "merge/plugins"
     ;;
   cdn)
     normal_push "deps" "caddy/cdn/deps"
@@ -85,7 +69,7 @@ case "$1" in
     ssh tb "cd caddy/cdn/deps && ~/bin/gen-manifest.sh https://tombrady.fireballs.me/cdn/deps"
     ;;
   *)
-    echo "usage: $0 [proxy|backend|deps|dev|all|cdn]"
+    echo "usage: $0 [proxy|backend|dev|all|cdn]"
     ;;
 esac
 
