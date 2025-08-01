@@ -15,6 +15,7 @@ class Tools : SuspendingJavaPlugin() {
             single<Drafting>(createdAtStart = true) { Drafting() }
             single<FlagFootballMaps>(createdAtStart = true) { FlagFootballMaps() }
             single<Splat>(createdAtStart = true) { Splat() }
+            single<Ready>(createdAtStart = true) { Ready() }
         }
 
         loadModule(toolModule)
