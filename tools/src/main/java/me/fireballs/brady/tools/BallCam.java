@@ -77,13 +77,16 @@ public class BallCam extends PacketListenerAbstract implements Listener {
             }
         }
 
-        private boolean ride(int snowballId) {
+        private boolean startRide(int snowballId) {
             if (snowballId != this.snowballId) {
                 this.snowballId = snowballId;
-                this.status = Status.RIDING;
                 return true;
             }
             return false;
+        }
+
+        private void finishRide() {
+            this.status = Status.RIDING;
         }
 
         private void beginDismount(User user) {
@@ -143,11 +146,24 @@ public class BallCam extends PacketListenerAbstract implements Listener {
             var riding = new WrapperPlayServerAttachEntity(user.getEntityId(), snowballId, false);
             Location location = player.getLocation();
 
+            var pos = new WrapperPlayServerPlayerPositionAndLook(
+                    0,
+                    0,
+                    0,
+                    spawn.getYaw(),
+                    spawn.getPitch(),
+                    (byte) ((1 << 0) | (1 << 1) | (1 << 2)),
+                    0,
+                    true
+            );
+
             event.getTasksAfterSend().add(() -> {
-                if (rider.ride(snowballId)) {
+                if (rider.startRide(snowballId)) {
                     user.sendPacket(riding);
+                    user.sendPacket(pos);
                     user.sendMessage(text(""), ChatTypes.GAME_INFO);
                     rider.location = location;
+                    rider.finishRide();
                 }
             });
         }
