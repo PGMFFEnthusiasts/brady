@@ -116,10 +116,7 @@ public class Ready implements Listener {
         hover.append(text("Ready", NamedTextColor.GREEN));
         appendPlayers(hover, ready);
 
-        if (!ready.isEmpty() && !notReady.isEmpty()) {
-            hover.appendNewline();
-            hover.appendNewline();
-        }
+        hover.appendNewline().appendNewline();
 
         hover.append(text("Not Ready", NamedTextColor.RED));
         appendPlayers(hover, notReady);
