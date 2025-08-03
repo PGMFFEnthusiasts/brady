@@ -4,6 +4,8 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
 import me.fireballs.brady.broxy.Broxy
+import me.fireballs.brady.broxy.utils.Constants.PRIMARY_SERVER_ID
+import me.fireballs.brady.broxy.utils.Constants.SECONDARY_SERVER_ID
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
 import kotlin.jvm.optionals.getOrNull
@@ -22,8 +24,8 @@ class Status(
 
         plugin.server.allPlayers.forEach {
             when (it.currentServer.getOrNull()?.serverInfo?.name) {
-                "primary" -> ++primary
-                "secondary" -> ++secondary
+                PRIMARY_SERVER_ID -> ++primary
+                SECONDARY_SERVER_ID -> ++secondary
             }
         }
 

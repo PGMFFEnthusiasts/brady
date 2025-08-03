@@ -7,6 +7,8 @@ import com.velocitypowered.api.proxy.server.ServerPing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.fireballs.brady.broxy.Broxy
+import me.fireballs.brady.broxy.utils.Constants.PRIMARY_SERVER_ID
+import me.fireballs.brady.broxy.utils.Constants.SECONDARY_SERVER_ID
 import me.fireballs.brady.broxy.utils.cc
 import me.fireballs.brady.broxy.utils.plus
 import net.kyori.adventure.text.Component
@@ -33,8 +35,8 @@ class BetterMOTD(
             .map { it.serverInfo.name to runCatching { it.ping().await() } }
             .forEach { (server, result) ->
                 val description = result.getOrNull()?.descriptionComponent ?: "&4No data.".cc() as Component
-                if (server == "primary") primaryStatus = description
-                if (server == "secondary") secondaryStatus = description
+                if (server == PRIMARY_SERVER_ID) primaryStatus = description
+                if (server == SECONDARY_SERVER_ID) secondaryStatus = description
             }
     }
 
