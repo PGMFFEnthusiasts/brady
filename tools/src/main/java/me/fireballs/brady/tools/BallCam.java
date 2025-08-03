@@ -8,7 +8,6 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientHeldItemChange;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSteerVehicle;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
@@ -18,6 +17,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,7 +37,12 @@ import static me.fireballs.brady.tools.BallCamKt.isToggleBall;
 import static net.kyori.adventure.text.Component.text;
 
 public class BallCam extends PacketListenerAbstract implements Listener {
-    private static final Component PREFIX = text("» ", NamedTextColor.AQUA).append(text("BallCam toggled ", NamedTextColor.GRAY));
+    private static final Component PREFIX = text("» ", NamedTextColor.AQUA)
+            .append(text("Ball", NamedTextColor.WHITE).decorate(TextDecoration.BOLD))
+            .append(text(" ", NamedTextColor.WHITE))
+            .append(text("Cam", NamedTextColor.WHITE, TextDecoration.BOLD))
+            .append(text(" toggled ", NamedTextColor.GRAY));
+
     private static final Component ON = PREFIX.append(text("ON", NamedTextColor.GREEN, TextDecoration.BOLD));
     private static final Component OFF = PREFIX.append(text("OFF", NamedTextColor.RED, TextDecoration.BOLD));
 
@@ -63,7 +68,6 @@ public class BallCam extends PacketListenerAbstract implements Listener {
         private boolean enabled;
         private Status status = Status.DISMOUNTED;
         private int snowballId;
-        private int heldSlot;
         private Location location;
 
         private void toggle(User user) {
@@ -153,8 +157,8 @@ public class BallCam extends PacketListenerAbstract implements Listener {
                         0,
                         0,
                         0,
-                        spawn.getYaw(),
-                        spawn.getPitch(),
+                        -spawn.getPitch(),
+                        -spawn.getYaw(),
                         (byte) (1 | (1 << 1) | (1 << 2)),
                         0,
                         true
@@ -221,10 +225,6 @@ public class BallCam extends PacketListenerAbstract implements Listener {
                     rider.finishDismount();
                 }
             }
-            case PacketType.Play.Client.HELD_ITEM_CHANGE -> {
-                var slot = new WrapperPlayClientHeldItemChange(event);
-                rider.heldSlot = slot.getSlot();
-            }
             default -> {
             }
         }
@@ -251,7 +251,8 @@ public class BallCam extends PacketListenerAbstract implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (!isToggleBall(event.getItem())) return;
 
-        MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(event.getPlayer());
+        Player player = event.getPlayer();
+        MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
         if (matchPlayer == null || !matchPlayer.isObserving()) return;
 
         var user = PacketEvents.getAPI().getPlayerManager().getUser(event.getPlayer());
@@ -260,6 +261,11 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
         Rider rider = riders.get(user);
         if (rider == null) return;
+
+        var swing = new WrapperPlayServerEntityAnimation(user.getEntityId(), WrapperPlayServerEntityAnimation.EntityAnimationType.SWING_MAIN_ARM);
+        user.sendPacket(swing);
+
+        player.playSound(player.getLocation(), Sound.CLICK, 1f, 1.7f);
 
         rider.toggle(user);
     }
