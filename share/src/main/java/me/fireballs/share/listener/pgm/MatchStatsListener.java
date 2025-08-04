@@ -55,7 +55,10 @@ public class MatchStatsListener implements Listener {
     public void onMatchStats(MatchStatsEvent event) {
         Match match = event.getMatch();
         Component gamemode = match.getMap().getGamemode();
-        if (gamemode == null || !PlainTextComponentSerializer.plainText().serialize(gamemode).equals("Flag Football")) return;
+        if (gamemode == null || 
+            (!PlainTextComponentSerializer.plainText().serialize(gamemode).equals("Flag Football") &&
+             !PlainTextComponentSerializer.plainText().serialize(gamemode).equals("Touchdown"))
+        ) return;
 
         StatsMatchModule statsModule = match.getModule(StatsMatchModule.class);
         if (statsModule == null) return;
