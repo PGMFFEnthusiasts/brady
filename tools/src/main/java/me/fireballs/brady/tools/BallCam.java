@@ -7,7 +7,6 @@ import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.User;
-import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSteerVehicle;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
@@ -47,7 +46,6 @@ public class BallCam extends PacketListenerAbstract implements Listener {
     private static final Component OFF = PREFIX.append(text("OFF", NamedTextColor.RED, TextDecoration.BOLD));
 
     private static final int SLOT = 7;
-    private static final double RIDING_OFFSET = -1.184425;
     private static final short TID = Short.MAX_VALUE * 5 / 6;
 
     private final Map<User, Rider> riders = new MapMaker()
@@ -144,10 +142,6 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
                 var spawn = new WrapperPlayServerSpawnEntity(event);
                 if (spawn.getEntityType() != EntityTypes.SNOWBALL) return;
-
-                Vector3d newPos = spawn.getPosition().add(0, RIDING_OFFSET, 0);
-                spawn.setPosition(newPos);
-                event.markForReEncode(true);
 
                 int snowballId = spawn.getEntityId();
                 var riding = new WrapperPlayServerAttachEntity(user.getEntityId(), snowballId, false);
