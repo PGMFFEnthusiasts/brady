@@ -6,7 +6,7 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.messages.edit
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import me.fireballs.brady.bot.utils.InfoBoard
+import me.fireballs.brady.core.generateInfoBoard
 import me.fireballs.brady.core.logExceptions
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -18,7 +18,6 @@ import org.koin.core.component.inject
 class Billboard : KoinComponent {
     private val bot by inject<Bot>()
     private val jda by inject<JDA>()
-    private val infoBoard by inject<InfoBoard>()
 
     private var currentJob: Job? = null
     private val channel = System.getenv("BRADY_BOT_BILLBOARD_CHANNEL")
@@ -36,7 +35,7 @@ class Billboard : KoinComponent {
     }
 
     private suspend fun tick() {
-        val generateInfoBoard = infoBoard.generateInfoBoard() ?: return
+        val generateInfoBoard = generateInfoBoard() ?: return
 
         jda.guilds.forEach { guild ->
             val channel = guild.channels.find { it.id == channel } ?: return@forEach

@@ -5,7 +5,7 @@ import io.nats.client.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.bot.Bot
-import me.fireballs.brady.bot.utils.InfoBoard
+import me.fireballs.brady.core.generateInGameInfoBoard
 import me.fireballs.brady.core.registerEvents
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -21,7 +21,6 @@ import java.time.Duration
 
 class StatusPush : Listener, KoinComponent {
     private val bot by inject<Bot>()
-    private val infoBoard by inject<InfoBoard>()
 
     private val natsClient = runCatching {
         Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
@@ -36,7 +35,7 @@ class StatusPush : Listener, KoinComponent {
             runCatching {
                 natsClient?.publish(
                     "status.${System.getenv("BRADY_SERVER") ?: "unknown"}",
-                    infoBoard.generateInGameInfoBoard().encodeToByteArray()
+                    generateInGameInfoBoard().encodeToByteArray()
                 )
                 natsClient?.flush(Duration.ofSeconds(5L))
             }

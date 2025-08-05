@@ -4,7 +4,6 @@ import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
 import dev.minn.jda.ktx.jdabuilder.default
 import me.fireballs.brady.bot.listener.Loggy
 import me.fireballs.brady.bot.listener.StatusPush
-import me.fireballs.brady.bot.utils.InfoBoard
 import me.fireballs.brady.core.loadModule
 import me.fireballs.brady.deps.PluginAnnotation
 import net.dv8tion.jda.api.JDA
@@ -30,7 +29,6 @@ class Bot : SuspendingJavaPlugin() {
         val botModule = module {
             single<Bot> { this@Bot }
 //            single<PlayerCounter>(createdAtStart = true) { PlayerCounter() }
-            single<InfoBoard> { InfoBoard() }
             single<Billboard>(createdAtStart = true) { Billboard() }
             single<JDA> { jda }
             single<Loggy>(createdAtStart = true) { Loggy() }
