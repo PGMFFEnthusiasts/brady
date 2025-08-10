@@ -11,6 +11,7 @@ import me.fireballs.share.listener.pgm.MatchStatsListener;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
 import me.fireballs.share.util.FootballDebugChannel;
+import me.fireballs.share.util.StatsLink;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -20,13 +21,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.logging.Level;
+import static me.fireballs.brady.core.DebuggingKt.log;
 
 public class SharePlugin extends JavaPlugin {
-    private static final String PASTES_DEV_URL = "https://pastes.dev/";
-
     private ActionNodeTriggerListener actionNodeTriggerListener;
     private Database database;
     private FootballListenerImpl footballListener;
@@ -89,32 +86,21 @@ public class SharePlugin extends JavaPlugin {
         }
     }
 
-    public void sendStatsPaste(String response) {
-        try (JsonReader reader = new JsonReader(new StringReader(response))) {
-            reader.beginObject();
-            while (reader.hasNext()) {
-                if (reader.nextName().equals("key")) {
-                    String key = reader.nextString();
-                    sendStats("Match Stats", PASTES_DEV_URL + key);
-                    break;
-                }
-            }
-        } catch (IOException ex) {
-            getLogger().log(Level.WARNING, ex.getMessage(), ex);
-        }
+    public void sendStats(StatsLink statsLink) {
+        log("match-stats", "sending stats for " + statsLink.toString());
+        Bukkit.getPluginManager().callEvent(new BradyShareEvent(statsLink.source(), statsLink.url()));
     }
 
-    public void sendStats(String prefix, String link) {
-        Bukkit.getPluginManager().callEvent(new BradyShareEvent(prefix, link));
+    public void broadcastStats(StatsLink statsLink) {
         Bukkit.broadcast(
-            new ComponentBuilder("\n» ")
-                .event(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here to view the match stats!")
-                    .color(ChatColor.AQUA)
-                    .create()))
-                .append(prefix + ": ").color(ChatColor.GOLD).bold(true)
-                .append(link).color(ChatColor.BLUE).bold(false)
-                .create()
+                new ComponentBuilder("\n» ")
+                        .event(new ClickEvent(ClickEvent.Action.OPEN_URL, statsLink.url()))
+                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here to view the match stats!")
+                                .color(ChatColor.AQUA)
+                                .create()))
+                        .append(statsLink.source() + ": ").color(ChatColor.GOLD).bold(true)
+                        .append(statsLink.url()).color(ChatColor.BLUE).bold(false)
+                        .create()
         );
     }
 }
