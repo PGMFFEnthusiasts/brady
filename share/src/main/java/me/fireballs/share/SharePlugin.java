@@ -1,10 +1,8 @@
 package me.fireballs.share;
 
-import com.google.gson.stream.JsonReader;
 import me.fireballs.brady.core.event.BradyShareEvent;
 import me.fireballs.share.command.FootballDebugCommand;
 import me.fireballs.share.football.FootballListenerImpl;
-import me.fireballs.share.listener.custom.ChatListener;
 import me.fireballs.share.listener.pgm.ActionNodeTriggerListener;
 import me.fireballs.share.listener.pgm.MatchCycleListener;
 import me.fireballs.share.listener.pgm.MatchStatsListener;
@@ -34,7 +32,6 @@ public class SharePlugin extends JavaPlugin {
         saveDefaultConfig();
 
         StatManager statManager = new StatManager();
-        new ChatListener(statManager);
 
         final String serverName = System.getenv().getOrDefault("BRADY_SERVER", "unknown");
         final ConfigurationSection databaseConfig = getConfig().getConfigurationSection("database");

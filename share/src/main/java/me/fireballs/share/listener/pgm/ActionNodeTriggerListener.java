@@ -73,11 +73,29 @@ public class ActionNodeTriggerListener implements Listener {
                 observer.onCarrierChange(matchPlayer);
             }
         }
+
+        if (event.nodeId.equals(roundIncrementActionId)) {
+            final boolean throwerExists = thrower != null;
+            for (final FootballListener observer : observers) {
+                observer.onTouchdown(matchPlayer);
+                if (throwerExists) {
+                    observer.onTouchdownPass(thrower);
+                }
+            }
+        } else if (event.nodeId.equals(flagStealActionId)) {
+            for (final FootballListener observer : observers) {
+                observer.onBallSteal(matchPlayer);
+            }
+        }
+
         if (thrower == null) {
             // when a potential thrower obtains the ball
             if (isReceiveControlAction(event.nodeId)) {
                 FootballDebugChannel.sendMessage(Component.text("(Potential) thrower identified"));
                 thrower = matchPlayer;
+                for (final FootballListener observer : observers) {
+                    observer.onBallPickup(matchPlayer);
+                }
             }
             return;
         }
@@ -85,6 +103,9 @@ public class ActionNodeTriggerListener implements Listener {
         if (catcher == null && throwLocation == null) { // thrower got da ball
             if (event.nodeId.equals(ballThrownActionId)) { // thrower makes a move
                 FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
+                for (final FootballListener observer : observers) {
+                    observer.onThrow(thrower);
+                }
                 throwLocation = thrower.getLocation();
                 return;
             } else if (isLossOfControlAction(event.nodeId)) { // thrower is bad at the game
@@ -100,6 +121,7 @@ public class ActionNodeTriggerListener implements Listener {
                 catcher = matchPlayer;
                 catchLocation = matchPlayer.getLocation();
                 for (final FootballListener observer : observers) {
+                    observer.onCatch(catcher);
                     observer.onPass(thrower, catcher);
                 }
                 return;

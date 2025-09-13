@@ -121,9 +121,12 @@ public class FootballListenerImpl implements FootballListener, Listener {
 
     @Override
     public void onPass(MatchPlayer thrower, MatchPlayer catcher) {
-        if (thrower.getParty().equals(catcher.getParty())) return;
-        statManager.incrementStat(thrower.getBukkit().getUniqueId(), FootballStatistic.PASS_INTERCEPTIONS);
-        statManager.incrementStat(catcher.getBukkit().getUniqueId(), FootballStatistic.DEFENSE_INTERCEPTIONS);
+        if (thrower.getParty().equals(catcher.getParty())) {
+            statManager.incrementStat(thrower.getBukkit().getUniqueId(), FootballStatistic.PASSES);
+        } else {
+            statManager.incrementStat(thrower.getBukkit().getUniqueId(), FootballStatistic.PASS_INTERCEPTIONS);
+            statManager.incrementStat(catcher.getBukkit().getUniqueId(), FootballStatistic.DEFENSE_INTERCEPTIONS);
+        }
     }
 
     @Override
@@ -163,5 +166,45 @@ public class FootballListenerImpl implements FootballListener, Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (database == null) return;
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> database.updatePlayerIdentity(event.getPlayer()));
+    }
+
+    @Override
+    public void onBallPickup(MatchPlayer thrower) {
+        statManager.incrementStat(
+            thrower.getBukkit().getUniqueId(), FootballStatistic.PICKUPS
+        );
+    }
+
+    @Override
+    public void onBallSteal(MatchPlayer stealer) {
+        statManager.incrementStat(
+            stealer.getBukkit().getUniqueId(), FootballStatistic.STRIPS
+        );
+    }
+
+    @Override
+    public void onThrow(MatchPlayer thrower) {
+        statManager.incrementStat(
+            thrower.getBukkit().getUniqueId(), FootballStatistic.THROWS
+        );
+    }
+
+    @Override
+    public void onCatch(MatchPlayer catcher) {
+        statManager.incrementStat(
+            catcher.getBukkit().getUniqueId(), FootballStatistic.CATCHES
+        );
+    }
+    @Override
+    public void onTouchdown(MatchPlayer player) {
+        statManager.incrementStat(
+            player.getBukkit().getUniqueId(), FootballStatistic.TOUCHDOWNS
+        );
+    }
+    @Override
+    public void onTouchdownPass(MatchPlayer thrower) {
+        statManager.incrementStat(
+            thrower.getBukkit().getUniqueId(), FootballStatistic.TOUCHDOWN_PASSES
+        );
     }
 }
