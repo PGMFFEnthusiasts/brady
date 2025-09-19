@@ -12,7 +12,9 @@ dependencies {
     compileOnlyApi(libs.adventure.api)
     compileOnlyApi(libs.adventure.platform.bukkit)
     compileOnlyApi(libs.adventure.text.serializer.plain)
-    api(libs.adventure.text.serializer.ansi)
+    api(libs.adventure.text.serializer.ansi) {
+        exclude("net.kyori", "adventure-api")
+    }
 
     compileOnlyApi(libs.luckperms.api)
     compileOnlyApi(libs.tc.oc.pgm.core)
@@ -20,7 +22,16 @@ dependencies {
 
     api(libs.mccoroutine.bukkit.core)
     api(libs.mccoroutine.bukkit.api)
-    api(libs.com.github.retrooper.packetevents.spigot)
+    api(libs.com.github.retrooper.packetevents.spigot) {
+        exclude("net.kyori", "adventure-api")
+        exclude("net.kyori", "adventure-nbt")
+        exclude("net.kyori", "adventure-key")
+        exclude("net.kyori", "examination-api")
+        exclude("net.kyori", "examination-string")
+        exclude("net.kyori", "adventure-text-serializer-gson")
+        exclude("net.kyori", "adventure-text-serializer-legacy")
+        exclude("net.kyori", "adventure-text-serializer-json-legacy-impl")
+    }
 
     api(libs.nbtapi)
 
