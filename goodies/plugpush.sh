@@ -69,7 +69,7 @@ case "$1" in
     ssh tb "cd caddy/cdn/deps && ~/bin/gen-manifest.sh https://tombrady.fireballs.me/cdn/deps"
     ;;
   *)
-    echo "usage: $0 [proxy|backend|dev|all|cdn]"
+    echo "usage: $0 [proxy|backend|all|cdn]"
     ;;
 esac
 
