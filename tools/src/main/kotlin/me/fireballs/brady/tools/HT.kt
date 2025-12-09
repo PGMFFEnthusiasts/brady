@@ -1,15 +1,18 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.ItemBox
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.command
-import me.fireballs.brady.core.registerEvents
+import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.ticks
+import kotlinx.coroutines.delay
+import me.fireballs.brady.core.*
 import net.minecraft.server.v1_8_R3.Items
 import org.bukkit.World
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItem
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerPickupItemEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.map.MapCanvas
@@ -68,7 +71,7 @@ class HT : Listener, KoinComponent {
         command("wife") {
             executor {
                 val p = player()
-                p.inventory.addItem(retrieveStack(p.world))
+                p.inventory.addItem(retrieveStack(p.world).clone())
             }
         }
 
@@ -78,5 +81,27 @@ class HT : Listener, KoinComponent {
     @EventHandler
     private fun onCycle(event: MatchAfterLoadEvent) {
         memoized = null
+    }
+
+    @EventHandler
+    private fun onDrop(event: PlayerDropItemEvent) {
+        val memo = memoized?.stack ?: return
+        if (!event.itemDrop.itemStack.isSimilar(memo)) return
+        val item = event.itemDrop
+        item.velocity = item.velocity.multiply(4.0)
+        item.fireTicks = 9999
+        (item as CraftItem).handle.noDamageTicks = 9999
+
+        tools.launch {
+            delay(40.ticks)
+            item.remove()
+        }
+    }
+
+    @EventHandler
+    private fun onPickup(event: PlayerPickupItemEvent) {
+        val memo = memoized?.stack ?: return
+        if (!event.item.itemStack.isSimilar(memo)) return
+        event.isCancelled = true
     }
 }
