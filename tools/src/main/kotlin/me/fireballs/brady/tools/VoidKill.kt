@@ -6,6 +6,7 @@ import org.bukkit.GameMode
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerTeleportEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -23,6 +24,14 @@ class VoidKill : Listener, KoinComponent {
         if (p.gameMode != GameMode.SURVIVAL && p.gameMode != GameMode.ADVENTURE) return
         if (event.to.y > 0) return
         event.isCancelled = true
+        p.handle.damageEntity(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE)
+    }
+
+    @EventHandler
+    private fun onVoidFalling(event: PlayerMoveEvent) {
+        val p = (event.player as CraftPlayer)
+        if (p.gameMode != GameMode.SURVIVAL && p.gameMode != GameMode.ADVENTURE) return
+        if (event.to.y > -10) return
         p.handle.damageEntity(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE)
     }
 }
