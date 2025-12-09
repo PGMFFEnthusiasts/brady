@@ -26,5 +26,5 @@ fun Player.actionBar(message: Component) {
     Core.adventure.player(this).sendActionBar(message)
 }
 
-fun Player.component(): Component = player(this)
+fun CommandSender.component(): Component = player(this)
 

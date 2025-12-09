@@ -19,6 +19,7 @@ class Tools : SuspendingJavaPlugin() {
             single<BallProjection>(createdAtStart = true) { BallProjection() }
             single<TheCube>(createdAtStart = true) { TheCube() }
             single<VoidKill>(createdAtStart = true) { VoidKill() }
+            single<Pause>(createdAtStart = true) { Pause() }
         }
 
         loadModule(toolModule)
