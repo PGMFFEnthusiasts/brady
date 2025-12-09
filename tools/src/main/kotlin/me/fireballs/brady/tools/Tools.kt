@@ -20,6 +20,7 @@ class Tools : SuspendingJavaPlugin() {
             single<TheCube>(createdAtStart = true) { TheCube() }
             single<VoidKill>(createdAtStart = true) { VoidKill() }
             single<Pause>(createdAtStart = true) { Pause() }
+            single<HT>(createdAtStart = true) { HT() }
         }
 
         loadModule(toolModule)

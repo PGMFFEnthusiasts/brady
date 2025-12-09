@@ -9,6 +9,7 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
+import org.bukkit.material.MaterialData
 
 fun itembox(itemType: Material = Material.DIRT): ItemBox {
     return ItemBox(ItemStack(itemType))
@@ -21,6 +22,13 @@ class ItemBox(
         val itemMeta = stack.itemMeta
         builder(itemMeta)
         stack.itemMeta = itemMeta
+        return this
+    }
+
+    fun materialData(builder: MaterialData.() -> Unit): ItemBox {
+        val data = stack.data
+        builder(data)
+        stack.data = data
         return this
     }
 
