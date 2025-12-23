@@ -82,10 +82,15 @@ public class ActionNodeTriggerListener implements Listener {
                     observer.onTouchdownPass(thrower);
                 }
             }
+            resetState();
+            return;
         } else if (event.nodeId.equals(flagStealActionId)) {
             for (final FootballListener observer : observers) {
                 observer.onBallSteal(matchPlayer);
             }
+            resetState();
+            thrower = matchPlayer;
+            return;
         }
 
         if (thrower == null) {
