@@ -41,7 +41,7 @@ public class FootballListenerImpl implements FootballListener, Listener {
     }
 
     @Override
-    public void onPassPossessionCompletion(CompletedFootballThrow completedThrow) {
+    public void onPassPossessionCompletion(CompletedFootballPass completedThrow) {
         if (!completedThrow.catcher().getParty().equals(completedThrow.thrower().getParty())) {
             FootballDebugChannel.sendMessage(Component.text("team mismatch ignore"));
             return;
@@ -59,12 +59,10 @@ public class FootballListenerImpl implements FootballListener, Listener {
         }
         final Spawn spawn1 = spawnMatchModule.getSpawns().get(0);
         final Spawn spawn2 = spawnMatchModule.getSpawns().get(1);
-        // really this shouldn't be needed if spawns aligned on the cross axis but who knows!
-        final double epsilon = 1.1;
         final Location referencePoint1 = spawn1.getSpawn(completedThrow.thrower());
         final Location referencePoint2 = spawn2.getSpawn(completedThrow.thrower());
         final Location theDiff = referencePoint2.clone().subtract(referencePoint1);
-        final boolean crossAxisIsZ = Math.abs(theDiff.getX()) > epsilon;
+        final boolean crossAxisIsZ = Math.abs(theDiff.getX()) > Math.abs(theDiff.getZ());
         final Function<Location, Location> postProcessLocation = (location) -> {
             Location newLocation = location.clone();
             newLocation.setY(0);
@@ -87,8 +85,10 @@ public class FootballListenerImpl implements FootballListener, Listener {
         final Location spawnLocation = validSpawn.get().getSpawn(completedThrow.thrower());
         int magnitude = 1;
         // if the spot the catcher lost the ball at is closer to spawn, that's an overall negative yardage
-        if (completedThrow.lossOfControlLocation().distanceSquared(spawnLocation)
-            < completedThrow.throwLocation().distanceSquared(spawnLocation)) {
+        if (
+            postProcessLocation.apply(completedThrow.lossOfControlLocation()).distanceSquared(spawnLocation) <
+                postProcessLocation.apply(completedThrow.throwLocation()).distanceSquared(spawnLocation)
+        ) {
             magnitude = -1;
         }
 
@@ -113,9 +113,19 @@ public class FootballListenerImpl implements FootballListener, Listener {
             completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_PASSING_BLOCKS,
             distance, Double::sum
         );
+        var newPassingBlocks =
+            statManager.getStat(completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_PASSING_BLOCKS);
+        FootballDebugChannel.sendMessage(Component.text("Thrower new passing blocks: " + df.format(newPassingBlocks)));
         statManager.mergeStat(
             completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.TOTAL_RECEIVING_BLOCKS,
             distance, Double::sum
+        );
+        var newReceivingBlocks =
+            statManager.getStat(
+                completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_RECEIVING_BLOCKS
+            );
+        FootballDebugChannel.sendMessage(
+            Component.text("Catcher new receiving blocks: " + df.format(newPassingBlocks))
         );
     }
 

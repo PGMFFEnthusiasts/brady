@@ -3,7 +3,7 @@ package me.fireballs.share.football;
 import tc.oc.pgm.api.player.MatchPlayer;
 
 public interface FootballListener {
-    default void onPassPossessionCompletion(CompletedFootballThrow completedThrow) {}
+    default void onPassPossessionCompletion(CompletedFootballPass completedThrow) {}
     default void onThrow(MatchPlayer thrower) {}
     default void onCatch(MatchPlayer catcher) {}
     default void onPass(MatchPlayer thrower, MatchPlayer catcher) {}

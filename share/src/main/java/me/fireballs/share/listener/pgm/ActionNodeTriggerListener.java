@@ -1,6 +1,6 @@
 package me.fireballs.share.listener.pgm;
 
-import me.fireballs.share.football.CompletedFootballThrow;
+import me.fireballs.share.football.CompletedFootballPass;
 import me.fireballs.share.football.FootballListener;
 import me.fireballs.share.util.FootballDebugChannel;
 import net.kyori.adventure.text.Component;
@@ -74,38 +74,39 @@ public class ActionNodeTriggerListener implements Listener {
             }
         }
 
-        if (event.nodeId.equals(roundIncrementActionId)) {
-            final boolean throwerExists = thrower != null;
+        if (event.nodeId.equals(roundIncrementActionId)) { // touchdown, record then reset
+            final boolean isTouchdownPass = thrower != null && catcher != null;
+            if (isTouchdownPass) {
+                lossOfControlLocation = catcher.getLocation();
+                emitPass();
+            }
             for (final FootballListener observer : observers) {
                 observer.onTouchdown(matchPlayer);
-                if (throwerExists) {
+                if (isTouchdownPass) {
                     observer.onTouchdownPass(thrower);
                 }
             }
             resetState();
-            return;
-        } else if (event.nodeId.equals(flagStealActionId)) {
+        } else if (event.nodeId.equals(flagStealActionId)) { // strip, change thrower then reset
+            final boolean wasPassed = thrower != null && catcher != null;
+            if (wasPassed) {
+                lossOfControlLocation = catcher.getLocation();
+                emitPass();
+            }
             for (final FootballListener observer : observers) {
                 observer.onBallSteal(matchPlayer);
             }
             resetState();
             thrower = matchPlayer;
-            return;
-        }
-
-        if (thrower == null) {
-            // when a potential thrower obtains the ball
-            if (isReceiveControlAction(event.nodeId)) {
+        } else if (thrower == null) { // no thrower assigned
+            if (isReceiveControlAction(event.nodeId)) { // when some1 gets the ball
                 FootballDebugChannel.sendMessage(Component.text("(Potential) thrower identified"));
                 thrower = matchPlayer;
                 for (final FootballListener observer : observers) {
                     observer.onBallPickup(matchPlayer);
                 }
             }
-            return;
-        }
-
-        if (catcher == null && throwLocation == null) { // thrower got da ball
+        } else if (catcher == null && throwLocation == null) { // some1 got da ball
             if (event.nodeId.equals(ballThrownActionId)) { // thrower makes a move
                 FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
                 for (final FootballListener observer : observers) {
@@ -116,11 +117,8 @@ public class ActionNodeTriggerListener implements Listener {
             } else if (isLossOfControlAction(event.nodeId)) { // thrower is bad at the game
                 FootballDebugChannel.sendMessage(Component.text("Thrower is bad at the game"));
                 thrower = null;
-                return;
-            } else if (event.nodeId.equals(flagPickupActionId)) { // i dont rlly know why i have to do this
-                return;
             }
-        } else if (throwLocation != null && catcher == null) { // throw state
+        } else if (throwLocation != null && catcher == null) { // ball mid air post-throw
             if (event.nodeId.equals(flagReceiveActionId)) { // pass completion, scope is the catcher
                 FootballDebugChannel.sendMessage(Component.text("Thrower completed the pass!"));
                 catcher = matchPlayer;
@@ -129,42 +127,27 @@ public class ActionNodeTriggerListener implements Listener {
                     observer.onCatch(catcher);
                     observer.onPass(thrower, catcher);
                 }
-                return;
-            } else if (event.nodeId.equals(flagPickupActionId)) { // i dont rlly know why i have to do this
-                return;
             }
         } else { // catcher en route
             if (isLossOfControlAction(event.nodeId)) {
                 FootballDebugChannel.sendMessage(Component.text("Catcher lost ball, marking throw as complete"));
                 lossOfControlLocation = matchPlayer.getLocation();
-                emitThrow();
+                emitPass();
                 resetState();
                 if (event.nodeId.equals(ballThrownActionId)) {
                     FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
                     thrower = matchPlayer;
                     throwLocation = thrower.getLocation();
                 }
-                return;
-            } else if (event.nodeId.equals(flagPickupActionId)) { // i dont rlly know why i have to do this
-                return;
             }
         }
-
-
-        FootballDebugChannel.sendMessage(
-            Component.text(
-                "Resetting state, unknown case (node ID was " + event.nodeId + ")"
-            )
-        );
-        // reset state in any unhandled case
-        resetState();
     }
 
     @EventHandler
     public void onMatchEndEvent(final MatchFinishEvent event) {
         if (catcher != null) {
             lossOfControlLocation = catcher.getLocation();
-            emitThrow();
+            emitPass();
             resetState();
         }
     }
@@ -173,15 +156,17 @@ public class ActionNodeTriggerListener implements Listener {
     public void onMatchQuitEvent(final PlayerLeaveMatchEvent event) {
         if (event.getPlayer().equals(catcher)) {
             lossOfControlLocation = catcher.getLocation();
-            emitThrow();
+            emitPass();
             resetState();
         } else if (event.getPlayer().equals(thrower)) {
             resetState();
         }
     }
 
-    private void emitThrow() {
-        final CompletedFootballThrow completedThrow = new CompletedFootballThrow(
+    private void emitPass() {
+        if (thrower == null || throwLocation == null || catcher == null
+            || catchLocation == null || lossOfControlLocation == null) return;
+        final CompletedFootballPass completedThrow = new CompletedFootballPass(
             thrower, throwLocation,
             catcher, catchLocation, lossOfControlLocation
         );
