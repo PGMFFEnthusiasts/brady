@@ -106,7 +106,7 @@ public class ActionNodeTriggerListener implements Listener {
                     observer.onBallPickup(matchPlayer);
                 }
             }
-        } else if (catcher == null && throwLocation == null) { // some1 got da ball
+        } else if (throwLocation == null) { // some1 got da ball
             if (event.nodeId.equals(ballThrownActionId)) { // thrower makes a move
                 FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
                 for (final FootballListener observer : observers) {
