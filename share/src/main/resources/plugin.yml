@@ -8,5 +8,8 @@ softdepend:
 commands:
   tbdebug:
     permission: tb.debug
+  pe:
+    permission: tb.effects
+    aliases: [ persistenteffects ]
 authors:
   - applepies

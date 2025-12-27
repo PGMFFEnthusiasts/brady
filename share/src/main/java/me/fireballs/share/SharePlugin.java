@@ -2,6 +2,8 @@ package me.fireballs.share;
 
 import me.fireballs.brady.core.event.BradyShareEvent;
 import me.fireballs.share.command.FootballDebugCommand;
+import me.fireballs.share.command.PersistentEffectsCommand;
+import me.fireballs.share.effects.EffectApplicationListener;
 import me.fireballs.share.football.FootballListenerImpl;
 import me.fireballs.share.listener.pgm.ActionNodeTriggerListener;
 import me.fireballs.share.listener.pgm.MatchCycleListener;
@@ -18,6 +20,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static me.fireballs.brady.core.DebuggingKt.log;
 
@@ -25,6 +32,7 @@ public class SharePlugin extends JavaPlugin {
     private ActionNodeTriggerListener actionNodeTriggerListener;
     private Database database;
     private FootballListenerImpl footballListener;
+    private EffectApplicationListener effectApplicationListener;
     public boolean uploadPaste;
 
     @Override
@@ -65,7 +73,16 @@ public class SharePlugin extends JavaPlugin {
 
         FootballDebugChannel.init(this);
         this.getCommand("tbdebug").setExecutor(new FootballDebugCommand());
-
+        final var trackedEffects = new HashMap<PotionEffectType, Integer>();
+        this.effectApplicationListener = new EffectApplicationListener(
+            this, "remove-cages", Collections.unmodifiableMap(trackedEffects)
+        );
+        Bukkit.getPluginManager().registerEvents(this.effectApplicationListener, this);
+        final PersistentEffectsCommand persistentEffectsCommand = new PersistentEffectsCommand(
+            trackedEffects,
+            List.of(effectApplicationListener)
+        );
+        this.getCommand("pe").setExecutor(persistentEffectsCommand);
         if (getConfig().getBoolean("upload-paste")) {
             this.uploadPaste = true;
         }
@@ -78,6 +95,7 @@ public class SharePlugin extends JavaPlugin {
         }
         FootballDebugChannel.unload();
         HandlerList.unregisterAll(this.actionNodeTriggerListener);
+        HandlerList.unregisterAll(this.effectApplicationListener);
         if (this.footballListener != null) {
             HandlerList.unregisterAll(this.footballListener);
         }
