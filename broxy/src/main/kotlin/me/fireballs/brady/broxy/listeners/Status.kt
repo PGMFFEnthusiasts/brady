@@ -4,8 +4,6 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
 import me.fireballs.brady.broxy.Broxy
-import me.fireballs.brady.broxy.utils.Constants.PRIMARY_SERVER_ID
-import me.fireballs.brady.broxy.utils.Constants.SECONDARY_SERVER_ID
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
 import kotlin.jvm.optionals.getOrNull
@@ -18,20 +16,23 @@ class Status(
         update()
     }
 
-    private fun update() {
-        var primary = 0
-        var secondary = 0
+    private data class ServerStatus(var count: Int, var name: String) {}
 
-        plugin.server.allPlayers.forEach {
-            when (it.currentServer.getOrNull()?.serverInfo?.name) {
-                PRIMARY_SERVER_ID -> ++primary
-                SECONDARY_SERVER_ID -> ++secondary
-            }
+    private fun update() {
+        val servers = plugin.server.allServers?.mapNotNull { server ->
+            val name = server?.serverInfo?.name ?: return@mapNotNull null
+            ServerStatus(0, name)
+        }?.sortedBy { it.name } ?: listOf()
+
+        if (servers.isEmpty()) return
+
+        plugin.server.allPlayers.forEach { player ->
+            servers.find { it.name == player.currentServer.getOrNull()?.serverInfo?.name }?.count++
         }
 
         jda.presence.activity = Activity.of(
             Activity.ActivityType.PLAYING,
-            "TB | $primary : $secondary",
+            "TB | ${servers.joinToString(separator = " : ") { status -> status.count.toString() }}",
         )
     }
 
