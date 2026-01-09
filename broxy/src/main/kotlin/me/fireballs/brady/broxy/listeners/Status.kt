@@ -1,8 +1,10 @@
 package me.fireballs.brady.broxy.listeners
 
+import com.github.shynixn.mccoroutine.velocity.launch
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
+import kotlinx.coroutines.delay
 import me.fireballs.brady.broxy.Broxy
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
@@ -44,5 +46,12 @@ class Status(
     @Subscribe
     fun onStateUpdateButLeave(event: DisconnectEvent) {
         update()
+
+        // this will fix all the state bugs
+        // i promise! you have to believe me.
+        plugin.pluginContainer.launch {
+            delay(5000L)
+            update()
+        }
     }
 }
