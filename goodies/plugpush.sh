@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # HOW TO USE
 # Add something like this to your ~/.ssh/config:
