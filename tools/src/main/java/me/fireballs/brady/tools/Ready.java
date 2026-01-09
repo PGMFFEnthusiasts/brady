@@ -5,8 +5,10 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.koin.java.KoinJavaComponent;
+import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.event.ChannelMessageEvent;
 import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.api.match.event.MatchStartEvent;
@@ -37,8 +39,8 @@ public class Ready implements Listener {
         registerEvents(plugin.getValue(), this);
     }
 
-    @EventHandler
-    public void onChat(ChannelMessageEvent<GlobalChannel> event) {
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onChat(ChannelMessageEvent<?> event) {
         if (!listening) return;
 
         MatchPlayer player = event.getSender();
@@ -52,6 +54,15 @@ public class Ready implements Listener {
             appendStatus(event, NamedTextColor.RED);
         } else if (READY_QUESTIONS.contains(message)) {
             appendStatus(event, NamedTextColor.AQUA);
+        }
+
+        var remainingViewers = new HashSet<>(event.getSender().getMatch().getPlayers());
+        remainingViewers.removeAll(event.getViewers());
+
+        for (MatchPlayer remainingViewer : remainingViewers) {
+            var component = PGM.get().getChatManager().getGlobalChannel()
+                    .formatMessage(null, event.getSender(), event.getComponent());
+            remainingViewer.sendMessage(component);
         }
     }
 
