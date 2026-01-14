@@ -35,6 +35,14 @@ class CommandExecution(
     }
 
     fun match(): Match = matchManager.getMatch(player().world) ?: err("Match not found")
+
+    fun <T> capture(error: String = "Unknown error", block: () -> T): T {
+        try {
+            return block()
+        } catch (e: Exception) {
+            err(e.message ?: error)
+        }
+    }
 }
 
 typealias CommandCompleter = CommandExecution.() -> Collection<String>
