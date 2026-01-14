@@ -13,6 +13,8 @@ import tc.oc.pgm.api.event.ChannelMessageEvent;
 import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.api.match.event.MatchStartEvent;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.channels.AdminChannel;
+import tc.oc.pgm.channels.PrivateMessageChannel;
 import tc.oc.pgm.channels.TeamChannel;
 import tc.oc.pgm.events.PlayerPartyChangeEvent;
 import tc.oc.pgm.match.ObserverParty;
@@ -44,7 +46,7 @@ public class Ready implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onChat(ChannelMessageEvent<?> event) {
         if (!listening) return;
-        if (!(event.getChannel() instanceof TeamChannel)) return;
+        if (event.getChannel() instanceof AdminChannel || event.getChannel() instanceof PrivateMessageChannel) return;
 
         MatchPlayer player = event.getSender();
         String message = event.getMessage().toLowerCase();
