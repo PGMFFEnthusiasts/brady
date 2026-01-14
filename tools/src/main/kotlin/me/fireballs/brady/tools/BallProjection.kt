@@ -89,7 +89,7 @@ class BallProjection : Listener, KoinComponent {
                 )
 
                 event.world.players
-                    .filter { it.gameMode == GameMode.CREATIVE }
+                    .filter { it.gameMode == GameMode.CREATIVE && Math.random() > 0.5 }
                     .forEach {
                         (it as CraftPlayer).handle.playerConnection.sendPacket(packet)
                     }
