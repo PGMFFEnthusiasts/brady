@@ -3,6 +3,7 @@ package me.fireballs.brady.tools
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.delay
+import me.fireballs.brady.core.currentMatch
 import me.fireballs.brady.core.lerp
 import me.fireballs.brady.core.registerEvents
 import net.minecraft.server.v1_8_R3.EnumParticle
@@ -17,6 +18,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.ProjectileLaunchEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import tc.oc.pgm.api.PGM
+import java.util.concurrent.ThreadLocalRandom
 
 private class BallState(
     var x: Double, var y: Double, var z: Double,
@@ -88,11 +91,10 @@ class BallProjection : Listener, KoinComponent {
                     lerp(t, 200f, 2_000_000f), 0
                 )
 
-                event.world.players
-                    .filter { it.gameMode == GameMode.CREATIVE && Math.random() > 0.5 }
-                    .forEach {
-                        (it as CraftPlayer).handle.playerConnection.sendPacket(packet)
-                    }
+                PGM.get().matchManager.currentMatch()?.observers?.forEach {
+                    if (ThreadLocalRandom.current().nextDouble() > 0.77)
+                            (it.bukkit as CraftPlayer).handle.playerConnection.sendPacket(packet)
+                }
 
 //                val loc = Location(event.world, ballPosition.x, ballPosition.y, ballPosition.z)
 //                for (player in event.world.players) {
