@@ -125,8 +125,11 @@ class FeatureFlagsSubscriber : KoinComponent {
                 }
 
                 tabCompleter = {
-                    if (subArgs.size < 2) flagMap.values.map { it.key }
-                    else flagMap[subArgs[0].lowercase()]?.suggest() ?: listOf()
+                    when (subArgs.size) {
+                        0, 1 -> flagMap.values.map { it.key }
+                        2 -> flagMap[subArgs[0].lowercase()]?.suggest() ?: listOf()
+                        else -> listOf()
+                    }
                 }
             }
         }
