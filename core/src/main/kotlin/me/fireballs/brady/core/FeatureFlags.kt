@@ -3,6 +3,7 @@ package me.fireballs.brady.core
 import com.google.common.collect.MapMaker
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
+import org.bukkit.Bukkit
 import org.koin.core.component.KoinComponent
 
 private val flagMap = MapMaker()
@@ -57,7 +58,7 @@ class FeatureFlagsSubscriber : KoinComponent {
     init {
         command("flag", permission = "brady.admin") {
             executor {
-                sender.send("&7Feature Flags".cc())
+                sender.send("&7⚑ Feature Flags".cc())
                 sender.send("/flag list &7- list all the flags and their values".cc())
                 sender.send("/flag show <flagKey> &7- show more detail about a flag".cc())
                 sender.send("/flag set <flagKey> <value> &7- set the value of a flag".cc())
@@ -117,7 +118,10 @@ class FeatureFlagsSubscriber : KoinComponent {
                     val errorMessage = flag.set(newValue)
                     if (errorMessage != null) err(errorMessage)
 
-                    sender.send("&7Set &f${flag.key}&7 from ".cc() + prev + "&7 to ".cc() + flag.render())
+                    val changedMessage = "&7⚑ ".cc() + sender.component() + "&7 set &f${flag.key}&7 from ".cc() + prev + "&7 ➡ ".cc() + flag.render() + ".&7".cc()
+                    Bukkit.getOnlinePlayers()
+                        .filter { it.hasPermission("brady.admin") }
+                        .forEach { it.send(changedMessage.forWhom(it)) }
                 }
 
                 tabCompleter = {
