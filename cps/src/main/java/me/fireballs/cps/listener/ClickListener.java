@@ -14,6 +14,7 @@ public record ClickListener(ProfileManager profileManager) implements PacketList
 
         int entityId = event.getUser().getEntityId();
         Profile profile = profileManager.getProfile(entityId);
+        if (profile == null) return;
 
         if (WrapperPlayClientPlayerFlying.isFlying(type)) {
             profile.tick();
