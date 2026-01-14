@@ -13,11 +13,13 @@ import tc.oc.pgm.api.event.ChannelMessageEvent;
 import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.api.match.event.MatchStartEvent;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.channels.GlobalChannel;
+import tc.oc.pgm.channels.TeamChannel;
 import tc.oc.pgm.events.PlayerPartyChangeEvent;
 import tc.oc.pgm.match.ObserverParty;
+import tc.oc.pgm.start.StartMatchModule;
 import tc.oc.pgm.teams.Team;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,19 +44,26 @@ public class Ready implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onChat(ChannelMessageEvent<?> event) {
         if (!listening) return;
+        if (!(event.getChannel() instanceof TeamChannel)) return;
 
         MatchPlayer player = event.getSender();
         String message = event.getMessage().toLowerCase();
 
+        var found = false;
         if (READY_MESSAGES.contains(message) && player.getCompetitor() != null) {
             setReady(player, true);
             appendStatus(event, NamedTextColor.GREEN);
+            found = true;
         } else if (NOT_READY_MESSAGES.contains(message) && player.getCompetitor() != null) {
             setReady(player, false);
             appendStatus(event, NamedTextColor.RED);
+            found = true;
         } else if (READY_QUESTIONS.contains(message)) {
             appendStatus(event, NamedTextColor.AQUA);
+            found = true;
         }
+
+        if (!found) return;
 
         var remainingViewers = new HashSet<>(event.getSender().getMatch().getPlayers());
         remainingViewers.removeAll(event.getViewers());
@@ -92,6 +101,8 @@ public class Ready implements Listener {
     }
 
     private void setReady(MatchPlayer player, boolean isReady) {
+        var wasReady = notReady.isEmpty();
+
         if (isReady) {
             ready.add(player);
             notReady.remove(player);
@@ -99,6 +110,10 @@ public class Ready implements Listener {
             ready.remove(player);
             notReady.add(player);
         }
+
+        if (wasReady && !notReady.isEmpty()) player.getMatch().getCountdown().cancelAll();
+        if (!wasReady && notReady.isEmpty()) player.getMatch().moduleRequire(StartMatchModule.class)
+                .forceStartCountdown(Duration.ofSeconds(30), Duration.ZERO);
     }
 
     private void clear(MatchPlayer player) {
