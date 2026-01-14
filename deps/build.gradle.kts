@@ -42,4 +42,5 @@ dependencies {
 
     api(libs.nats)
     api(libs.postgres)
+    api(libs.jctools)
 }
