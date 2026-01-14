@@ -9,5 +9,6 @@ class TabListResize : PacketListenerAbstract() {
     override fun onPacketSend(event: PacketSendEvent) {
         if (event.packetType != PacketType.Play.Server.JOIN_GAME) return
         WrapperPlayServerJoinGame(event).maxPlayers = 80
+        event.markForReEncode(true)
     }
 }
