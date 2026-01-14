@@ -29,6 +29,7 @@ class Core : SuspendingJavaPlugin() {
 
         DebuggingSubscriber()
         StandardBradyListener()
+        FeatureFlagsSubscriber()
     }
 
     override fun onDisable() {

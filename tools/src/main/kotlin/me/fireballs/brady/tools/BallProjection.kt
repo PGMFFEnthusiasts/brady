@@ -3,6 +3,7 @@ package me.fireballs.brady.tools
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.delay
+import me.fireballs.brady.core.FeatureFlagBool
 import me.fireballs.brady.core.currentMatch
 import me.fireballs.brady.core.lerp
 import me.fireballs.brady.core.registerEvents
@@ -69,8 +70,11 @@ class BallProjection : Listener, KoinComponent {
         tools.registerEvents(this)
     }
 
+    private val enabled = FeatureFlagBool("ballProjection", true)
+
     @EventHandler(ignoreCancelled = true)
     private suspend fun onLaunch(event: ProjectileLaunchEvent) {
+        if (!enabled.state) return
         if (event.entity !is Snowball) return
 
 //        delay(1.ticks)

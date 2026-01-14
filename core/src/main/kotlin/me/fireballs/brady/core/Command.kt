@@ -36,11 +36,11 @@ class CommandExecution(
 
     fun match(): Match = matchManager.getMatch(player().world) ?: err("Match not found")
 
-    fun <T> capture(error: String = "Unknown error", block: () -> T): T {
+    fun <T> capture(error: String? = null, block: () -> T): T {
         try {
             return block()
         } catch (e: Exception) {
-            err(e.message ?: error)
+            err(error ?: e.message ?: "Unknown error")
         }
     }
 }
@@ -189,8 +189,7 @@ private class CommandHandler(val javaPlugin: SuspendingJavaPlugin, val commandBu
         val completions = mutableListOf<String>()
         completions.addAll(subcommandCandidates)
         completions.addAll(head.tabCompleter(CommandExecution(sender, args, subArgs)))
-
-        completions.removeIf { !it.startsWith(currentArg, true) }
+        completions.removeIf { !it.startsWith(currentArg, true) && !it.startsWith(args.last(), true) }
 
         return completions
     }

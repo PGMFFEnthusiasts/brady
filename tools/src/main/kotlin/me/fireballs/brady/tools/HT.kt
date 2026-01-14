@@ -67,11 +67,14 @@ class HT : Listener, KoinComponent {
         return finalStack
     }
 
+    private val enabled = FeatureFlagBool("wifeEnabled", true)
+
     init {
         command("wife") {
             executor {
                 val p = player()
-                p.inventory.addItem(retrieveStack(p.world).clone())
+                if (enabled.state) p.inventory.addItem(retrieveStack(p.world).clone())
+                else err("This feature is disabled")
             }
         }
 
