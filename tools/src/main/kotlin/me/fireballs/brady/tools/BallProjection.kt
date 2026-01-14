@@ -83,7 +83,8 @@ class BallProjection : Listener, KoinComponent {
             val t = (originalLength.toFloat() - ballPositions.size) / originalLength
 //            Bukkit.broadcastMessage(t.toString())
 
-            for (ballPosition in ballPositions) {
+            val observerSet = PGM.get().matchManager.currentMatch()?.observers?.map { it.player }
+            if (observerSet != null) for (ballPosition in ballPositions) {
                 val packet = PacketPlayOutWorldParticles(
                     EnumParticle.REDSTONE, true,
                     ballPosition.x.toFloat(), ballPosition.y.toFloat(), ballPosition.z.toFloat(),
@@ -91,9 +92,9 @@ class BallProjection : Listener, KoinComponent {
                     lerp(t, 200f, 2_000_000f), 0
                 )
 
-                PGM.get().matchManager.currentMatch()?.observers?.forEach {
+                observerSet.forEach {
                     if (ThreadLocalRandom.current().nextDouble() > 0.77)
-                            (it.bukkit as CraftPlayer).handle.playerConnection.sendPacket(packet)
+                            (it as CraftPlayer).handle.playerConnection.sendPacket(packet)
                 }
 
 //                val loc = Location(event.world, ballPosition.x, ballPosition.y, ballPosition.z)
