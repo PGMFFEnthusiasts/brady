@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.player.Username;
 import tc.oc.pgm.stats.PlayerStats;
+import tc.oc.pgm.stats.StatsMatchModule;
 import tc.oc.pgm.util.named.Named;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public class TableUtil {
             "PICKUPS", "THRW", "PASS", "CATCH", "STRIP", "TD", "TD_PASS",
             "PASS_BLOX", "RCV_BLOX", "DEF_INT", "PASS_INT", "DMG_CARRIER"};
 
-    public static String assembleTable(Map<UUID, PlayerStats> statsMap, StatManager statManager) {
+    public static String assembleTable(Map<UUID, PlayerStats> statsMap, StatManager statManager, StatsMatchModule statsModule) {
         List<Statline> statlines = new ArrayList<>();
 
         statsMap.forEach((uuid, stats) -> {
@@ -31,8 +32,7 @@ public class TableUtil {
                                     .orElse(uuid.toString())
                     );
 
-            String team = Optional.ofNullable(PGM.get().getMatchManager().getPlayer(uuid))
-                    .flatMap(player -> Optional.ofNullable(player.getCompetitor()))
+            String team = Optional.ofNullable(statsModule.getPrimaryTeam(uuid, false))
                     .map(Named::getNameLegacy)
                     .orElse("UNKNOWN");
 

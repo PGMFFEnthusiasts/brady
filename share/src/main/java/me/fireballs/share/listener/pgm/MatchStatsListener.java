@@ -72,7 +72,7 @@ public final class MatchStatsListener implements Listener {
 
         if (plugin.uploadPaste) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                String table = TableUtil.assembleTable(statsModule.getStats(), statManager);
+                String table = TableUtil.assembleTable(statsModule.getStats(), statManager, statsModule);
 
                 try {
                     Stream<String> lines = HTTPUtil.post(table);
@@ -184,8 +184,7 @@ public final class MatchStatsListener implements Listener {
             final UUID uuid = entry.getKey();
             final PlayerStats stats = entry.getValue();
 
-            final Competitor team = Optional.ofNullable(PGM.get().getMatchManager().getPlayer(uuid))
-                    .flatMap(player -> Optional.ofNullable(player.getCompetitor())).orElse(null);
+            final Competitor team = statsModule.getPrimaryTeam(uuid, false);
             if (team == null) {
                 return null;
             }
