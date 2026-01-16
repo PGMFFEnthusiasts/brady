@@ -22,6 +22,7 @@ class Tools : SuspendingJavaPlugin() {
             single<Pause>(createdAtStart = true) { Pause() }
             single<HT>(createdAtStart = true) { HT() }
             single<Tournaments>(createdAtStart = true) { Tournaments() }
+            single<JumpResetParticles>(createdAtStart = true) { JumpResetParticles() }
         }
 
         loadModule(toolModule)
