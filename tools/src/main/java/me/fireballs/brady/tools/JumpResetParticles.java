@@ -8,6 +8,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
+import me.fireballs.brady.core.FeatureFlagBool;
 import me.fireballs.brady.core.PluginExtensionsKt;
 import net.minecraft.server.v1_8_R3.EnumParticle;
 import org.bukkit.Bukkit;
@@ -25,6 +26,7 @@ public class JumpResetParticles extends PacketListenerAbstract {
 
     private final Tools plugin;
     private final Map<User, PlayerState> states = new NonBlockingHashMap<>();
+    private final FeatureFlagBool enabled = new FeatureFlagBool("jumpResetParticles", true);
 
     public JumpResetParticles() {
         this.plugin = KoinJavaComponent.get(Tools.class);
@@ -104,11 +106,13 @@ public class JumpResetParticles extends PacketListenerAbstract {
     }
 
     private void playEffect(Player player, Location loc) {
+        if (!enabled.getState()) return;
+
         Bukkit.getScheduler().runTask(plugin, () -> {
             var nmsWorld = ((CraftWorld) player.getWorld()).getHandle();
             nmsWorld.a(EnumParticle.SPELL_WITCH, false,
                     loc.getX(), loc.getY(), loc.getZ(),
-                    30, 0.15, 0, 0.15, 0); // count, dx, dy, dz, speed
+                    30, 0.15, 0, 0.15, 0); // count, xd, yd, zd, speed
         });
     }
 }
