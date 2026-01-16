@@ -10,9 +10,9 @@ private val flagMap = MapMaker()
     .concurrencyLevel(4)
     .makeMap<String, FeatureFlag<*>>()
 
-fun attemptToSetFlag(key: String): Boolean {
+fun attemptToSetFlag(key: String, value: String): Boolean {
     val flag = flagMap[key.lowercase()] ?: return false
-    return flag.set(key) == null
+    return flag.set(value) == null
 }
 
 abstract class FeatureFlag<T>(

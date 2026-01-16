@@ -13,6 +13,7 @@ import me.fireballs.brady.broxy.listeners.Router
 import me.fireballs.brady.broxy.listeners.Status
 import me.fireballs.brady.broxy.listeners.StatusPull
 import me.fireballs.brady.broxy.loggy.Loggy
+import me.fireballs.brady.broxy.tournament.TournamentStateManager
 import net.dv8tion.jda.internal.utils.JDALogger
 import org.slf4j.Logger
 
@@ -43,6 +44,8 @@ class Broxy {
 
         val status = StatusPull(this)
         server.eventManager.register(this, status)
+        val tournamentStateManager = TournamentStateManager(this)
+        server.eventManager.register(this, tournamentStateManager)
 
         val botToken = System.getenv("BRADY_BOT_TOKEN")
         if (botToken.isNullOrEmpty()) {

@@ -21,6 +21,7 @@ class Tools : SuspendingJavaPlugin() {
             single<VoidKill>(createdAtStart = true) { VoidKill() }
             single<Pause>(createdAtStart = true) { Pause() }
             single<HT>(createdAtStart = true) { HT() }
+            single<Tournaments>(createdAtStart = true) { Tournaments() }
         }
 
         loadModule(toolModule)

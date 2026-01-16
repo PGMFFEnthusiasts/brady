@@ -15,7 +15,6 @@ import tc.oc.pgm.api.match.event.MatchStartEvent;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.channels.AdminChannel;
 import tc.oc.pgm.channels.PrivateMessageChannel;
-import tc.oc.pgm.channels.TeamChannel;
 import tc.oc.pgm.events.PlayerPartyChangeEvent;
 import tc.oc.pgm.match.ObserverParty;
 import tc.oc.pgm.start.StartMatchModule;
@@ -113,8 +112,8 @@ public class Ready implements Listener {
             notReady.add(player);
         }
 
-        if (wasReady && !notReady.isEmpty()) player.getMatch().getCountdown().cancelAll();
-        if (!wasReady && notReady.isEmpty()) player.getMatch().moduleRequire(StartMatchModule.class)
+        if (wasReady && !notReady.isEmpty() && listening) player.getMatch().getCountdown().cancelAll();
+        if (!wasReady && notReady.isEmpty() && listening) player.getMatch().moduleRequire(StartMatchModule.class)
                 .forceStartCountdown(Duration.ofSeconds(30), Duration.ZERO);
     }
 

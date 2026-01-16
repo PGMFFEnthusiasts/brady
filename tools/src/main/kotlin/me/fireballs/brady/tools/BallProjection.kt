@@ -97,7 +97,7 @@ class BallProjection : Listener, KoinComponent {
                 )
 
                 observerSet.forEach {
-                    if (ThreadLocalRandom.current().nextDouble() > 0.77)
+                    if (ThreadLocalRandom.current().nextDouble() > 0.77 && it is CraftPlayer)
                             (it as CraftPlayer).handle.playerConnection.sendPacket(packet)
                 }
 

@@ -56,13 +56,13 @@ class CommandBuilder(
     val usageMessage: String?,
     val aliases: Set<String>,
 ) {
-    internal val subcommands = mutableListOf<CommandBuilder>()
+    val subcommands = mutableListOf<CommandBuilder>()
 
     val playerCompleter: CommandCompleter = {
         Bukkit.getOnlinePlayers()
             .filter { it.name.startsWith(subArgs.last(), true) }
             .map { it.name }
-            .sortedWith(String.Companion.CASE_INSENSITIVE_ORDER)
+            .sortedWith(String.CASE_INSENSITIVE_ORDER)
     }
 
     var executor: CommandExecutor = { error("&c⚠ This command doesn't do anything".cc()) }
@@ -78,11 +78,12 @@ class CommandBuilder(
 
     fun subcommand(
         name: String,
+        description: String? = null,
         permission: String? = null,
         vararg aliases: String = arrayOf(),
         builder: CommandBuilderBlock = {},
     ) {
-        val subCommand = CommandBuilder(name, null, permission, usageMessage, aliases.toSet())
+        val subCommand = CommandBuilder(name, description, permission, usageMessage, aliases.toSet())
         builder(subCommand)
         subcommands.add(subCommand)
     }
