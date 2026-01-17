@@ -76,4 +76,40 @@ public class Statements {
     public static final String DAMAGE_CARRIER_COLUMN = "damage_carrier";
     public static final String CREATE_DAMAGE_CARRIER_COLUMN_QUERY =
         "ALTER TABLE player_match_data ADD COLUMN IF NOT EXISTS damage_carrier DOUBLE PRECISION DEFAULT 0.0;";
+
+    public static final String CREATE_TOURNAMENT_TABLE =
+        "CREATE TABLE IF NOT EXISTS tournament (" +
+        "id SERIAL PRIMARY KEY, " +
+        "name TEXT NOT NULL, " +
+        "date BIGINT NOT NULL, " +
+        "winner_team_id INTEGER NOT NULL)";
+    public static final String CREATE_TOURNAMENT_TEAM_TABLE =
+        "CREATE TABLE IF NOT EXISTS tournament_team (" +
+        "tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE, " +
+        "team_id INTEGER NOT NULL, " +
+        "captain_uuid BYTEA NOT NULL, " +
+        "PRIMARY KEY (tournament_id, team_id))";
+    public static final String CREATE_TOURNAMENT_TEAM_PLAYER_TABLE =
+        "CREATE TABLE IF NOT EXISTS tournament_team_player (" +
+        "tournament_id INTEGER NOT NULL, " +
+        "team_id INTEGER NOT NULL, " +
+        "player_uuid BYTEA NOT NULL, " +
+        "PRIMARY KEY (tournament_id, team_id, player_uuid), " +
+        "FOREIGN KEY (tournament_id, team_id) REFERENCES tournament_team(tournament_id, team_id) ON DELETE CASCADE)";
+    public static final String CREATE_TOURNAMENT_MATCH_TABLE =
+        "CREATE TABLE IF NOT EXISTS tournament_match (" +
+        "tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE, " +
+        "match_id INTEGER NOT NULL REFERENCES match_data(match) ON DELETE CASCADE, " +
+        "team_one_tournament_id INTEGER NOT NULL, " +
+        "team_two_tournament_id INTEGER NOT NULL, " +
+        "PRIMARY KEY (tournament_id, match_id), " +
+        "FOREIGN KEY (tournament_id, team_one_tournament_id) REFERENCES tournament_team(tournament_id, team_id), " +
+        "FOREIGN KEY (tournament_id, team_two_tournament_id) REFERENCES tournament_team(tournament_id, team_id))";
+
+    public static final String CREATE_TOURNAMENT_DATE_INDEX =
+        "CREATE INDEX IF NOT EXISTS idx_tournament_date ON tournament(date DESC)";
+    public static final String CREATE_TOURNAMENT_MATCH_TOURNAMENT_ID_INDEX =
+        "CREATE INDEX IF NOT EXISTS idx_tournament_match_tournament_id ON tournament_match(tournament_id)";
+    public static final String CREATE_TOURNAMENT_TEAM_PLAYER_TOURNAMENT_ID_INDEX =
+        "CREATE INDEX IF NOT EXISTS idx_tournament_team_player_tournament_id ON tournament_team_player(tournament_id)";
 }

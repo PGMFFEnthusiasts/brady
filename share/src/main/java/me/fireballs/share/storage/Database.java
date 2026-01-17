@@ -43,6 +43,13 @@ import static me.fireballs.share.storage.Statements.TEAM_ONE_NAME_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_TWO_COLOR_COLUMN;
 import static me.fireballs.share.storage.Statements.TEAM_TWO_NAME_COLUMN;
 import static me.fireballs.share.storage.Statements.UPDATE_PLAYER_IDENTITY_QUERY;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_TABLE;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_TEAM_TABLE;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_TEAM_PLAYER_TABLE;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_MATCH_TABLE;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_DATE_INDEX;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_MATCH_TOURNAMENT_ID_INDEX;
+import static me.fireballs.share.storage.Statements.CREATE_TOURNAMENT_TEAM_PLAYER_TOURNAMENT_ID_INDEX;
 
 public class Database {
     private final Logger logger;
@@ -77,6 +84,13 @@ public class Database {
             statement.addBatch(CREATE_MATCH_DATA_START_TIME_INDEX);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_PLAYER_INDEX);
             statement.addBatch(CREATE_PLAYER_MATCH_DATA_MATCH_INDEX);
+            statement.addBatch(CREATE_TOURNAMENT_TABLE);
+            statement.addBatch(CREATE_TOURNAMENT_TEAM_TABLE);
+            statement.addBatch(CREATE_TOURNAMENT_TEAM_PLAYER_TABLE);
+            statement.addBatch(CREATE_TOURNAMENT_MATCH_TABLE);
+            statement.addBatch(CREATE_TOURNAMENT_DATE_INDEX);
+            statement.addBatch(CREATE_TOURNAMENT_MATCH_TOURNAMENT_ID_INDEX);
+            statement.addBatch(CREATE_TOURNAMENT_TEAM_PLAYER_TOURNAMENT_ID_INDEX);
             statement.executeBatch();
             statement.clearBatch();
             final DatabaseMetaData databaseMetadata = connection.getMetaData();
