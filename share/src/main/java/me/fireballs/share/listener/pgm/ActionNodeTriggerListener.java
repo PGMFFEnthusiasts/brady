@@ -137,6 +137,9 @@ public class ActionNodeTriggerListener implements Listener {
                 if (event.nodeId.equals(ballThrownActionId)) {
                     FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
                     thrower = matchPlayer;
+                    for (final FootballListener observer : observers) {
+                        observer.onThrow(thrower);
+                    }
                     throwLocation = thrower.getLocation();
                 }
             }
