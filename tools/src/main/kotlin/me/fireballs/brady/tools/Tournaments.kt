@@ -14,8 +14,6 @@ import me.fireballs.brady.core.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
-import net.luckperms.api.LuckPerms
 import net.luckperms.api.LuckPermsProvider
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
@@ -280,11 +278,7 @@ class Tournaments : Listener, KoinComponent {
 
                 tabCompleter {
                     when (subArgs.size) {
-                        0, 1 -> currentState?.teams?.map { it.name } ?: listOf()
-                        2 -> currentState?.teams
-                            ?.firstOrNull { it.name.equals(subArgs[0], true) }
-                            ?.players?.map { it.name } ?: listOf()
-
+                        0, 1 -> currentState?.teams?.flatMap { it.players.map { p -> p.name } } ?: listOf()
                         else -> listOf()
                     }
                 }
