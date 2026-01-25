@@ -183,6 +183,9 @@ public final class MatchStatsListener implements Listener {
         final Map<UUID, PlayerFootballStats> footballStatsMap = statsMap.entrySet().stream().map(entry -> {
             final UUID uuid = entry.getKey();
             final PlayerStats stats = entry.getValue();
+            if (stats.getTimePlayed() == Duration.ZERO) {
+                return null;
+            }
 
             final Competitor team = statsModule.getPrimaryTeam(uuid, false);
             if (team == null) {
