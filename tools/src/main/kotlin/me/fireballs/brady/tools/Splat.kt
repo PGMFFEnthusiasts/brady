@@ -14,32 +14,10 @@ import tc.oc.pgm.api.event.ActionNodeTriggerEvent
 
 class Splat : Listener, KoinComponent {
     private val tools by inject<Tools>()
-    private var splatStatus = true
+    private var splatStatus = FeatureFlagBool("splatEnabled", true)
 
     init {
         tools.registerEvents(this)
-
-        command("splat", permission = "brady.splat") {
-            executor {
-                sender.send("&7/splat [&aon&7 | &coff&7] (current ".cc() + (if (splatStatus) "&aON" else "&cOFF") + "&7)")
-            }
-
-            subcommand("on") {
-                executor {
-                    sender.send("&aON".cc())
-                    okay.play(sender)
-                    splatStatus = true
-                }
-            }
-
-            subcommand("off") {
-                executor {
-                    sender.send("&cOFF".cc())
-                    uhOh.play(sender)
-                    splatStatus = false
-                }
-            }
-        }
     }
 
     private val thud = soundbox()
@@ -51,7 +29,7 @@ class Splat : Listener, KoinComponent {
 
     @EventHandler
     private fun onSplat(event: ProjectileHitEvent) {
-        if (!splatStatus) return
+        if (!splatStatus.state) return
         if (event.entityType != EntityType.SNOWBALL) return
 //        val hitLocation = event.entity.location.toVector()
 //            .add(event.entity.velocity)
