@@ -14,7 +14,7 @@ import org.koin.core.component.inject
 
 class VoidKill : Listener, KoinComponent {
     val enabled = FeatureFlagBool("voidSetback", true)
-    private val tools: Tools by inject<Tools>()
+    private val tools by inject<Tools>()
 
     init {
         tools.registerEvents(this)
