@@ -11,7 +11,7 @@ class Tools : SuspendingJavaPlugin() {
     override fun onEnable() {
         val toolModule = module {
             single<Tools> { this@Tools }
-            single<Drafting>(createdAtStart = true) { Drafting() }
+//            single<Drafting>(createdAtStart = true) { Drafting() }
             single<FlagFootballMaps>(createdAtStart = true) { FlagFootballMaps() }
             single<Splat>(createdAtStart = true) { Splat() }
             single<Ready>(createdAtStart = true) { Ready() }
@@ -23,6 +23,8 @@ class Tools : SuspendingJavaPlugin() {
             single<HT>(createdAtStart = true) { HT() }
             single<Tournaments>(createdAtStart = true) { Tournaments() }
             single<JumpResetParticles>(createdAtStart = true) { JumpResetParticles() }
+            single<ACR>(createdAtStart = true) { ACR() }
+            single<Benched>(createdAtStart = true) { Benched() }
         }
 
         loadModule(toolModule)
