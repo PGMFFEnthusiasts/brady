@@ -12,6 +12,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWi
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.google.common.collect.MapMaker;
 import kotlin.Lazy;
+import me.fireballs.brady.core.KavyKt;
+import me.fireballs.brady.core.Retrieval;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -62,6 +64,8 @@ public class BallCam extends PacketListenerAbstract implements Listener {
         DISMOUNTED, RIDING, DISMOUNTING
     }
 
+    private static final String key = "ballcam";
+
     private static class Rider {
         private boolean enabled;
         private Status status = Status.DISMOUNTED;
@@ -70,6 +74,7 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
         private void toggle(User user) {
             enabled = !enabled;
+            KavyKt.boolSet(user.getUUID(), key, enabled);
 
             if (enabled) {
                 user.sendMessage(ON);
@@ -117,6 +122,10 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
         private void finishDismount() {
             this.status = Status.DISMOUNTED;
+        }
+
+        Rider(boolean onByDefault) {
+            enabled = onByDefault;
         }
     }
 
@@ -225,8 +234,9 @@ public class BallCam extends PacketListenerAbstract implements Listener {
     }
 
     @Override
-    public void onUserConnect(UserConnectEvent event) {
-        riders.put(event.getUser(), new Rider());
+    public void onUserLogin(UserLoginEvent event) {
+        KavyKt.boolGet(event.getUser().getUUID(), key, false, Retrieval.CACHE_THEN_FRESH)
+                .thenAccept(v -> riders.put(event.getUser(), new Rider(v)));
     }
 
     @Override
