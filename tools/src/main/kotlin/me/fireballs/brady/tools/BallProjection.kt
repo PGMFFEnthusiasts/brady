@@ -97,8 +97,11 @@ class BallProjection : Listener, KoinComponent {
                 )
 
                 observerSet.forEach {
-                    if (ThreadLocalRandom.current().nextDouble() > 0.77 && it is CraftPlayer)
-                            (it as CraftPlayer).handle.playerConnection.sendPacket(packet)
+                    if (ThreadLocalRandom.current().nextDouble() > 0.7) {
+                        val b = it?.bukkit ?: return@forEach
+                        if (b !is CraftPlayer) return@forEach
+                        b.handle.playerConnection.sendPacket(packet)
+                    }
                 }
 
 //                val loc = Location(event.world, ballPosition.x, ballPosition.y, ballPosition.z)
