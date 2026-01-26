@@ -21,6 +21,7 @@ class Core : SuspendingJavaPlugin() {
             single<MapOrder> { PGM.get().mapOrder }
             single<BukkitAudiences> { BukkitAudiences.create(this@Core) }
             single<MenuManager> { MenuManager() }
+            single<KavyManager>(createdAtStart = true) { KavyManager() }
         }
 
         startKoin {
@@ -35,10 +36,12 @@ class Core : SuspendingJavaPlugin() {
     override fun onDisable() {
         val kickMessage = "&c⚠ Server is restarting ⚠".colorLegacy()
         server.onlinePlayers.forEach { it.kickPlayer(kickMessage) }
+        kavyManager.onDisable()
     }
 
     companion object : KoinComponent {
         val instance by inject<Core>()
         val adventure by inject<BukkitAudiences>()
+        val kavyManager by inject<KavyManager>()
     }
 }
