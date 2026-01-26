@@ -25,6 +25,7 @@ class Tools : SuspendingJavaPlugin() {
             single<JumpResetParticles>(createdAtStart = true) { JumpResetParticles() }
             single<ACR>(createdAtStart = true) { ACR() }
             single<Benched>(createdAtStart = true) { Benched() }
+            single<Colorizer>(createdAtStart = true) { Colorizer() }
         }
 
         loadModule(toolModule)
