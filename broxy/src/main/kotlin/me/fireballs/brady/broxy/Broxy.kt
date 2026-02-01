@@ -11,6 +11,7 @@ import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.minn.jda.ktx.jdabuilder.default
+import me.fireballs.brady.broxy.listeners.ApolloChatLength
 import me.fireballs.brady.broxy.listeners.BetterMOTD
 import me.fireballs.brady.broxy.listeners.Router
 import me.fireballs.brady.broxy.listeners.Status
@@ -44,6 +45,7 @@ class Broxy {
     fun onProxyInitialization(event: ProxyInitializeEvent) {
         server.eventManager.register(this, BetterMOTD(this))
         server.eventManager.register(this, Router(this))
+        server.eventManager.register(this, ApolloChatLength)
 
         val status = StatusPull(this)
         server.eventManager.register(this, status)
