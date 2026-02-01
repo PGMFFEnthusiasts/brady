@@ -4,6 +4,7 @@ import kotlin.Lazy;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -19,10 +20,13 @@ import tc.oc.pgm.events.PlayerPartyChangeEvent;
 import tc.oc.pgm.match.ObserverParty;
 import tc.oc.pgm.start.StartMatchModule;
 import tc.oc.pgm.teams.Team;
+import tc.oc.pgm.util.named.Named;
 
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static me.fireballs.brady.core.PluginExtensionsKt.registerEvents;
 import static net.kyori.adventure.text.Component.text;
@@ -33,9 +37,14 @@ public class Ready implements Listener {
     private static final Set<String> READY_QUESTIONS = Set.of("r?", "ready?");
 
     private boolean listening = true;
+    private boolean sentHint = false;
 
-    private final Set<MatchPlayer> ready = new HashSet<>();
-    private final Set<MatchPlayer> notReady = new HashSet<>();
+    private final Comparator<MatchPlayer> playerComparator = Comparator
+            .comparing((MatchPlayer p) -> p.getParty().getNameLegacy())
+            .thenComparing(Named::getNameLegacy);
+
+    private final Set<MatchPlayer> ready = new TreeSet<>(playerComparator);
+    private final Set<MatchPlayer> notReady = new TreeSet<>(playerComparator);
 
     public Ready() {
         Lazy<Tools> plugin = KoinJavaComponent.inject(Tools.class);
@@ -99,6 +108,7 @@ public class Ready implements Listener {
     public void onCycle(MatchLoadEvent event) {
         clearAll();
         listening = true;
+        sentHint = false;
     }
 
     private void setReady(MatchPlayer player, boolean isReady) {
@@ -128,11 +138,16 @@ public class Ready implements Listener {
     }
 
     private void appendStatus(ChannelMessageEvent<?> event, NamedTextColor color) {
+        boolean appendHint = !sentHint;
+        sentHint = true;
+
         event.setComponent(
                 event.getComponent()
                         .append(text(" " + ready.size(), color))
                         .append(text("/", NamedTextColor.GRAY))
                         .append(text(ready.size() + notReady.size(), NamedTextColor.AQUA))
+                        .append(text(appendHint ? " [hover]" : "", NamedTextColor.GRAY)
+                                .decorate(TextDecoration.ITALIC))
                         .hoverEvent(getHover(ready, notReady))
         );
     }
