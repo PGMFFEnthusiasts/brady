@@ -3,6 +3,13 @@ plugins {
     kotlin("kapt") version "2.2.0"
 }
 
+// thank the tank
+java.sourceCompatibility = JavaVersion.VERSION_21
+
+kotlin {
+    jvmToolchain(21)
+}
+
 dependencies {
     api(kotlin("stdlib"))
     api(kotlin("reflect"))
