@@ -23,10 +23,7 @@ import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.util.named.Named;
 
 import java.time.Duration;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static me.fireballs.brady.core.PluginExtensionsKt.registerEvents;
 import static net.kyori.adventure.text.Component.text;
@@ -43,8 +40,8 @@ public class Ready implements Listener {
             .comparing((MatchPlayer p) -> p.getParty().getNameLegacy())
             .thenComparing(Named::getNameLegacy);
 
-    private final Set<MatchPlayer> ready = new TreeSet<>(playerComparator);
-    private final Set<MatchPlayer> notReady = new TreeSet<>(playerComparator);
+    private final Set<MatchPlayer> ready = new HashSet<>();
+    private final Set<MatchPlayer> notReady = new HashSet<>();
 
     public Ready() {
         Lazy<Tools> plugin = KoinJavaComponent.inject(Tools.class);
@@ -166,9 +163,11 @@ public class Ready implements Listener {
         return HoverEvent.showText(hover.build());
     }
 
-
     private void appendPlayers(TextComponent.Builder builder, Set<MatchPlayer> players) {
-        for (MatchPlayer player : players) {
+        List<MatchPlayer> sortedPlayers = new ArrayList<>(players);
+        sortedPlayers.sort(playerComparator);
+
+        for (MatchPlayer player : sortedPlayers) {
             builder.appendNewline();
 
             NamedTextColor teamColor = NamedTextColor.AQUA;
