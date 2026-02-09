@@ -18,6 +18,7 @@ import tc.oc.pgm.api.party.Competitor
 import tc.oc.pgm.api.party.VictoryCondition
 import tc.oc.pgm.damagehistory.DamageHistoryMatchModule
 import tc.oc.pgm.events.PlayerPartyChangeEvent
+import tc.oc.pgm.flag.FlagMatchModule
 import tc.oc.pgm.score.ScoreCause
 import tc.oc.pgm.score.ScoreMatchModule
 import tc.oc.pgm.spawns.SpawnMatchModule
@@ -65,12 +66,12 @@ class Pause : Listener, KoinComponent {
                 if (!m.isRunning) err("Match is not running")
 
                 if (pauseState != null) {
-                    unpause()
                     unpauseSound.broadcast(m.world)
-                    m.sendActionBar("&d&l။ UNPAUSED".cc())
                     m.sendMessage(Component.empty())
                     m.sendMessage("&d&l။ ".cc() + sender.component() + "&d has unpaused the game.".cc())
                     m.sendMessage(Component.empty())
+                    unpause()
+                    m.sendActionBar("&d&l။ UNPAUSED".cc())
                     return@executor
                 }
 
@@ -98,7 +99,11 @@ class Pause : Listener, KoinComponent {
                 // was bouta put a title on but too much
                 m.players
                     .filter { it.isParticipating }
-                    .forEach { it.isFrozen = true }
+                    .forEach {
+                        it.reset()
+                        it.isDead = true
+                        it.isFrozen = true
+                    }
 
                 pauseSound.broadcast(m.world)
                 m.sendMessage(Component.empty())
@@ -117,6 +122,7 @@ class Pause : Listener, KoinComponent {
                 m.sendMessage("&d&l။ ".cc() + sender.component() + "&d has reset the game.".cc())
                 m.sendMessage(Component.empty())
                 resetAllPlayers(m)
+                m.playSound(Sounds.DEATH_OWN)
             }
         }
 
@@ -154,13 +160,13 @@ class Pause : Listener, KoinComponent {
                 val tick = pauseTicks - it
                 if (pauseState != null) return
                 delay(1.ticks)
-                state.match.sendActionBar(stripe("။ UNPAUSING ${tick / 20}.${tick % 20}s", it).cc())
-                state.match.playSound(Sounds.DEATH_OWN)
+                state.match.sendActionBar(stripe("။ UNPAUSING ${tick / 20}.${(tick % 20).toString().padEnd(2, '0')}s", it).cc())
             }
         }
 
         restoreTime(state.match, state.restoredTime)
         resetAllPlayers(state.match)
+        state.match.playSound(Sounds.DEATH_OWN)
 
         val sm = state.match.getModule(ScoreMatchModule::class.java)
         state.capturedScores?.forEach { (k, v) -> sm?.setScore(k, v, ScoreCause.FLAG_CAPTURE) }
@@ -172,17 +178,22 @@ class Pause : Listener, KoinComponent {
     private fun resetAllPlayers(match: Match) {
         val dt = match.getModule(DamageHistoryMatchModule::class.java)
         val spawnModule = match.moduleRequire(SpawnMatchModule::class.java)
+        val flags = match.getModule(FlagMatchModule::class.java)
+        flags?.flags?.forEach { it.state.dropFlag() }
 
         match.players
             .filter { it.isParticipating }
             .forEach {
+                it.isDead = false
                 it.isFrozen = false
+                val despawnEvent = ParticipantDespawnEvent(it, it.bukkit.location)
+                it.match.callEvent(despawnEvent)
+                dt?.onPlayerDespawn(despawnEvent)
                 val spawn = spawnModule.chooseSpawn(it)
                 val spawnLocation = spawn?.getSpawn(it) ?: return@forEach
                 it.reset()
                 it.bukkit.teleport(spawnLocation)
                 spawn.applyKit(it)
-                dt?.onPlayerDespawn(ParticipantDespawnEvent(it, it.bukkit.location))
             }
     }
 
@@ -195,7 +206,12 @@ class Pause : Listener, KoinComponent {
     private fun onMatchJoin(event: PlayerPartyChangeEvent) {
         if (pauseState == null) return
         val party = event.newParty ?: return
-        if (party.isObserving) return
+        if (party.isObserving) {
+            event.player.isDead = false
+            event.player.isFrozen = false
+            return
+        }
+        event.player.isDead = true
         event.player.isFrozen = true
     }
 }
