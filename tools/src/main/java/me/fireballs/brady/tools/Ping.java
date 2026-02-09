@@ -9,12 +9,18 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerKe
 import kotlin.Unit;
 import me.fireballs.brady.core.CommandBuilder;
 import me.fireballs.brady.core.CommandExecution;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jctools.maps.NonBlockingHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.koin.java.KoinJavaComponent;
+import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.util.named.NameStyle;
 
 import java.util.ArrayDeque;
 import java.util.Map;
@@ -23,14 +29,20 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static me.fireballs.brady.core.CommandKt.command;
 import static me.fireballs.brady.core.PluginExtensionsKt.registerPacketEvents;
+import static net.kyori.adventure.text.Component.text;
 
 public class Ping extends PacketListenerAbstract {
 
-    private final Map<User, PingState> pings = new NonBlockingHashMap<>();
+    private final Tools plugin;
+    private final BukkitAudiences bukkitAudiences;
+
+    private final Map<User, PingStats> pings = new NonBlockingHashMap<>();
     private final Map<Long, PendingPing> callbacks = new NonBlockingHashMap<>();
 
     public Ping() {
-        Tools plugin = KoinJavaComponent.get(Tools.class);
+        this.plugin = KoinJavaComponent.get(Tools.class);
+        this.bukkitAudiences = KoinJavaComponent.get(BukkitAudiences.class);
+
         registerPacketEvents(plugin, this);
 
         command(
@@ -40,7 +52,6 @@ public class Ping extends PacketListenerAbstract {
                 "/ping <user>",
                 new String[0],
                 this::buildCommand
-
         );
     }
 
@@ -81,7 +92,7 @@ public class Ping extends PacketListenerAbstract {
 
     @Override
     public void onUserLogin(UserLoginEvent event) {
-        pings.put(event.getUser(), new PingState());
+        pings.put(event.getUser(), new PingStats());
     }
 
     @Override
@@ -102,9 +113,9 @@ public class Ping extends PacketListenerAbstract {
             return;
         }
 
-        PingState state = pings.get(event.getUser());
-        if (state != null) {
-            state.outgoing.add(System.currentTimeMillis());
+        PingStats stats = pings.get(event.getUser());
+        if (stats != null) {
+            stats.outgoing.add(System.currentTimeMillis());
         }
     }
 
@@ -116,43 +127,55 @@ public class Ping extends PacketListenerAbstract {
         var wrapper = new WrapperPlayClientKeepAlive(event);
         long id = wrapper.getId();
 
-        PingState state = pings.get(user);
-        if (state == null) return;
+        PingStats stats = pings.get(user);
+        if (stats == null) return;
 
         if (callbacks.containsKey(id)) {
             PendingPing pending = callbacks.remove(id);
 
+            Player viewer = pending.ctx.player();
+            Player target = pending.target;
+
             int ping = (int) (System.currentTimeMillis() - pending.sentTime);
-            int average = state.getAverage();
-            int jitter = state.getJitter();
+            int average = stats.getAverage();
+            int jitter = stats.getJitter();
 
-            String targetName = pending.ctx.player() == pending.target
-                    ? ""
-                    : pending.target.getDisplayName() + "§b's ";
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                TextComponent.Builder message = text()
+                        .append(text("Pong! ", NamedTextColor.GOLD))
+                        .append(text("(", NamedTextColor.GRAY))
+                        .append(text(ping + "ms", getPingColor(ping), TextDecoration.BOLD))
+                        .append(text(") ", NamedTextColor.GRAY));
 
-            pending.ctx.player().sendMessage(
-                    String.format("§6Pong! §7(%s§l%dms§7) %s§b60s Average§f: %s§l%dms§b ± %s%d",
-                            getPingColor(ping), ping,
-                            targetName,
-                            getPingColor(average), average,
-                            getJitterColor(jitter), jitter
-                    )
-            );
+                if (viewer != target) {
+                    MatchPlayer pgmTarget = PGM.get().getMatchManager().getPlayer(target);
+                    if (pgmTarget == null) return;
 
-            state.trackPing(ping);
+                    message.append(pgmTarget.getName(NameStyle.FANCY))
+                            .append(text("'s "));
+                }
+
+                message.append(text("60s Average", NamedTextColor.AQUA))
+                        .append(text(": ", NamedTextColor.WHITE))
+                        .append(text(average + "ms", getPingColor(average), TextDecoration.BOLD))
+                        .append(text(" ± ", NamedTextColor.AQUA))
+                        .append(text(jitter, getJitterColor(jitter)));
+
+                bukkitAudiences.player(viewer).sendMessage(message.build());
+            });
 
             event.setCancelled(true);
             return; // don't track our manual keepalives to not skew the 60-second average
         }
 
-        Long sentTime = state.outgoing.poll();
+        Long sentTime = stats.outgoing.poll();
         if (sentTime == null) return;
 
         int ping = (int) (System.currentTimeMillis() - sentTime);
-        state.trackPing(ping);
+        stats.trackPing(ping);
     }
 
-    private static class PingState {
+    private static class PingStats {
         final Queue<Long> outgoing = new ArrayDeque<>();
         final int[] responses = new int[30]; // server sends a keepalive every 2 seconds
         int index;
@@ -194,20 +217,20 @@ public class Ping extends PacketListenerAbstract {
         }
     }
 
-    private static ChatColor getPingColor(int ping) {
-        if (ping < 50) return ChatColor.GREEN;
-        if (ping < 100) return ChatColor.DARK_GREEN;
-        if (ping < 150) return ChatColor.YELLOW;
-        if (ping < 200) return ChatColor.RED;
-        return ChatColor.DARK_RED;
+    private static NamedTextColor getPingColor(int ping) {
+        if (ping < 50) return NamedTextColor.GREEN;
+        if (ping < 100) return NamedTextColor.DARK_GREEN;
+        if (ping < 150) return NamedTextColor.YELLOW;
+        if (ping < 200) return NamedTextColor.RED;
+        return NamedTextColor.DARK_RED;
     }
 
-    private static ChatColor getJitterColor(int jitter) {
-        if (jitter < 5) return ChatColor.GREEN;
-        if (jitter < 10) return ChatColor.DARK_GREEN;
-        if (jitter < 15) return ChatColor.YELLOW;
-        if (jitter < 20) return ChatColor.RED;
-        return ChatColor.DARK_RED;
+    private static NamedTextColor getJitterColor(int jitter) {
+        if (jitter < 5) return NamedTextColor.GREEN;
+        if (jitter < 10) return NamedTextColor.DARK_GREEN;
+        if (jitter < 15) return NamedTextColor.YELLOW;
+        if (jitter < 20) return NamedTextColor.RED;
+        return NamedTextColor.DARK_RED;
     }
 
     @SuppressWarnings("unchecked")
