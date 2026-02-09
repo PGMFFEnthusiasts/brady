@@ -26,6 +26,7 @@ class Tools : SuspendingJavaPlugin() {
             single<ACR>(createdAtStart = true) { ACR() }
             single<Benched>(createdAtStart = true) { Benched() }
             single<Colorizer>(createdAtStart = true) { Colorizer() }
+            single<Ping>(createdAtStart = true) { Ping() }
         }
 
         loadModule(toolModule)
