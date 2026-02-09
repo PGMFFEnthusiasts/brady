@@ -1,12 +1,9 @@
 package me.fireballs.brady.tools
 
 import kotlinx.coroutines.future.await
-import me.fireballs.brady.core.Retrieval
-import me.fireballs.brady.core.boolGet
-import me.fireballs.brady.core.boolGetCached
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.core.*
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import org.bukkit.entity.Player
@@ -32,7 +29,11 @@ class Benched : Listener, KoinComponent {
     private class NDP(
         val upstream: NameDecorationProvider
     ) : NameDecorationProvider {
-        private val banishedComponent = "&c∅".cc()
+        private val banishedComponent = "&c∅".cc().hover(
+            "&cBenched".cc() + newline() +
+                    "&7This player is disallowed from".cc() + newline() +
+                    "&7participating in any matches.".cc()
+        )
 
         override fun getPrefix(uuid: UUID?): String? {
             return upstream.getPrefix(uuid)
