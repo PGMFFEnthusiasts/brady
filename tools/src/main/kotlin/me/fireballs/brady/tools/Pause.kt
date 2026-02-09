@@ -6,12 +6,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import me.fireballs.brady.core.*
 import net.kyori.adventure.text.Component
-import net.minecraft.server.v1_8_R3.DamageSource
 import org.bukkit.Sound
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.util.Vector
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.Match
@@ -19,11 +17,24 @@ import tc.oc.pgm.api.match.event.MatchFinishEvent
 import tc.oc.pgm.api.party.Competitor
 import tc.oc.pgm.api.party.VictoryCondition
 import tc.oc.pgm.damagehistory.DamageHistoryMatchModule
+import tc.oc.pgm.events.PlayerPartyChangeEvent
 import tc.oc.pgm.score.ScoreCause
 import tc.oc.pgm.score.ScoreMatchModule
+import tc.oc.pgm.spawns.SpawnMatchModule
 import tc.oc.pgm.spawns.events.ParticipantDespawnEvent
 import tc.oc.pgm.timelimit.TimeLimit
 import tc.oc.pgm.timelimit.TimeLimitMatchModule
+import tc.oc.pgm.util.bukkit.Sounds
+import kotlin.collections.component1
+import kotlin.collections.component2
+
+private fun stripe(s: String, tick: Int): String {
+    val sb = StringBuilder(s)
+    val even = (tick / s.length) % 2 == 0
+    sb.insert(tick % s.length, if (even) "&d&l" else "&5&l")
+    sb.insert(0, if (even) "&5&l" else "&d&l")
+    return sb.toString()
+}
 
 class Pause : Listener, KoinComponent {
     private val tools: Tools by inject<Tools>()
@@ -74,12 +85,7 @@ class Pause : Listener, KoinComponent {
                     var tick = 0
 
                     while (true) {
-                        val sb = StringBuilder(pausedText)
-                        val even = (tick / pausedText.length) % 2 == 0
-                        sb.insert(tick % pausedText.length, if (even) "&d&l" else "&5&l")
-                        sb.insert(0, if (even) "&5&l" else "&d&l")
-                        m.sendActionBar(sb.toString().cc())
-
+                        m.sendActionBar(stripe(pausedText, tick).cc())
                         delay(2.ticks)
                         if (pauseState == null) break
                         ++tick
@@ -92,12 +98,25 @@ class Pause : Listener, KoinComponent {
                 // was bouta put a title on but too much
                 m.players
                     .filter { it.isParticipating }
-                    .forEach { it.bukkit.velocity = Vector() }
+                    .forEach { it.isFrozen = true }
 
                 pauseSound.broadcast(m.world)
                 m.sendMessage(Component.empty())
                 m.sendMessage("&d&l‣ &f".cc() + sender.component() + "&d has paused the game.".cc())
                 m.sendMessage(Component.empty())
+            }
+        }
+
+        command("reset", permission = "brady.pause") {
+            executor {
+                val m = match()
+                if (!m.isRunning) err("Match is not running")
+                if (pauseState != null) err("The match is paused, unpause it first")
+
+                m.sendMessage(Component.empty())
+                m.sendMessage("&d&l။ ".cc() + sender.component() + "&d has reset the game.".cc())
+                m.sendMessage(Component.empty())
+                resetAllPlayers(m)
             }
         }
 
@@ -123,32 +142,60 @@ class Pause : Listener, KoinComponent {
         return sm.scores.toMap()
     }
 
-    private fun unpause() {
+    private val pauseTicks = 60
+    private suspend fun unpause(instant: Boolean = false) {
         val state = pauseState ?: return
         pauseState = null
 
-        restoreTime(state.match, state.restoredTime)
         state.pauseJob.cancel()
 
-        // todo: find some way to decrement deaths?
-        val dt = state.match.getModule(DamageHistoryMatchModule::class.java)
-        val sm = state.match.getModule(ScoreMatchModule::class.java)
-
-        state.match.players
-            .filter { it.isParticipating }
-            .forEach {
-                dt?.onPlayerDespawn(ParticipantDespawnEvent(it, it.bukkit.location))
-                (it.bukkit as CraftPlayer).handle.damageEntity(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE)
+        if (!instant) {
+            repeat(pauseTicks) {
+                val tick = pauseTicks - it
+                if (pauseState != null) return
+                delay(1.ticks)
+                state.match.sendActionBar(stripe("။ UNPAUSING ${tick / 20}.${tick % 20}s", it).cc())
+                state.match.playSound(Sounds.DEATH_OWN)
             }
+        }
 
+        restoreTime(state.match, state.restoredTime)
+        resetAllPlayers(state.match)
+
+        val sm = state.match.getModule(ScoreMatchModule::class.java)
         state.capturedScores?.forEach { (k, v) -> sm?.setScore(k, v, ScoreCause.FLAG_CAPTURE) }
         state.victoryConditions.forEach { state.match.addVictoryCondition(it) }
 
         state.match.calculateVictory()
     }
 
+    private fun resetAllPlayers(match: Match) {
+        val dt = match.getModule(DamageHistoryMatchModule::class.java)
+        val spawnModule = match.moduleRequire(SpawnMatchModule::class.java)
+
+        match.players
+            .filter { it.isParticipating }
+            .forEach {
+                it.isFrozen = false
+                val spawn = spawnModule.chooseSpawn(it)
+                val spawnLocation = spawn?.getSpawn(it) ?: return@forEach
+                it.reset()
+                it.bukkit.teleport(spawnLocation)
+                spawn.applyKit(it)
+                dt?.onPlayerDespawn(ParticipantDespawnEvent(it, it.bukkit.location))
+            }
+    }
+
     @EventHandler
-    private fun onFinish(event: MatchFinishEvent) {
-        unpause()
+    private suspend fun onFinish(event: MatchFinishEvent) {
+        unpause(true)
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun onMatchJoin(event: PlayerPartyChangeEvent) {
+        if (pauseState == null) return
+        val party = event.newParty ?: return
+        if (party.isObserving) return
+        event.player.isFrozen = true
     }
 }
