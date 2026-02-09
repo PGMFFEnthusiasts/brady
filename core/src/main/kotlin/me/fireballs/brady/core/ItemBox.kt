@@ -18,6 +18,11 @@ fun itembox(itemType: Material = Material.DIRT): ItemBox {
 class ItemBox(
     val stack: ItemStack,
 ) {
+    fun setDamage(short: Short): ItemBox {
+        stack.durability = short
+        return this
+    }
+
     fun itemMeta(builder: ItemMeta.() -> Unit): ItemBox {
         val itemMeta = stack.itemMeta
         builder(itemMeta)
