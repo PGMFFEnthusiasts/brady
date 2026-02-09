@@ -242,8 +242,7 @@ class Tournaments : Listener, KoinComponent {
                 tabCompleter {
                     when (subArgs.size) {
                         0, 1 -> currentState?.teams?.map { it.name } ?: listOf()
-                        2 -> currentPlayers.map { it.name }
-                        else -> listOf()
+                        else -> currentPlayers.map { it.name }
                     }
                 }
             }
