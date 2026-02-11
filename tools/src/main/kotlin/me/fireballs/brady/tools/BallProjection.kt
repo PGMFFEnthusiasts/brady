@@ -65,6 +65,7 @@ private fun trace(projectile: Projectile): List<Vector3d> {
 
 class BallProjection : Listener, KoinComponent {
     private val tools by inject<Tools>()
+    private val settings by inject<ToolsSettings>()
 
     init {
         tools.registerEvents(this)
@@ -87,7 +88,7 @@ class BallProjection : Listener, KoinComponent {
             val t = (originalLength.toFloat() - ballPositions.size) / originalLength
 //            Bukkit.broadcastMessage(t.toString())
 
-            val observerSet = PGM.get().matchManager.currentMatch()?.observers?.map { it.player }
+            val observerSet = PGM.get().matchManager.currentMatch()?.observers?.mapNotNull { it.player }
             if (observerSet != null) for (ballPosition in ballPositions) {
                 val packet = PacketPlayOutWorldParticles(
                     EnumParticle.REDSTONE, true,
@@ -98,8 +99,9 @@ class BallProjection : Listener, KoinComponent {
 
                 observerSet.forEach {
                     if (ThreadLocalRandom.current().nextDouble() > 0.7) {
-                        val b = it?.bukkit ?: return@forEach
+                        val b = it.bukkit ?: return@forEach
                         if (b !is CraftPlayer) return@forEach
+                        if (!settings.ballProjection.retrieveValue(b)) return@forEach
                         b.handle.playerConnection.sendPacket(packet)
                     }
                 }

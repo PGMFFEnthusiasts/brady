@@ -1,18 +1,27 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.BooleanSettingValue
-import me.fireballs.brady.core.Settings
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.createEnumSetting
-import me.fireballs.brady.core.itembox
-import me.fireballs.brady.core.plus
+import me.fireballs.brady.core.*
 import me.fireballs.brady.tools.pvpfx.ProjectileSkins
 import net.kyori.adventure.text.Component.newline
 import org.bukkit.Material
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.ItemStack
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import tc.oc.pgm.spawns.events.ObserverKitApplyEvent
 
-class ToolsSettings : KoinComponent {
+private val preferencesItem = itembox(Material.REDSTONE_COMPARATOR)
+    .name("&b&lPreferences".cc())
+    .specialData("tools:preferences")
+
+private fun isPreferencesItem(item: ItemStack?) =
+    item?.specialData() == "tools:preferences"
+
+class ToolsSettings : Listener, KoinComponent {
+    private val tools by inject<Tools>()
     private val settings by inject<Settings>()
 
     val splatSetting = BooleanSettingValue(
@@ -38,6 +47,14 @@ class ToolsSettings : KoinComponent {
         itembox(Material.SNOW_BALL),
     )
 
+    val ballProjection = BooleanSettingValue(
+        "settings.ballprojection",
+        true,
+        "&dBall Projection".cc(),
+        "&7Shows where a projectile may land".cc() + newline() + "&7only while observing.",
+        itembox(Material.EYE_OF_ENDER),
+    )
+
     val jumpResetParticles = BooleanSettingValue(
         "settings.jumpreset",
         true,
@@ -52,6 +69,21 @@ class ToolsSettings : KoinComponent {
             hideArmor,
             projectileSkin,
             jumpResetParticles,
+            ballProjection,
         )
+
+        tools.registerEvents(this)
+    }
+
+    @EventHandler
+    private fun giveKit(event: ObserverKitApplyEvent) {
+        event.player.bukkit.inventory.setItem(6, preferencesItem.build())
+    }
+
+    @EventHandler
+    private fun handlePreferencesItem(event: PlayerInteractEvent) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return
+        if (!isPreferencesItem(event.getItem())) return
+        settings.openSettingsPage(event.player)
     }
 }
