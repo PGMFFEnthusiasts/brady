@@ -21,7 +21,8 @@ class Core : SuspendingJavaPlugin() {
             single<MapOrder> { PGM.get().mapOrder }
             single<BukkitAudiences> { BukkitAudiences.create(this@Core) }
             single<MenuManager> { MenuManager() }
-            single<KavyManager>(createdAtStart = true) { KavyManager() }
+            serviceOf(::KavyManager)
+            serviceOf(::Settings)
         }
 
         startKoin {

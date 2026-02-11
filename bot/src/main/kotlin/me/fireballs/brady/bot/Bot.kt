@@ -5,6 +5,7 @@ import dev.minn.jda.ktx.jdabuilder.default
 import me.fireballs.brady.bot.listener.Loggy
 import me.fireballs.brady.bot.listener.StatusPush
 import me.fireballs.brady.core.loadModule
+import me.fireballs.brady.core.serviceOf
 import me.fireballs.brady.deps.PluginAnnotation
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.internal.utils.JDALogger
@@ -29,10 +30,10 @@ class Bot : SuspendingJavaPlugin() {
         val botModule = module {
             single<Bot> { this@Bot }
 //            single<PlayerCounter>(createdAtStart = true) { PlayerCounter() }
-            single<Billboard>(createdAtStart = true) { Billboard() }
+            serviceOf(::Billboard)
             single<JDA> { jda }
-            single<Loggy>(createdAtStart = true) { Loggy() }
-            single<StatusPush>(createdAtStart = true) { StatusPush() }
+            serviceOf(::Loggy)
+            serviceOf(::StatusPush)
         }
 
         this.jda = jda
