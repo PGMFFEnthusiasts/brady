@@ -7,7 +7,9 @@ import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -92,7 +94,15 @@ class MenuBox(
         player: Player,
     ): Menu {
         val inventory = Bukkit.createInventory(player, slots, title)
+        val menu = initialize(inventory)
+        player.openInventory(menu.inventory)
+        menuManager.playerMenus[player] = menu
+        return menu
+    }
+
+    internal fun initialize(inventory: Inventory, parent: Menu? = null): Menu {
         val menu = Menu(
+            this,
             player,
             inventory,
 
@@ -100,19 +110,20 @@ class MenuBox(
             ArrayList(clickHandlers),
             ArrayList(tickHandlers),
             ArrayList(closeHandlers),
+
+            parent,
         )
 
         items.entries.forEach {
             inventory.setItem(it.key, it.value.stack)
         }
 
-        player.openInventory(inventory)
-        menuManager.playerMenus[player] = menu
         return menu
     }
 }
 
 class Menu(
+    val template: MenuBox,
     val viewer: Player,
     val inventory: Inventory,
 
@@ -120,24 +131,38 @@ class Menu(
     val clickHandlers: List<suspend Menu.(InventoryClickEvent) -> Unit>,
     val tickHandlers: List<suspend Menu.() -> Unit>,
     val closeHandlers: List<suspend Menu.() -> Unit>,
+
+    val parent: Menu? = null,
 ) : KoinComponent {
     private val plugin by inject<Core>()
 
-    val isActive
-        get() = viewer.isOnline && viewer.openInventory.topInventory == inventory
+    var currentChild: Menu? = null
+    private var alreadyClosed = false
+
+    val isTopInventoryMatching: Boolean
+        get() = viewer.openInventory.topInventory == inventory
+
+    val isActive: Boolean
+        get() = viewer.isOnline && (viewer.openInventory.topInventory == inventory || currentChild?.isActive == true)
 
     @Suppress("DEPRECATION")
-    var currentTitle = inventory.title
+    var currentTitle: String = inventory.title
         set(value) {
             if (isActive) viewer.sendInventoryTitleChange(value)
             field = value
         }
 
     fun close(): Boolean {
-        if (isActive) viewer.closeInventory()
+        if (isTopInventoryMatching && parent == null) viewer.closeInventory()
+        parent?.let { if (it.currentChild == this) it.currentChild = null }
+
         plugin.launch {
-            closeHandlers.forEach {
-                it.invoke(this@Menu)
+            currentChild?.close()
+            if (!alreadyClosed) {
+                alreadyClosed = true
+                closeHandlers.forEach {
+                    it.invoke(this@Menu)
+                }
             }
         }
 
@@ -145,7 +170,14 @@ class Menu(
     }
 
     internal suspend fun onInteract(event: InventoryClickEvent) {
-        items[event.slot]?.handler?.invoke(this, event)
+        if (!isActive) return
+        val child = currentChild
+        if (child != null) {
+            child.onInteract(event)
+            return
+        }
+        if (event.clickedInventory == inventory)
+            items[event.slot]?.handler?.invoke(this, event)
         clickHandlers.forEach {
             it.invoke(this@Menu, event)
         }
@@ -171,6 +203,43 @@ class Menu(
     ) {
         items.remove(slot)
         inventory.clear(slot)
+    }
+
+    fun push(builder: MenuBox) {
+        if (currentChild != null) return
+        if (builder.slots == template.slots) {
+            inventory.clear()
+            val menu = builder.initialize(inventory, this)
+            currentChild = menu
+            menu.currentTitle = menu.currentTitle
+            return
+        }
+
+        val subInventory = Bukkit.createInventory(viewer, builder.slots, builder.title)
+        val menu = builder.initialize(subInventory)
+        currentChild = menu
+        viewer.openInventory(menu.inventory)
+    }
+
+    fun pop() {
+        val p = parent
+        if (p == null) {
+            close()
+            return
+        }
+
+        if (p.inventory.size == inventory.size) {
+            inventory.clear()
+            items.entries.forEach { inventory.setItem(it.key, it.value.stack) }
+            currentTitle = currentTitle
+            if (p.currentChild == this) p.currentChild = null
+            close()
+            return
+        }
+
+        if (p.currentChild == this) p.currentChild = null
+        viewer.openInventory(p.inventory)
+        close()
     }
 }
 
@@ -204,9 +273,12 @@ class MenuManager : Listener, KoinComponent {
         playerMenus.remove(event.player)?.close()
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     private fun onInventoryClose(event: InventoryCloseEvent) {
-        playerMenus.remove(event.player)?.close()
+        val menu = playerMenus[event.player] ?: return
+        if (!(menu.currentChild?.isActive ?: false))
+            playerMenus.remove(event.player, menu)
+        menu.close()
     }
 
     @EventHandler
