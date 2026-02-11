@@ -14,6 +14,7 @@ import tc.oc.pgm.api.event.ActionNodeTriggerEvent
 
 class Splat : Listener, KoinComponent {
     private val tools by inject<Tools>()
+    private val settings by inject<ToolsSettings>()
     private var splatStatus = FeatureFlagBool("splatEnabled", true)
 
     init {
@@ -37,7 +38,11 @@ class Splat : Listener, KoinComponent {
 //        val solid = hitLocation.block.type.isSolid
 //        log("snowball-hits", "solid = $solid")
         log("snowball-hits", "ignoreNextHit = $ignoreNextHit")
-        if (!ignoreNextHit) thud.broadcast(event.world)
+        if (!ignoreNextHit) {
+            for (player in event.world.players) {
+                if (settings.splatSetting.retrieveValue(player)) thud.play(player)
+            }
+        }
         ignoreNextHit = false
     }
 

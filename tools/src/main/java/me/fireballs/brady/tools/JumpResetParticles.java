@@ -9,10 +9,10 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWi
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
 import me.fireballs.brady.core.FeatureFlagBool;
+import me.fireballs.brady.core.PlayerExtensionsKt;
 import me.fireballs.brady.core.PluginExtensionsKt;
 import net.minecraft.server.v1_8_R3.EnumParticle;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles;
 import org.bukkit.entity.Player;
 import org.jctools.maps.NonBlockingHashMap;
 import org.jetbrains.annotations.NotNull;
@@ -25,11 +25,13 @@ public class JumpResetParticles extends PacketListenerAbstract {
     private static final short TRANSACTION_ID = -333;
 
     private final Tools plugin;
+    private final ToolsSettings settings;
     private final Map<User, PlayerState> states = new NonBlockingHashMap<>();
     private final FeatureFlagBool enabled = new FeatureFlagBool("jumpResetParticles", true);
 
     public JumpResetParticles() {
         this.plugin = KoinJavaComponent.get(Tools.class);
+        this.settings = KoinJavaComponent.get(ToolsSettings.class);
         PluginExtensionsKt.registerPacketEvents(plugin, this);
     }
 
@@ -107,12 +109,16 @@ public class JumpResetParticles extends PacketListenerAbstract {
 
     private void playEffect(Player player, Location loc) {
         if (!enabled.getState()) return;
+        var packet = new PacketPlayOutWorldParticles(
+                EnumParticle.SPELL_WITCH, false,
+                (float) loc.getX(), (float) loc.getY(), (float) loc.getZ(),
+                0.15f, 0f, 0.15f, // offset
+                0f, 30 // speed, count
+        );
 
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            var nmsWorld = ((CraftWorld) player.getWorld()).getHandle();
-            nmsWorld.a(EnumParticle.SPELL_WITCH, false,
-                    loc.getX(), loc.getY(), loc.getZ(),
-                    30, 0.15, 0, 0.15, 0); // count, xd, yd, zd, speed
-        });
+        for (Player p : player.getWorld().getPlayers()) {
+            if (!settings.getJumpResetParticles().retrieveValue(p)) continue;
+            PlayerExtensionsKt.sendPacket(p, packet);
+        }
     }
 }
