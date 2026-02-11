@@ -3,6 +3,7 @@ package me.fireballs.brady.core
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.github.shynixn.mccoroutine.bukkit.ticks
+import com.google.common.collect.MapMaker
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -266,7 +267,7 @@ class MenuManager : Listener, KoinComponent {
         }
     }
 
-    internal val playerMenus = mutableMapOf<Player, Menu>()
+    internal val playerMenus = MapMaker().makeMap<Player, Menu>()
 
     @EventHandler
     private fun onQuit(event: PlayerQuitEvent) {
