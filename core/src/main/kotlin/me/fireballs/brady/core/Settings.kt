@@ -30,16 +30,17 @@ abstract class SettingValue<V>(
     abstract fun allValues(): Iterable<V>
     abstract suspend fun load(player: UUID)
     abstract fun retrieveValue(player: UUID): V
+    fun retrieveValue(player: Player) = retrieveValue(player.uniqueId)
     abstract fun nextValue(v: V): V
     abstract fun prevValue(v: V): V
 
     internal fun setNextOrPreviousBasedOnTheBoolean(forward: Boolean, player: Player) {
-        val retrieved = retrieveValue(player.uniqueId)
+        val retrieved = retrieveValue(player)
         setValue(player, if (forward) nextValue(retrieved) else prevValue(retrieved))
     }
 
     fun renderItem(player: Player): ItemStack {
-        val v = valueCache[player.uniqueId] ?: retrieveValue(player.uniqueId)
+        val v = valueCache[player.uniqueId] ?: retrieveValue(player)
         val d = defaultValue()
         return baseItem
             .name(name)
