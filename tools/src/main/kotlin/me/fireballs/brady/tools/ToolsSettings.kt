@@ -63,6 +63,14 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.ENCHANTMENT_TABLE),
     )
 
+    val dayvision = BooleanSettingValue(
+        "settings.dayvision",
+        false,
+        "&bDayvision".cc(),
+        "&7Blocks all nightvision.".cc(),
+        itembox(Material.DAYLIGHT_DETECTOR),
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -70,6 +78,7 @@ class ToolsSettings : Listener, KoinComponent {
             projectileSkin,
             jumpResetParticles,
             ballProjection,
+            dayvision
         )
 
         tools.registerEvents(this)

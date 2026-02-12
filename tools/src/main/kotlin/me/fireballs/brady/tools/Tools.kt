@@ -5,6 +5,7 @@ import me.fireballs.brady.core.loadModule
 import me.fireballs.brady.core.registerPacketEvents
 import me.fireballs.brady.core.serviceOf
 import me.fireballs.brady.deps.PluginAnnotation
+import me.fireballs.brady.tools.pvpfx.Dayvision
 import me.fireballs.brady.tools.pvpfx.HideArmor
 import me.fireballs.brady.tools.pvpfx.ProjectileSkin
 import org.koin.dsl.module
@@ -34,6 +35,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::ToolsSettings)
             serviceOf(::HideArmor)
             serviceOf(::ProjectileSkin)
+            serviceOf(::Dayvision)
         }
 
         loadModule(toolModule)
