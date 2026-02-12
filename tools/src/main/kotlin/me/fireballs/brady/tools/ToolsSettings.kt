@@ -28,7 +28,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.splat",
         true,
         "&aSplat".cc(),
-        "&7Makes a thump sound on ball land.".cc(),
+        listOf("&7Makes a thump sound on ball land.".cc()),
         itembox(Material.SLIME_BALL),
     )
 
@@ -36,14 +36,14 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.hidearmor",
         false,
         "&aHide Armor".cc(),
-        "&7Hide the armor on everyone.".cc(),
+        listOf("&7Hide the armor on everyone.".cc()),
         itembox(Material.LEATHER_CHESTPLATE),
     )
 
     val projectileSkin = createEnumSetting<ProjectileSkins>(
         "settings.projectileskin",
         "&bProjectile Skin".cc(),
-        "&7Cosmetically change your projectile.".cc(),
+        listOf("&7Cosmetically change your projectile.".cc()),
         itembox(Material.SNOW_BALL),
     )
 
@@ -51,7 +51,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.ballprojection",
         true,
         "&dBall Projection".cc(),
-        "&7Shows where a projectile may land".cc() + newline() + "&7only while observing.",
+        listOf("&7Shows where a projectile may land".cc(), "&7only while observing.".cc()),
         itembox(Material.EYE_OF_ENDER),
     )
 
@@ -59,7 +59,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.jumpreset",
         true,
         "&5Jump Reset Particles".cc(),
-        "&7Plays purple jump reset particles".cc() + newline() + "&7when a player does a jump reset.",
+        listOf("&7Plays purple jump reset particles".cc(), "&7when a player does a jump reset.".cc()),
         itembox(Material.ENCHANTMENT_TABLE),
     )
 
@@ -67,7 +67,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.dayvision",
         false,
         "&bDayvision".cc(),
-        "&7Blocks all nightvision.".cc(),
+        listOf("&7Blocks all nightvision.".cc()),
         itembox(Material.DAYLIGHT_DETECTOR),
     )
 

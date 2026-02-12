@@ -253,6 +253,8 @@ class MenuManager : Listener, KoinComponent {
         plugin.launch(plugin.minecraftDispatcher) { renderTick() }
     }
 
+    internal val playerMenus = MapMaker().makeMap<Player, Menu>()
+
     private suspend fun garbageCollect() {
         while (true) {
             playerMenus.entries.removeIf { !it.value.isActive && it.value.close() }
@@ -266,8 +268,6 @@ class MenuManager : Listener, KoinComponent {
             delay(1.ticks)
         }
     }
-
-    internal val playerMenus = MapMaker().makeMap<Player, Menu>()
 
     @EventHandler
     private fun onQuit(event: PlayerQuitEvent) {
