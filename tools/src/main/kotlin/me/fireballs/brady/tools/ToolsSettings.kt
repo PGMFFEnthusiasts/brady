@@ -44,7 +44,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.projectileskin",
         "&bProjectile Skin".cc(),
         listOf("&7Cosmetically change your projectile.".cc()),
-        itembox(Material.SNOW_BALL),
+        itembox(Material.ENDER_PEARL),
     )
 
     val ballProjection = BooleanSettingValue(
