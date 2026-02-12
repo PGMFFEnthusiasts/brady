@@ -41,7 +41,7 @@ class DebuggingSubscriber : Listener, KoinComponent {
     init {
         core.registerEvents(this)
 
-        command("d", "brady.debug") {
+        command("d", permission = "brady.debug") {
             executor {
                 sender.send()
                 sender.send("&6Brady's debugging commands:".cc())
