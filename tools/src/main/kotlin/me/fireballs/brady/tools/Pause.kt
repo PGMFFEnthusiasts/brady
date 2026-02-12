@@ -1,7 +1,10 @@
 package me.fireballs.brady.tools
 
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityAnimation
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUseBed
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
+import io.github.retrooper.packetevents.util.SpigotConversionUtil
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import me.fireballs.brady.core.*
@@ -26,8 +29,6 @@ import tc.oc.pgm.spawns.events.ParticipantDespawnEvent
 import tc.oc.pgm.timelimit.TimeLimit
 import tc.oc.pgm.timelimit.TimeLimitMatchModule
 import tc.oc.pgm.util.bukkit.Sounds
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 private fun stripe(s: String, tick: Int): String {
     val sb = StringBuilder(s)
@@ -194,6 +195,14 @@ class Pause : Listener, KoinComponent {
                 it.reset()
                 it.bukkit.teleport(spawnLocation)
                 spawn.applyKit(it)
+                WrapperPlayServerUseBed(
+                    it.bukkit.entityId,
+                    SpigotConversionUtil.fromBukkitLocation(it.bukkit.location).position.toVector3i()
+                ).send(it.bukkit)
+                WrapperPlayServerEntityAnimation(
+                    it.bukkit.entityId,
+                    WrapperPlayServerEntityAnimation.EntityAnimationType.WAKE_UP
+                ).send(it.bukkit)
             }
     }
 
