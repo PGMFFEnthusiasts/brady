@@ -148,7 +148,7 @@ private val closeItem = itembox(Material.BARRIER)
 
 private val nukeItem = itembox(Material.TNT)
     .name("&cReset".cc())
-    .lore("&7Resets all settings".cc())
+    .lore("&7Resets all preferences".cc())
     .build()
 
 private val switchSound = soundbox()
@@ -161,10 +161,10 @@ private val nukeSound = soundbox()
     .add(Sound.EXPLODE, 1.25f)
 
 private val openSound = soundbox()
-    .add(Sound.DOOR_OPEN, 1.25f)
+    .add(Sound.DOOR_OPEN, 1.25f, 0.6f)
 
 private val closeSound = soundbox()
-    .add(Sound.DOOR_CLOSE, 0.75f)
+    .add(Sound.DOOR_CLOSE, 0.75f, 0.2f)
 
 val settingSlotPositions = (9..45).filter { it % 9 != 0 && it % 8 != 0 }
 
