@@ -1,4 +1,4 @@
-package me.fireballs.brady.core
+package me.fireballs.brady.corepgm
 
 import org.bukkit.Bukkit
 import tc.oc.pgm.api.match.MatchManager

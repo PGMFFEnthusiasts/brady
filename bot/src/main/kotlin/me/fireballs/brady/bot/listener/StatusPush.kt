@@ -5,7 +5,7 @@ import io.nats.client.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.bot.Bot
-import me.fireballs.brady.core.generateInGameInfoBoard
+import me.fireballs.brady.corepgm.generateInGameInfoBoard
 import me.fireballs.brady.core.registerEvents
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority

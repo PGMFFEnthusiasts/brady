@@ -3,8 +3,7 @@ version: 1.0.0
 name: Share
 description: "Share brady stats"
 softdepend:
-  - PGM
-  - Core
+  - CorePGM
 commands:
   tbdebug:
     permission: tb.debug

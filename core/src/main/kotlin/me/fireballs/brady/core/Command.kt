@@ -9,10 +9,6 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.SimpleCommandMap
 import org.bukkit.entity.Player
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import tc.oc.pgm.api.match.Match
-import tc.oc.pgm.api.match.MatchManager
 import kotlin.math.max
 
 class CommandInterrupt(val reason: Component?) : Exception(reason?.plainText())
@@ -22,9 +18,7 @@ class CommandExecution(
 
     val args: Array<String>,
     val subArgs: Array<String>,
-) : KoinComponent {
-    private val matchManager by inject<MatchManager>()
-
+) {
     fun error(reason: Component): Nothing = throw CommandInterrupt(reason)
     fun err(reason: Component): Nothing = error("&c⚠ ".cc() + reason)
     fun err(reason: String): Nothing = error("&c⚠ $reason".cc())
@@ -33,8 +27,6 @@ class CommandExecution(
         if (sender !is Player) err("You must be a player to use this!")
         return sender
     }
-
-    fun match(): Match = matchManager.getMatch(player().world) ?: err("Match not found")
 
     fun <T> capture(error: String? = null, block: () -> T): T {
         try {

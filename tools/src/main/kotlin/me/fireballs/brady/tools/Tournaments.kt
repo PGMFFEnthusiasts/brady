@@ -11,6 +11,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withTimeoutOrNull
 import me.fireballs.brady.core.*
+import me.fireballs.brady.corepgm.attemptToSetFlag
+import me.fireballs.brady.corepgm.component
+import me.fireballs.brady.corepgm.currentMatch
+import me.fireballs.brady.corepgm.forWhom
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor

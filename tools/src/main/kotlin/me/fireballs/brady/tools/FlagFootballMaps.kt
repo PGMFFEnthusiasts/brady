@@ -1,6 +1,8 @@
 package me.fireballs.brady.tools
 
 import me.fireballs.brady.core.*
+import me.fireballs.brady.corepgm.currentMatch
+import me.fireballs.brady.corepgm.forWhom
 import org.bukkit.Material
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

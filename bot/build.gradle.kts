@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    compileOnlyApi(project(":core"))
+    compileOnlyApi(project(":core-pgm"))
 }

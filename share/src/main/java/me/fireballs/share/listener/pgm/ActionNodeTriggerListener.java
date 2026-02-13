@@ -113,7 +113,6 @@ public class ActionNodeTriggerListener implements Listener {
                     observer.onThrow(thrower);
                 }
                 throwLocation = thrower.getLocation();
-                return;
             } else if (isLossOfControlAction(event.nodeId)) { // thrower is bad at the game
                 FootballDebugChannel.sendMessage(Component.text("Thrower is bad at the game"));
                 thrower = null;

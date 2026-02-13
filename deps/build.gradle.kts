@@ -17,7 +17,6 @@ dependencies {
     }
 
     compileOnlyApi(libs.luckperms.api)
-    compileOnlyApi(libs.tc.oc.pgm.core)
     compileOnlyApi(libs.app.ashcon.sportpaper)
 
     api(libs.mccoroutine.bukkit.core)

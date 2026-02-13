@@ -8,6 +8,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.core.*
+import me.fireballs.brady.corepgm.component
+import me.fireballs.brady.corepgm.match
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.title.Title
 import org.bukkit.Sound
@@ -242,7 +244,7 @@ class Drafting : Listener, KoinComponent {
         val teamList = teamModule.teams.toList()
 
         val startModule = match.needModule(StartMatchModule::class.java)
-        startModule.setAutoStart(false)
+        startModule.isAutoStart = false
 
         val capOne = rollCaptain(teamList.find { it.id == "team-one" }!!)
         val capTwo = rollCaptain(teamList.find { it.id == "team-two" }!!)

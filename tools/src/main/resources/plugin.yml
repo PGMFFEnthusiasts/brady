@@ -1,5 +1,5 @@
 name: Tools
 softdepend:
-  - Core
+  - CorePGM
 main: me.fireballs.brady.tools.Tools
 version: 1.0.0

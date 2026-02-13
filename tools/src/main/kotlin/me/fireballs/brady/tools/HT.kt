@@ -4,6 +4,7 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.delay
 import me.fireballs.brady.core.*
+import me.fireballs.brady.corepgm.FeatureFlagBool
 import net.minecraft.server.v1_8_R3.Items
 import org.bukkit.World
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld

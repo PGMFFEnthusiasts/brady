@@ -13,6 +13,7 @@ plugins {
 }
 
 include("core")
+include("core-pgm")
 include("deps")
 include("bot")
 include("tools")

@@ -34,6 +34,7 @@ function backend_plug_push() {
   SERVER=$1
   normal_push "deps" "$SERVER"
   normal_push "core" "$SERVER"
+  normal_push "core-pgm" "$SERVER"
   normal_push "bot" "$SERVER"
   normal_push "share" "$SERVER"
   normal_push "tools" "$SERVER"
@@ -61,6 +62,7 @@ case "$1" in
   cdn)
     normal_push "deps" "caddy/cdn/deps"
     normal_push "core" "caddy/cdn/deps"
+    normal_push "core-pgm" "caddy/cdn/deps"
     normal_push "bot" "caddy/cdn/deps"
     normal_push "share" "caddy/cdn/deps"
     normal_push "tools" "caddy/cdn/deps"

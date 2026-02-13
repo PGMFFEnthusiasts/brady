@@ -7,18 +7,12 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import tc.oc.pgm.api.PGM
-import tc.oc.pgm.api.map.MapOrder
-import tc.oc.pgm.api.match.MatchManager
 
 @PluginAnnotation
 class Core : SuspendingJavaPlugin() {
     override fun onEnable() {
         val appModule = module {
             single<Core> { this@Core }
-            single<PGM> { PGM.get() }
-            single<MatchManager> { PGM.get().matchManager }
-            single<MapOrder> { PGM.get().mapOrder }
             single<BukkitAudiences> { BukkitAudiences.create(this@Core) }
             single<MenuManager> { MenuManager() }
             serviceOf(::KavyManager)
@@ -30,8 +24,6 @@ class Core : SuspendingJavaPlugin() {
         }
 
         DebuggingSubscriber()
-        StandardBradyListener()
-        FeatureFlagsSubscriber()
     }
 
     override fun onDisable() {

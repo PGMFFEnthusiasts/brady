@@ -5,7 +5,7 @@ import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.fireballs.brady.core.Retrieval
-import me.fireballs.brady.core.currentMatch
+import me.fireballs.brady.corepgm.currentMatch
 import me.fireballs.brady.core.registerEvents
 import me.fireballs.brady.core.stringGet
 import me.fireballs.brady.core.stringGetCached

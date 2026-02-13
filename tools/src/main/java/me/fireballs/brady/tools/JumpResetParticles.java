@@ -8,9 +8,9 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
-import me.fireballs.brady.core.FeatureFlagBool;
 import me.fireballs.brady.core.PlayerExtensionsKt;
 import me.fireballs.brady.core.PluginExtensionsKt;
+import me.fireballs.brady.corepgm.FeatureFlagBool;
 import net.minecraft.server.v1_8_R3.EnumParticle;
 import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles;
 import org.bukkit.entity.Player;

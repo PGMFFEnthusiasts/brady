@@ -6,7 +6,7 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.messages.edit
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import me.fireballs.brady.core.generateInfoBoard
+import me.fireballs.brady.corepgm.generateInfoBoard
 import me.fireballs.brady.core.logExceptions
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel

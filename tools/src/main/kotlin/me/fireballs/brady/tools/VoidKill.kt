@@ -1,7 +1,7 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.FeatureFlagBool
 import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.corepgm.FeatureFlagBool
 import net.minecraft.server.v1_8_R3.DamageSource
 import org.bukkit.GameMode
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer

@@ -8,7 +8,6 @@ import net.minecraft.server.v1_8_R3.Packet
 import org.bukkit.command.CommandSender
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer
 import org.bukkit.entity.Player
-import tc.oc.pgm.util.player.PlayerComponent.player
 
 fun Player.sendPacket(packetWrapper: PacketWrapper<*>) =
     PacketEvents.getAPI().playerManager.sendPacket(this, packetWrapper)
@@ -31,8 +30,6 @@ fun CommandSender.send() {
 fun Player.actionBar(message: Component) {
     Core.adventure.player(this).sendActionBar(message)
 }
-
-fun CommandSender.component(): Component = player(this)
 
 val Player.handle: EntityPlayer
     get() = (this as CraftPlayer).handle

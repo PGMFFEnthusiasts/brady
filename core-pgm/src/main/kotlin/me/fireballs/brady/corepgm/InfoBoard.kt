@@ -1,5 +1,10 @@
-package me.fireballs.brady.core
+package me.fireballs.brady.corepgm
 
+import me.fireballs.brady.corepgm.ansify
+import me.fireballs.brady.core.c
+import me.fireballs.brady.core.cc
+import me.fireballs.brady.core.coloredText
+import me.fireballs.brady.core.plus
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.format.NamedTextColor

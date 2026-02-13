@@ -1,4 +1,4 @@
-package me.fireballs.brady.core
+package me.fireballs.brady.corepgm
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import net.kyori.adventure.platform.facet.FacetAudienceProvider

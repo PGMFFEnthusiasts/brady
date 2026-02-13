@@ -1,4 +1,4 @@
-package me.fireballs.brady.core
+package me.fireballs.brady.corepgm
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer

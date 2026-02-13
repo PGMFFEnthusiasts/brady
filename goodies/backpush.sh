@@ -17,6 +17,7 @@ function add() {
 
 add "deps"
 add "core"
+add "core-pgm"
 add "bot"
 add "share"
 add "tools"

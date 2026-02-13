@@ -18,7 +18,7 @@ class Status(
         update()
     }
 
-    private data class ServerStatus(var count: Int, var name: String) {}
+    private data class ServerStatus(var count: Int, var name: String)
 
     private fun update() {
         val servers = plugin.server.allServers?.mapNotNull { server ->

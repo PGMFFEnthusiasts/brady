@@ -1,5 +1,5 @@
 name: Bot
 softdepend:
-  - Core
+  - CorePGM
 main: me.fireballs.brady.bot.Bot
 version: 1.0.0

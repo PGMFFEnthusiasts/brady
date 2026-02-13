@@ -1,0 +1,7 @@
+name: CorePGM
+load: STARTUP
+softdepend:
+  - Deps
+  - Core
+main: me.fireballs.brady.corepgm.CorePGM
+version: 1.0.0

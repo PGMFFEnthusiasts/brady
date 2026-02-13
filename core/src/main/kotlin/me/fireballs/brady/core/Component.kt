@@ -7,9 +7,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.title.Title
 import net.md_5.bungee.api.ChatColor
-import org.bukkit.Bukkit
-import org.bukkit.command.CommandSender
-import tc.oc.pgm.util.text.ComponentRenderer
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
@@ -23,9 +20,6 @@ operator fun Component.plus(other: Component) =
 
 operator fun Component.plus(other: String) =
     Component.join(JoinConfiguration.noSeparators(), this, other.cc())
-
-fun Component.forWhom(sender: CommandSender = Bukkit.getConsoleSender()) =
-    ComponentRenderer.RENDERER.render(this, Core.adventure.sender(sender))
 
 fun Component.url(url: String) = this.clickEvent(ClickEvent.openUrl(url))
 fun Component.command(command: String) = this.clickEvent(ClickEvent.runCommand(command))
