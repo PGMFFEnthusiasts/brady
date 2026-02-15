@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
+import tc.oc.pgm.api.match.event.MatchStartEvent
 import tc.oc.pgm.api.match.event.MatchUnloadEvent
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
@@ -21,7 +22,7 @@ class MatchIdManager(
     private val finalizedMatchIds = ConcurrentHashMap.newKeySet<String>()
 
     @EventHandler(priority = EventPriority.LOW)
-    fun onMatchLoad(event: MatchAfterLoadEvent) {
+    fun onMatchStart(event: MatchStartEvent) {
         if (database == null) return
 
         val pgmMatchId = event.match.id
