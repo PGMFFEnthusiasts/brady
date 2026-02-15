@@ -2,7 +2,6 @@ package me.fireballs.share.command;
 
 import me.fireballs.share.effects.PersistentEffectRegistrationSubscriber;
 import me.fireballs.share.effects.PotionEffectApplication;
-import me.fireballs.share.util.FootballDebugChannel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.StringUtils;

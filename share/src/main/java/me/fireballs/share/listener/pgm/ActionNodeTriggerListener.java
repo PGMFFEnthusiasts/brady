@@ -2,8 +2,6 @@ package me.fireballs.share.listener.pgm;
 
 import me.fireballs.share.football.CompletedFootballPass;
 import me.fireballs.share.football.FootballListener;
-import me.fireballs.share.util.FootballDebugChannel;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,6 +13,8 @@ import tc.oc.pgm.events.PlayerLeaveMatchEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static me.fireballs.brady.core.DebuggingKt.log;
 
 public class ActionNodeTriggerListener implements Listener {
     private final String flagPickupActionId;
@@ -63,7 +63,7 @@ public class ActionNodeTriggerListener implements Listener {
     public void onActionNodeTrigger(final ActionNodeTriggerEvent event) {
         if (!relevantActions.contains(event.nodeId)) return;
         if (event.nodeId.equals(resetFlagActionId)) { // whenever the flag is reset we should have a clean state
-            FootballDebugChannel.sendMessage(Component.text("Flag reset action detected"));
+            log("football", "Flag reset action detected");
             resetState();
             return;
         }
@@ -100,7 +100,7 @@ public class ActionNodeTriggerListener implements Listener {
             thrower = matchPlayer;
         } else if (thrower == null) { // no thrower assigned
             if (isReceiveControlAction(event.nodeId)) { // when some1 gets the ball
-                FootballDebugChannel.sendMessage(Component.text("(Potential) thrower identified"));
+                log("football", "(Potential) thrower identified");
                 thrower = matchPlayer;
                 for (final FootballListener observer : observers) {
                     observer.onBallPickup(matchPlayer);
@@ -108,18 +108,18 @@ public class ActionNodeTriggerListener implements Listener {
             }
         } else if (throwLocation == null) { // some1 got da ball
             if (event.nodeId.equals(ballThrownActionId)) { // thrower makes a move
-                FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
+                log("football", "Thrower made a throw");
                 for (final FootballListener observer : observers) {
                     observer.onThrow(thrower);
                 }
                 throwLocation = thrower.getLocation();
             } else if (isLossOfControlAction(event.nodeId)) { // thrower is bad at the game
-                FootballDebugChannel.sendMessage(Component.text("Thrower is bad at the game"));
+                log("football", "Thrower is bad at the game");
                 thrower = null;
             }
         } else if (throwLocation != null && catcher == null) { // ball mid air post-throw
             if (event.nodeId.equals(flagReceiveActionId)) { // pass completion, scope is the catcher
-                FootballDebugChannel.sendMessage(Component.text("Thrower completed the pass!"));
+                log("football", "Thrower completed the pass!");
                 catcher = matchPlayer;
                 catchLocation = matchPlayer.getLocation();
                 for (final FootballListener observer : observers) {
@@ -129,12 +129,12 @@ public class ActionNodeTriggerListener implements Listener {
             }
         } else { // catcher en route
             if (isLossOfControlAction(event.nodeId)) {
-                FootballDebugChannel.sendMessage(Component.text("Catcher lost ball, marking throw as complete"));
+                log("football", "Catcher lost ball, marking throw as complete");
                 lossOfControlLocation = matchPlayer.getLocation();
                 emitPass();
                 resetState();
                 if (event.nodeId.equals(ballThrownActionId)) {
-                    FootballDebugChannel.sendMessage(Component.text("Thrower made a throw"));
+                    log("football", "Thrower made a throw");
                     thrower = matchPlayer;
                     for (final FootballListener observer : observers) {
                         observer.onThrow(thrower);

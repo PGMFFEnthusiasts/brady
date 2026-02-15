@@ -2,9 +2,7 @@ package me.fireballs.share.football;
 
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
-import me.fireballs.share.util.FootballDebugChannel;
 import me.fireballs.share.util.FootballStatistic;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -27,6 +25,8 @@ import java.text.DecimalFormat;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static me.fireballs.brady.core.DebuggingKt.log;
+
 public class FootballListenerImpl implements FootballListener, Listener {
     private final JavaPlugin plugin;
     private final StatManager statManager;
@@ -43,18 +43,18 @@ public class FootballListenerImpl implements FootballListener, Listener {
     @Override
     public void onPassPossessionCompletion(CompletedFootballPass completedThrow) {
         if (!completedThrow.catcher().getParty().equals(completedThrow.thrower().getParty())) {
-            FootballDebugChannel.sendMessage(Component.text("team mismatch ignore"));
+            log("football", "team mismatch ignore");
             return;
         }
         final SpawnMatchModule spawnMatchModule =
             completedThrow.thrower().getMatch().getModule(SpawnMatchModule.class);
         if (spawnMatchModule == null) {
-            FootballDebugChannel.sendMessage(Component.text("SpawnMatchModule was null for some reason"));
+            log("football", "SpawnMatchModule was null for some reason");
             return;
         }
         // horrendous code incoming!
         if (spawnMatchModule.getSpawns().size() < 2) {
-            FootballDebugChannel.sendMessage(Component.text("Less than 2 spawns?"));
+            log("football", "Less than 2 spawns?");
             return;
         }
         final Spawn spawn1 = spawnMatchModule.getSpawns().get(0);
@@ -79,7 +79,7 @@ public class FootballListenerImpl implements FootballListener, Listener {
             spawnMatchModule.getSpawns().stream().filter((spawn) -> spawn.allows(completedThrow.thrower()))
                 .findFirst();
         if (validSpawn.isEmpty()) {
-            FootballDebugChannel.sendMessage(Component.text("Spawn was empty for some reason"));
+            log("football", "Spawn was empty for some reason");
             return;
         }
         final Location spawnLocation = validSpawn.get().getSpawn(completedThrow.thrower());
@@ -99,12 +99,11 @@ public class FootballListenerImpl implements FootballListener, Listener {
                 postProcessLocation.apply(completedThrow.lossOfControlLocation()).distance(
                     postProcessLocation.apply(completedThrow.throwLocation())
                 )) * magnitude;
-        FootballDebugChannel.sendMessage(
-            Component.text(
-                "(" + df.format(distance) + " blocks) " +
-                    completedThrow.thrower() + " to " +
-                    completedThrow.catcher()
-            )
+        log(
+            "football",
+            "(" + df.format(distance) + " blocks) " +
+                completedThrow.thrower() + " to " +
+                completedThrow.catcher()
         );
         if (distance < 0.0) {
             distance = 0.0;
@@ -115,7 +114,7 @@ public class FootballListenerImpl implements FootballListener, Listener {
         );
         var newPassingBlocks =
             statManager.getStat(completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_PASSING_BLOCKS);
-        FootballDebugChannel.sendMessage(Component.text("Thrower new passing blocks: " + df.format(newPassingBlocks)));
+        log("football", "Thrower new passing blocks: " + df.format(newPassingBlocks));
         statManager.mergeStat(
             completedThrow.catcher().getBukkit().getUniqueId(), FootballStatistic.TOTAL_RECEIVING_BLOCKS,
             distance, Double::sum
@@ -124,9 +123,7 @@ public class FootballListenerImpl implements FootballListener, Listener {
             statManager.getStat(
                 completedThrow.thrower().getBukkit().getUniqueId(), FootballStatistic.TOTAL_RECEIVING_BLOCKS
             );
-        FootballDebugChannel.sendMessage(
-            Component.text("Catcher new receiving blocks: " + df.format(newPassingBlocks))
-        );
+        log("football", "Catcher new receiving blocks: " + df.format(newPassingBlocks));
     }
 
     @Override

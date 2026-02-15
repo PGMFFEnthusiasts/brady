@@ -10,7 +10,6 @@ import me.fireballs.share.manager.MatchIdManager;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
 import me.fireballs.share.util.*;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -103,7 +102,7 @@ public final class MatchStatsListener implements Listener {
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            FootballDebugChannel.sendMessage(Component.text("Attempting to write match data to database"));
+            log("share", "Attempting to write match data to database");
             if (database != null && playerAndMatchData != null) {
                 // Try to use preallocated match ID, fallback to creating new if not available
                 int matchId = matchIdManager.getPreallocatedMatchId(matchKey);
@@ -112,16 +111,12 @@ public final class MatchStatsListener implements Listener {
                 if (matchId > 0) {
                     // Use preallocated ID - update the existing row
                     success = database.updateMatchData(matchId, playerAndMatchData.matchData);
-                    FootballDebugChannel.sendMessage(Component.text(
-                            "Updated preallocated match data, match #" + matchId
-                    ));
+                    log("match-stats", "Updated preallocated match data, match #" + matchId);
                 } else {
                     // Fallback: create new match entry (shouldn't happen normally)
                     matchId = database.addMatchData(playerAndMatchData.matchData);
                     success = matchId > 0;
-                    FootballDebugChannel.sendMessage(Component.text(
-                            "Created new match data (no preallocation), match #" + matchId
-                    ));
+                    log("match-stats", "Created new match data (no preallocation), match #" + matchId);
                 }
 
                 if (success) {
@@ -129,9 +124,7 @@ public final class MatchStatsListener implements Listener {
                     matchIdManager.markFinalized(matchKey);
 
                     database.batchAddPlayerMatchData(matchId, playerAndMatchData.stats);
-                    FootballDebugChannel.sendMessage(Component.text(
-                            "Wrote player match data"
-                    ));
+                    log("match-stats", "Wrote player match data");
 
                     final var statsLink = new StatsLink(String.format(WEBSITE_MATCH_FORMAT, matchId), "Website");
                     plugin.sendStats(statsLink);

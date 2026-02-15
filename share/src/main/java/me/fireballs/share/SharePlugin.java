@@ -2,7 +2,6 @@ package me.fireballs.share;
 
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin;
 import me.fireballs.brady.core.event.BradyShareEvent;
-import me.fireballs.share.command.FootballDebugCommand;
 import me.fireballs.share.command.PersistentEffectsCommand;
 import me.fireballs.share.effects.EffectApplicationListener;
 import me.fireballs.share.football.FootballListenerImpl;
@@ -13,7 +12,6 @@ import me.fireballs.share.listener.pgm.ScoreboardListener;
 import me.fireballs.share.manager.MatchIdManager;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
-import me.fireballs.share.util.FootballDebugChannel;
 import me.fireballs.share.util.StatsLink;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -83,8 +81,6 @@ public class SharePlugin extends SuspendingJavaPlugin {
         Bukkit.getPluginManager().registerEvents(this.footballListener, this);
         this.actionNodeTriggerListener.addObserver(this.footballListener);
 
-        FootballDebugChannel.init(this);
-        this.getCommand("tbdebug").setExecutor(new FootballDebugCommand());
         final var trackedEffects = new HashMap<PotionEffectType, Integer>();
         this.effectApplicationListener = new EffectApplicationListener(
             this, "remove-cages", Collections.unmodifiableMap(trackedEffects)
@@ -105,7 +101,6 @@ public class SharePlugin extends SuspendingJavaPlugin {
         if (this.database != null) {
             this.database.close();
         }
-        FootballDebugChannel.unload();
         HandlerList.unregisterAll(this.actionNodeTriggerListener);
         HandlerList.unregisterAll(this.effectApplicationListener);
         if (this.footballListener != null) {
