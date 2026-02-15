@@ -1,5 +1,6 @@
 package me.fireballs.share.storage;
 
+import me.fireballs.brady.core.storage.DatabaseConnection;
 import me.fireballs.share.util.MatchData;
 import me.fireballs.share.util.PlayerFootballStats;
 import org.bukkit.entity.Player;
@@ -7,7 +8,6 @@ import org.bukkit.entity.Player;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,18 +64,7 @@ public class Database {
         final String password,
         final String dbLocation
     ) {
-        try {
-            Class.forName("org.postgresql.Driver");
-            connection = DriverManager.getConnection(
-                String.format(
-                    "jdbc:postgresql://%s",
-                    dbLocation
-                ),
-                username, password
-            );
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        connection = DatabaseConnection.postgres(username, password, dbLocation);
 
         try (final Statement statement = connection.createStatement()) {
             statement.addBatch(CREATE_MATCH_DATA_TABLE);
