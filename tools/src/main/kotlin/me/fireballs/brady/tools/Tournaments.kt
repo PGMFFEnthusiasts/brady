@@ -454,7 +454,7 @@ class Tournaments : Listener, KoinComponent {
                 return
             }
 
-            delay(20.ticks)
+            delay(1.ticks)
         } else {
             b("&cMap not found!".cc())
         }
@@ -476,6 +476,9 @@ class Tournaments : Listener, KoinComponent {
             return
         }
 
+        teamOne.setMaxSize(0, 0)
+        teamTwo.setMaxSize(0, 0)
+
         if (data.timeLimit > 0) {
             val duration = Duration.ofSeconds(data.timeLimit.toLong())
             val timeLimitModule = match.getModule(TimeLimitMatchModule::class.java)
@@ -486,7 +489,21 @@ class Tournaments : Listener, KoinComponent {
             }
         }
 
-        delay(4.seconds)
+        val matchUuids = data.teams
+            .flatMap { it.players }
+            .mapNotNull { runCatching { UUID.fromString(it.uuid) }.getOrNull() }
+
+        withTimeoutOrNull(4.seconds) {
+            while (true) {
+                val everyoneJoined = matchUuids.all { uuid ->
+                    val player = Bukkit.getPlayer(uuid) ?: return@all false
+                    match.getPlayer(player) != null
+                }
+
+                if (everyoneJoined) break
+                delay(1.ticks)
+            }
+        }
 
         val teamOneSize = data.teams.first().players.size
         val teamTwoSize = data.teams.last().players.size
