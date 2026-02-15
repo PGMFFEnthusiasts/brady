@@ -37,6 +37,18 @@ public class Statements {
     public static final String UPDATE_PLAYER_IDENTITY_QUERY =
         "INSERT INTO player_identities(uuid, name) VALUES (?, ?) ON CONFLICT (uuid) DO UPDATE SET name = excluded.name";
 
+    public static final String PREALLOCATE_MATCH_ID =
+        "INSERT INTO match_data (server, start_time, duration, winner, team_one_score, team_two_score, map, " +
+        "is_tourney, team_one_name, team_two_name, team_one_color, team_two_color) " +
+        "VALUES (?, 0, 0, 0, 0, 0, 'pending match', false, '', '', 0, 0)";
+    public static final String UPDATE_MATCH_DATA_ROW =
+        "UPDATE match_data SET server = ?, start_time = ?, duration = ?, winner = ?, " +
+        "team_one_score = ?, team_two_score = ?, map = ?, is_tourney = ?, " +
+        "team_one_name = ?, team_two_name = ?, team_one_color = ?, team_two_color = ? " +
+        "WHERE match = ?";
+    public static final String DELETE_PLACEHOLDER_MATCH =
+        "DELETE FROM match_data WHERE match = ? AND map = 'pending match';";
+
     public static boolean columnExists(
         final DatabaseMetaData databaseMetadata,
         final String tableName,
@@ -88,6 +100,7 @@ public class Statements {
         "tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE, " +
         "team_id INTEGER NOT NULL, " +
         "captain_uuid BYTEA NOT NULL, " +
+        "name character varying(100) NOT NULL, " +
         "PRIMARY KEY (tournament_id, team_id))";
     public static final String CREATE_TOURNAMENT_TEAM_PLAYER_TABLE =
         "CREATE TABLE IF NOT EXISTS tournament_team_player (" +

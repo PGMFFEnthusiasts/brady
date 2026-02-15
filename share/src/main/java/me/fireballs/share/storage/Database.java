@@ -138,6 +138,59 @@ public class Database {
         return -1;
     }
 
+    public int preallocateMatchId() {
+        if (connection == null) return -1;
+        try (final PreparedStatement preparedStatement =
+                 connection.prepareStatement(Statements.PREALLOCATE_MATCH_ID, Statement.RETURN_GENERATED_KEYS)) {
+            // Use server name as a placeholder identifier
+            preparedStatement.setString(1, "pending");
+            if (preparedStatement.executeUpdate() == 1) {
+                try (final ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1;
+    }
+
+    public boolean updateMatchData(int matchId, final MatchData matchData) {
+        if (connection == null) return false;
+        try (final PreparedStatement preparedStatement =
+                 connection.prepareStatement(Statements.UPDATE_MATCH_DATA_ROW)) {
+            preparedStatement.setString(1, matchData.server());
+            preparedStatement.setLong(2, matchData.startTime());
+            preparedStatement.setInt(3, matchData.duration());
+            preparedStatement.setInt(4, matchData.winner());
+            preparedStatement.setInt(5, matchData.teamOneScore());
+            preparedStatement.setInt(6, matchData.teamTwoScore());
+            preparedStatement.setString(7, matchData.map());
+            preparedStatement.setBoolean(8, matchData.isTourney());
+            preparedStatement.setString(9, matchData.teamOneName());
+            preparedStatement.setString(10, matchData.teamTwoName());
+            preparedStatement.setInt(11, matchData.teamOneColor());
+            preparedStatement.setInt(12, matchData.teamTwoColor());
+            preparedStatement.setInt(13, matchId);
+            return preparedStatement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean deletePlaceholderMatch(int matchId) {
+        if (connection == null) return false;
+        try (final PreparedStatement preparedStatement =
+                 connection.prepareStatement(Statements.DELETE_PLACEHOLDER_MATCH)) {
+            preparedStatement.setInt(1, matchId);
+            return preparedStatement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void batchAddPlayerMatchData(
         final int matchId,
         final Map<UUID, PlayerFootballStats> stats

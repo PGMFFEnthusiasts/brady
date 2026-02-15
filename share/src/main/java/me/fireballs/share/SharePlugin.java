@@ -1,5 +1,6 @@
 package me.fireballs.share;
 
+import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin;
 import me.fireballs.brady.core.event.BradyShareEvent;
 import me.fireballs.share.command.FootballDebugCommand;
 import me.fireballs.share.command.PersistentEffectsCommand;
@@ -8,6 +9,8 @@ import me.fireballs.share.football.FootballListenerImpl;
 import me.fireballs.share.listener.pgm.ActionNodeTriggerListener;
 import me.fireballs.share.listener.pgm.MatchCycleListener;
 import me.fireballs.share.listener.pgm.MatchStatsListener;
+import me.fireballs.share.listener.pgm.ScoreboardListener;
+import me.fireballs.share.manager.MatchIdManager;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
 import me.fireballs.share.util.FootballDebugChannel;
@@ -19,7 +22,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Collections;
@@ -28,11 +30,13 @@ import java.util.List;
 
 import static me.fireballs.brady.core.DebuggingKt.log;
 
-public class SharePlugin extends JavaPlugin {
+public class SharePlugin extends SuspendingJavaPlugin {
     private ActionNodeTriggerListener actionNodeTriggerListener;
     private Database database;
     private FootballListenerImpl footballListener;
     private EffectApplicationListener effectApplicationListener;
+    private MatchIdManager matchIdManager;
+    private ScoreboardListener scoreboardListener;
     public boolean uploadPaste;
 
     @Override
@@ -51,8 +55,16 @@ public class SharePlugin extends JavaPlugin {
             this.database.init(username, password, path);
         }
 
+        // Initialize match ID manager for preallocation
+        this.matchIdManager = new MatchIdManager(this, database);
+        Bukkit.getPluginManager().registerEvents(this.matchIdManager, this);
+
+        // Register scoreboard listener to display match IDs
+        this.scoreboardListener = new ScoreboardListener(this, this.matchIdManager);
+        Bukkit.getPluginManager().registerEvents(this.scoreboardListener, this);
+
         Bukkit.getPluginManager().registerEvents(
-            new MatchStatsListener(this, statManager, serverName, database),
+            new MatchStatsListener(this, statManager, serverName, database, matchIdManager),
             this
         );
         Bukkit.getPluginManager().registerEvents(new MatchCycleListener(statManager), this);
@@ -98,6 +110,12 @@ public class SharePlugin extends JavaPlugin {
         HandlerList.unregisterAll(this.effectApplicationListener);
         if (this.footballListener != null) {
             HandlerList.unregisterAll(this.footballListener);
+        }
+        if (this.matchIdManager != null) {
+            HandlerList.unregisterAll(this.matchIdManager);
+        }
+        if (this.scoreboardListener != null) {
+            HandlerList.unregisterAll(this.scoreboardListener);
         }
     }
 

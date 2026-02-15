@@ -6,6 +6,7 @@ import com.google.common.collect.MapMaker;
 import com.google.gson.stream.JsonReader;
 import me.fireballs.brady.core.ComponentKt;
 import me.fireballs.share.SharePlugin;
+import me.fireballs.share.manager.MatchIdManager;
 import me.fireballs.share.manager.StatManager;
 import me.fireballs.share.storage.Database;
 import me.fireballs.share.util.*;
@@ -42,12 +43,14 @@ public final class MatchStatsListener implements Listener {
     private final StatManager statManager;
     private final String serverName;
     private final Database database;
+    private final MatchIdManager matchIdManager;
 
-    public MatchStatsListener(SharePlugin plugin, StatManager statManager, String serverName, Database database) {
+    public MatchStatsListener(SharePlugin plugin, StatManager statManager, String serverName, Database database, MatchIdManager matchIdManager) {
         this.plugin = plugin;
         this.statManager = statManager;
         this.serverName = serverName;
         this.database = database;
+        this.matchIdManager = matchIdManager;
     }
 
     // this is NECESSARY... probably
@@ -102,20 +105,40 @@ public final class MatchStatsListener implements Listener {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             FootballDebugChannel.sendMessage(Component.text("Attempting to write match data to database"));
             if (database != null && playerAndMatchData != null) {
-                final int matchId = database.addMatchData(playerAndMatchData.matchData);
-                FootballDebugChannel.sendMessage(Component.text(
-                        "Successfully wrote match data, match #" + matchId
-                ));
-                database.batchAddPlayerMatchData(matchId, playerAndMatchData.stats);
-                FootballDebugChannel.sendMessage(Component.text(
-                        "Wrote player match data"
-                ));
+                // Try to use preallocated match ID, fallback to creating new if not available
+                int matchId = matchIdManager.getPreallocatedMatchId(matchKey);
+                boolean success;
 
-                final var statsLink = new StatsLink(String.format(WEBSITE_MATCH_FORMAT, matchId), "Website");
-                plugin.sendStats(statsLink);
-                alreadyUploaded.put(matchKey, statsLink);
-                pendingUpload.getOrDefault(matchKey, (v) -> {
-                }).accept(statsLink);
+                if (matchId > 0) {
+                    // Use preallocated ID - update the existing row
+                    success = database.updateMatchData(matchId, playerAndMatchData.matchData);
+                    FootballDebugChannel.sendMessage(Component.text(
+                            "Updated preallocated match data, match #" + matchId
+                    ));
+                } else {
+                    // Fallback: create new match entry (shouldn't happen normally)
+                    matchId = database.addMatchData(playerAndMatchData.matchData);
+                    success = matchId > 0;
+                    FootballDebugChannel.sendMessage(Component.text(
+                            "Created new match data (no preallocation), match #" + matchId
+                    ));
+                }
+
+                if (success) {
+                    // Mark as finalized so cleanup doesn't delete the row
+                    matchIdManager.markFinalized(matchKey);
+
+                    database.batchAddPlayerMatchData(matchId, playerAndMatchData.stats);
+                    FootballDebugChannel.sendMessage(Component.text(
+                            "Wrote player match data"
+                    ));
+
+                    final var statsLink = new StatsLink(String.format(WEBSITE_MATCH_FORMAT, matchId), "Website");
+                    plugin.sendStats(statsLink);
+                    alreadyUploaded.put(matchKey, statsLink);
+                    pendingUpload.getOrDefault(matchKey, (v) -> {
+                    }).accept(statsLink);
+                }
             }
         });
     }
