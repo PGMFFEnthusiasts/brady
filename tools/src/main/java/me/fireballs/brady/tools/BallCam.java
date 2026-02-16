@@ -49,6 +49,7 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
     private static final int SLOT = 7;
     private static final short TID = Short.MAX_VALUE * 5 / 6;
+    private static final float MIN_PITCH = 20;
 
     private final Map<User, Rider> riders = new MapMaker()
             .concurrencyLevel(4)
@@ -151,6 +152,8 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
                 var spawn = new WrapperPlayServerSpawnEntity(event);
                 if (spawn.getEntityType() != EntityTypes.SNOWBALL) return;
+
+                if (spawn.getYaw() < MIN_PITCH) return; // yaw & pitch are sent out of order
 
                 int snowballId = spawn.getEntityId();
                 var riding = new WrapperPlayServerAttachEntity(user.getEntityId(), snowballId, false);
