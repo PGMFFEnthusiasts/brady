@@ -10,6 +10,8 @@ import kotlin.Unit;
 import me.fireballs.brady.core.CommandBuilder;
 import me.fireballs.brady.core.CommandExecution;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -23,12 +25,14 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.util.named.NameStyle;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static me.fireballs.brady.core.CommandKt.command;
 import static me.fireballs.brady.core.PluginExtensionsKt.registerPacketEvents;
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 public class Ping extends PacketListenerAbstract {
@@ -139,29 +143,76 @@ public class Ping extends PacketListenerAbstract {
             int ping = (int) (System.currentTimeMillis() - pending.sentTime);
             int average = stats.getAverage();
             int jitter = stats.getJitter();
+            var line = stats.constructHistoryLine();
 
             Bukkit.getScheduler().runTask(plugin, () -> {
-                TextComponent.Builder message = text()
-                        .append(text("Pong! ", NamedTextColor.GOLD))
-                        .append(text("(", NamedTextColor.GRAY))
-                        .append(text(ping + "ms", getPingColor(ping), TextDecoration.BOLD))
-                        .append(text(") ", NamedTextColor.GRAY));
+                var targetMP = PGM.get().getMatchManager().getPlayer(target);
+                var senderMP = PGM.get().getMatchManager().getPlayer(viewer);
+                if (senderMP == null || targetMP == null) return;
 
-                if (viewer != target) {
-                    MatchPlayer pgmTarget = PGM.get().getMatchManager().getPlayer(target);
-                    if (pgmTarget == null) return;
+//                senderMP.sendMessage(empty());
+//                senderMP.sendMessage(text(" ⚡ Ping for ", NamedTextColor.YELLOW)
+//                        .append(targetMP.getName(NameStyle.FANCY)));
+//                senderMP.sendMessage(empty());
+//                senderMP.sendMessage(text(" [", NamedTextColor.GRAY)
+//                        .append(line)
+//                        .append(text("] ", NamedTextColor.GRAY))
+//                        .append(text(average + "ms", getPingColor(average)))
+//                        .append(text(" ± ", NamedTextColor.GRAY))
+//                        .append(text(jitter, getJitterColor(jitter)))
+//                        .append(text(" (60s avg)", NamedTextColor.GRAY, TextDecoration.ITALIC)));
+//                senderMP.sendMessage(empty());
+//                senderMP.sendMessage(text(" ⚡ Latest: ", NamedTextColor.YELLOW)
+//                        .append(text(ping + "ms", getPingColor(ping))));
+//                senderMP.sendMessage(text(" ")
+//                        .append(targetMP.getName(NameStyle.FANCY))
+//                        .append(text(" [", NamedTextColor.GRAY))
+//                        .append(line)
+//                        .append(text("] ", NamedTextColor.GRAY)));
+//                senderMP.sendMessage(text(" ⤷ ", NamedTextColor.GRAY)
+//                        .append(text(average + "ms", getPingColor(average)))
+//                        .append(text(" ± ", NamedTextColor.GRAY))
+//                        .append(text(jitter, getJitterColor(jitter)))
+//                        .append(text(" (60s avg)", NamedTextColor.GRAY, TextDecoration.ITALIC)));
+//                senderMP.sendMessage(text(" ⤷ ", NamedTextColor.GRAY)
+//                        .append(text(ping + "ms", getPingColor(ping)))
+//                        .append(text(" (latest)", NamedTextColor.GRAY, TextDecoration.ITALIC)));
+//                senderMP.sendMessage(empty());
 
-                    message.append(pgmTarget.getName(NameStyle.FANCY))
-                            .append(text("'s "));
-                }
+                senderMP.sendMessage(text(" ")
+                        .append(targetMP.getName(NameStyle.FANCY))
+                        .append(text(" "))
+                        .append(text(ping + "ms", getPingColor(ping)))
+                        .append(text(" (latest)", NamedTextColor.GRAY, TextDecoration.ITALIC)));
+                senderMP.sendMessage(text(" [", NamedTextColor.GRAY)
+                        .append(line)
+                        .append(text("] ", NamedTextColor.GRAY))
+                        .append(text(average + "ms", getPingColor(average)))
+                        .append(text(" ± ", NamedTextColor.GRAY))
+                        .append(text(jitter, getJitterColor(jitter)))
+                        .append(text(" (60s avg)", NamedTextColor.GRAY, TextDecoration.ITALIC)));
 
-                message.append(text("60s Average", NamedTextColor.AQUA))
-                        .append(text(": ", NamedTextColor.WHITE))
-                        .append(text(average + "ms", getPingColor(average), TextDecoration.BOLD))
-                        .append(text(" ± ", NamedTextColor.AQUA))
-                        .append(text(jitter, getJitterColor(jitter)));
-
-                bukkitAudiences.player(viewer).sendMessage(message.build());
+//                TextComponent.Builder message = text()
+//                        .append(text("Pong! ", NamedTextColor.GOLD))
+//                        .append(text("(", NamedTextColor.GRAY))
+//                        .append(text(ping + "ms", getPingColor(ping), TextDecoration.BOLD))
+//                        .append(text(") ", NamedTextColor.GRAY));
+//
+//                if (viewer != target) {
+//                    MatchPlayer pgmTarget = PGM.get().getMatchManager().getPlayer(target);
+//                    if (pgmTarget == null) return;
+//
+//                    message.append(pgmTarget.getName(NameStyle.FANCY))
+//                            .append(text("'s "));
+//                }
+//
+//                message.append(text("60s Average", NamedTextColor.AQUA))
+//                        .append(text(": ", NamedTextColor.WHITE))
+//                        .append(text(average + "ms", getPingColor(average), TextDecoration.BOLD))
+//                        .append(text(" ± ", NamedTextColor.AQUA))
+//                        .append(text(jitter, getJitterColor(jitter)));
+//
+//                bukkitAudiences.player(viewer).sendMessage(message.build());
             });
 
             event.setCancelled(true);
@@ -203,6 +254,21 @@ public class Ping extends PacketListenerAbstract {
             for (int i = 0; i < count; i++)
                 sum = sum + Math.abs(responses[i] - average);
             return sum / count;
+        }
+
+        private static final Component EMPTY_BAR = text("┃", NamedTextColor.GRAY);
+        Component constructHistoryLine() {
+            var bars = new Component[responses.length];
+            Arrays.fill(bars, EMPTY_BAR);
+            if (count != 0) {
+                for (var i = 0; i < responses.length; i++) {
+                    var ping = responses[Math.floorMod(index - count + i, responses.length)];
+                    var color = getPingColor(ping);
+                    bars[i] = text("┃", color).hoverEvent(text(ping + "ms", color));
+                }
+            }
+
+            return Component.join(JoinConfiguration.noSeparators(), bars);
         }
     }
 
