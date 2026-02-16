@@ -2,7 +2,6 @@ package me.fireballs.brady.tools
 
 import me.fireballs.brady.core.*
 import me.fireballs.brady.tools.pvpfx.ProjectileSkins
-import net.kyori.adventure.text.Component.newline
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -71,6 +70,30 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.DAYLIGHT_DETECTOR),
     )
 
+    val mineplexSounds = BooleanSettingValue(
+        "settings.mineplexsounds",
+        false,
+        "&6Mineplex Hit sounds".cc(),
+        listOf("&7Use damage sounds from Mineplex".cc()),
+        itembox(Material.WOOL).setDamage(1),
+    )
+
+    val flagSounds = BooleanSettingValue(
+        "settings.flagsounds",
+        true,
+        "&fFlag Hit Sounds".cc(),
+        listOf("&7Plays an alternate damage sound".cc(), "&7for the flagholder".cc()),
+        itembox(Material.BANNER).setDamage(15),
+    )
+
+    val comboSounds = BooleanSettingValue(
+        "settings.combosounds",
+        true,
+        "&bCombo Sounds".cc(),
+        listOf("&7Makes combos sound crunchier".cc()),
+        itembox(Material.PRISMARINE_CRYSTALS),
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -78,7 +101,10 @@ class ToolsSettings : Listener, KoinComponent {
             projectileSkin,
             jumpResetParticles,
             ballProjection,
-            dayvision
+            dayvision,
+            mineplexSounds,
+            flagSounds,
+            comboSounds,
         )
 
         tools.registerEvents(this)
