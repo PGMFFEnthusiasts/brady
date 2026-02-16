@@ -247,13 +247,13 @@ class Menu(
 class MenuManager : Listener, KoinComponent {
     private val plugin by inject<Core>()
 
+    internal val playerMenus = MapMaker().makeMap<Player, Menu>()
+
     init {
         plugin.registerEvents(this)
         plugin.launch(plugin.minecraftDispatcher) { garbageCollect() }
         plugin.launch(plugin.minecraftDispatcher) { renderTick() }
     }
-
-    internal val playerMenus = MapMaker().makeMap<Player, Menu>()
 
     private suspend fun garbageCollect() {
         while (true) {

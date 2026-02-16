@@ -166,7 +166,7 @@ private val openSound = soundbox()
 private val closeSound = soundbox()
     .add(Sound.DOOR_CLOSE, 0.75f, 0.2f)
 
-val settingSlotPositions = (9..45).filter { it % 9 != 0 && it % 8 != 0 }
+val settingSlotPositions = (9..45).filter { it % 9 != 0 && it % 9 != 8 }
 
 class Settings : Listener, KoinComponent {
     private val core by inject<Core>()
