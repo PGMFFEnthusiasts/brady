@@ -4,12 +4,15 @@ import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.google.common.collect.MapMaker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import net.luckperms.api.LuckPermsProvider
 import net.luckperms.api.model.user.User
 import net.luckperms.api.node.NodeType
 import net.luckperms.api.node.types.MetaNode
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -29,7 +32,7 @@ enum class Retrieval {
 
 private object KavyValkey {
     private const val namespace = "kavy"
-    private val client = runCatching { newValkeyPooledClient() }.getOrNull()
+    val client = runCatching { newValkeyPooledClient() }.getOrNull()
 
     private val cache: ConcurrentMap<UUID, ConcurrentMap<String, String>> = MapMaker()
         .concurrencyLevel(4)
@@ -37,7 +40,7 @@ private object KavyValkey {
 
     val enabled = client != null
 
-    private fun redisKey(uuid: UUID) = "$namespace:${uuid.toString().lowercase()}"
+    fun redisKey(uuid: UUID) = "$namespace:${uuid.toString().lowercase()}"
 
     fun getCached(uuid: UUID, key: String) = cache[uuid]?.get(key)
 
@@ -177,15 +180,79 @@ class KavyManager : Listener, KoinComponent {
         val value: String,
     )
 
-    private val tools by inject<Core>()
+    private val core by inject<Core>()
     private var syncJob: Job? = null
 
     init {
-        tools.registerEvents(this)
-        syncJob = tools.launch(tools.asyncDispatcher) {
+        core.registerEvents(this)
+        syncJob = core.launch(core.asyncDispatcher) {
             while (true) {
                 delay(20.ticks)
                 sync()
+            }
+        }
+        command("kavy", permission = "brady.admin") {
+            fun CommandExecution.resolvePlayer() = subArgs.getOrNull(0)?.let {
+                Bukkit.getPlayer(it) ?: err("Player not found")
+            } ?: player()
+            subcommand("list", "<&cplayer&7> -&f list all keys & values in a player's kavy") {
+                executor {
+                    val client = KavyValkey.client ?: err("Use LP meta commands instead")
+                    val p = resolvePlayer()
+                    val keys = withContext(Dispatchers.IO) {
+                        client.hgetAll(KavyValkey.redisKey(p.uniqueId))
+                    }
+                    sender.send("&7${p.name}'s keys (${keys.size}):".cc())
+                    keys.forEach { (k, v) ->
+                        sender.send("&7$k: $v".cc().fill("/kavy set ${p.name} $k "))
+                    }
+                }
+
+                tabCompleter = playerCompleter
+            }
+
+            subcommand("get", "<&cplayer&7> <&ckey&7> -&f retrieve the value of a player's key") {
+                executor {
+                    val client = KavyValkey.client ?: err("Use LP meta commands instead")
+                    val p = resolvePlayer()
+                    val k = capture("Provide a key") { subArgs[1] }
+                    val v = withContext(Dispatchers.IO) {
+                        client.hget(KavyValkey.redisKey(p.uniqueId), k)
+                    }
+                    sender.send("&7${p.name}'s $k: $v".cc())
+                }
+
+                tabCompleter = {
+                    if (subArgs.size < 2) playerCompleter()
+                    else emptyList()
+                }
+            }
+
+            subcommand("set", "<&cplayer&7> <&ckey&7> <&cvalue&7> -&f set the value of a player's key") {
+                executor {
+                    val client = KavyValkey.client ?: err("Use LP meta commands instead")
+                    val p = resolvePlayer()
+                    val k = capture("Provide a key") { subArgs[1] }
+                    val v = capture("Provide a value") { subArgs[2] }
+                    withContext(Dispatchers.IO) {
+                        client.hset(KavyValkey.redisKey(p.uniqueId), k, v)
+                    }
+                    sender.send("&7Set ${p.name}'s $k: $v".cc())
+                }
+
+                tabCompleter = {
+                    if (subArgs.size < 2) playerCompleter()
+                    else emptyList()
+                }
+            }
+
+            executor {
+                subcommands.forEach {
+                    sender.send(
+                        ("&7/kavy &c" + it.name + " &7" + it.description).cc()
+                            .fill("/kavy ${it.name} ")
+                    )
+                }
             }
         }
     }
