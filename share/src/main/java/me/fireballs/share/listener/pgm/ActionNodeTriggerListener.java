@@ -1,7 +1,10 @@
 package me.fireballs.share.listener.pgm;
 
+import me.fireballs.brady.corepgm.event.BradyFootballLifecycleEvent;
+import me.fireballs.brady.corepgm.event.FootballLifecycleAction;
 import me.fireballs.share.football.CompletedFootballPass;
 import me.fireballs.share.football.FootballListener;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -69,6 +72,7 @@ public class ActionNodeTriggerListener implements Listener {
         }
         if (!(event.scope instanceof MatchPlayer matchPlayer)) return;
         if (isReceiveControlAction(event.nodeId)) {
+            emitLifecycleEvent(FootballLifecycleAction.CARRIER_CHANGE, matchPlayer);
             for (final FootballListener observer : observers) {
                 observer.onCarrierChange(matchPlayer);
             }
@@ -86,6 +90,15 @@ public class ActionNodeTriggerListener implements Listener {
                     observer.onTouchdownPass(thrower);
                 }
             }
+            emitLifecycleEvent(FootballLifecycleAction.TOUCHDOWN, matchPlayer);
+            if (isTouchdownPass) {
+                emitLifecycleEvent(
+                    FootballLifecycleAction.TOUCHDOWN_PASS,
+                    thrower,
+                    thrower,
+                    catcher
+                );
+            }
             resetState();
         } else if (event.nodeId.equals(flagStealActionId)) { // strip, change thrower then reset
             final boolean wasPassed = thrower != null && catcher != null;
@@ -93,6 +106,7 @@ public class ActionNodeTriggerListener implements Listener {
                 lossOfControlLocation = catcher.getLocation();
                 emitPass();
             }
+            emitLifecycleEvent(FootballLifecycleAction.BALL_STEAL, matchPlayer);
             for (final FootballListener observer : observers) {
                 observer.onBallSteal(matchPlayer);
             }
@@ -102,6 +116,7 @@ public class ActionNodeTriggerListener implements Listener {
             if (isReceiveControlAction(event.nodeId)) { // when some1 gets the ball
                 log("football", "(Potential) thrower identified");
                 thrower = matchPlayer;
+                emitLifecycleEvent(FootballLifecycleAction.BALL_PICKUP, matchPlayer);
                 for (final FootballListener observer : observers) {
                     observer.onBallPickup(matchPlayer);
                 }
@@ -109,6 +124,7 @@ public class ActionNodeTriggerListener implements Listener {
         } else if (throwLocation == null) { // some1 got da ball
             if (event.nodeId.equals(ballThrownActionId)) { // thrower makes a move
                 log("football", "Thrower made a throw");
+                emitLifecycleEvent(FootballLifecycleAction.THROW, thrower);
                 for (final FootballListener observer : observers) {
                     observer.onThrow(thrower);
                 }
@@ -122,6 +138,8 @@ public class ActionNodeTriggerListener implements Listener {
                 log("football", "Thrower completed the pass!");
                 catcher = matchPlayer;
                 catchLocation = matchPlayer.getLocation();
+                emitLifecycleEvent(FootballLifecycleAction.CATCH, catcher, thrower, catcher);
+                emitLifecycleEvent(FootballLifecycleAction.PASS, thrower, thrower, catcher);
                 for (final FootballListener observer : observers) {
                     observer.onCatch(catcher);
                     observer.onPass(thrower, catcher);
@@ -172,9 +190,33 @@ public class ActionNodeTriggerListener implements Listener {
             thrower, throwLocation,
             catcher, catchLocation, lossOfControlLocation
         );
+        Bukkit.getPluginManager().callEvent(
+            new BradyFootballLifecycleEvent(
+                FootballLifecycleAction.PASS_POSSESSION_COMPLETED,
+                catcher,
+                thrower,
+                catcher,
+                throwLocation,
+                catchLocation,
+                lossOfControlLocation
+            )
+        );
         for (final FootballListener observer : observers) {
             observer.onPassPossessionCompletion(completedThrow);
         }
+    }
+
+    private void emitLifecycleEvent(final FootballLifecycleAction action, final MatchPlayer actor) {
+        Bukkit.getPluginManager().callEvent(new BradyFootballLifecycleEvent(action, actor));
+    }
+
+    private void emitLifecycleEvent(
+        final FootballLifecycleAction action,
+        final MatchPlayer actor,
+        final MatchPlayer thrower,
+        final MatchPlayer catcher
+    ) {
+        Bukkit.getPluginManager().callEvent(new BradyFootballLifecycleEvent(action, actor, thrower, catcher));
     }
 
     private void resetState() {
