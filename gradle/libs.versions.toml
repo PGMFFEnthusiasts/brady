@@ -19,7 +19,7 @@ tc-oc-pgm-core = "0.16-SNAPSHOT"
 com-github-retrooper-packetevents-spigot = "2.11.2"
 
 velocity-api = "3.4.0-SNAPSHOT"
-nats = "2.21.4"
+valkey-java = "5.5.0"
 postgres = "42.7.7"
 jctools = "4.0.3"
 
@@ -55,6 +55,6 @@ discord-webhooks = { module = "club.minnced:discord-webhooks", version.ref = "di
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "velocity-api" }
-nats = { module = "io.nats:jnats", version.ref = "nats" }
+valkey = { module = "io.valkey:valkey-java", version.ref = "valkey-java" }
 postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
 jctools = { module = "org.jctools:jctools-core", version.ref = "jctools"}

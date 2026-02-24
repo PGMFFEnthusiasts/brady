@@ -4,17 +4,17 @@ import com.github.shynixn.mccoroutine.velocity.launch
 import com.google.common.collect.MapMaker
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
-import io.nats.client.Nats
-import io.nats.client.Options
+import io.valkey.JedisPubSub
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.broxy.Broxy
 import me.fireballs.brady.broxy.utils.c
 import me.fireballs.brady.broxy.utils.cc
+import me.fireballs.brady.broxy.utils.newValkeyClient
 import me.fireballs.brady.broxy.utils.plus
 import me.fireballs.brady.broxy.utils.url
-import java.time.Duration
+import me.fireballs.brady.broxy.utils.valkeyUrlOrLocalDefault
 import java.util.concurrent.ConcurrentMap
 import kotlin.jvm.optionals.getOrNull
 
@@ -24,21 +24,25 @@ class StatusPull(
         .concurrencyLevel(2)
         .makeMap()
 ) {
+    private val redisUrl = valkeyUrlOrLocalDefault()
+
     init {
         plugin.pluginContainer.launch {
             withContext(Dispatchers.IO) {
-                val natsClient = runCatching {
-                    Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
-                }.getOrNull() ?: return@withContext
-
-                val sub = natsClient.subscribe("status.*")
-                natsClient.flush(Duration.ofSeconds(5))
-
                 while (true) {
-                    val msg = sub.nextMessage(0)
-                    val key = msg.subject
-                    val content = msg.data.decodeToString()
-                    statusMap[key] = content
+                    runCatching {
+                        newValkeyClient(redisUrl).use { jedis ->
+                            jedis.psubscribe(object : JedisPubSub() {
+                                override fun onPMessage(pattern: String?, channel: String?, message: String?) {
+                                    if (channel == null || message == null) return
+                                    statusMap[channel] = message
+                                }
+                            }, "status.*")
+                        }
+                    }.onFailure {
+                        it.printStackTrace()
+                        delay(1000L)
+                    }
                 }
             }
         }

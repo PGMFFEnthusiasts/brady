@@ -22,7 +22,7 @@ dependencies {
     compileOnly(libs.velocity.api)
     kapt(libs.velocity.api)
 
-    api(libs.nats)
+    api(libs.valkey)
     api(libs.jda)
     api(libs.jda.ktx)
     api(libs.logback)

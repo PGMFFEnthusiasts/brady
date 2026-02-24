@@ -2,18 +2,18 @@ package me.fireballs.brady.broxy.loggy
 
 import com.github.shynixn.mccoroutine.velocity.launch
 import dev.minn.jda.ktx.coroutines.await
-import io.nats.client.Nats
-import io.nats.client.Options
+import io.valkey.JedisPubSub
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.broxy.Broxy
 import me.fireballs.brady.broxy.utils.logExceptions
+import me.fireballs.brady.broxy.utils.newValkeyClient
+import me.fireballs.brady.broxy.utils.valkeyUrlOrLocalDefault
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.IncomingWebhookClient
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.WebhookClient
-import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class Loggy(
@@ -21,6 +21,7 @@ class Loggy(
     private val jda: JDA,
 ) {
     private val queue = ConcurrentLinkedQueue<String>()
+    private val redisUrl = valkeyUrlOrLocalDefault()
     private var client: IncomingWebhookClient? = null
 
     init {
@@ -36,23 +37,19 @@ class Loggy(
 
         plugin.pluginContainer.launch {
             withContext(Dispatchers.IO) {
-                logExceptions {
-                    Nats.connect(
-                        Options.builder()
-                            .server(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
-                            .reconnectWait(Duration.ofSeconds(10))
-                            .maxReconnects(-1)
-                            .build()
-                    ).use {
-                        val sub = it.subscribe("loggy")
-                        it.flush(Duration.ofSeconds(5))
-
-                        while (true) {
-                            val msg = sub.nextMessage(0)
-                            val content = msg.data.decodeToString()
-                            queue.offer(content)
+                while (true) {
+                    logExceptions {
+                        newValkeyClient(redisUrl).use { jedis ->
+                            jedis.subscribe(object : JedisPubSub() {
+                                override fun onMessage(channel: String?, message: String?) {
+                                    if (message == null) return
+                                    queue.offer(message)
+                                }
+                            }, "loggy")
                         }
                     }
+
+                    delay(1000L)
                 }
             }
         }

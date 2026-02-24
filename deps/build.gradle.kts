@@ -39,7 +39,7 @@ dependencies {
     api(libs.discord.webhooks)
     api(libs.logback)
 
-    api(libs.nats)
+    api(libs.valkey)
     api(libs.postgres)
     api(libs.jctools)
 }

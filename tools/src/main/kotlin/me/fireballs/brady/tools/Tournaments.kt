@@ -3,8 +3,7 @@ package me.fireballs.brady.tools
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.google.gson.Gson
-import io.nats.client.Nats
-import io.nats.client.Options
+import io.valkey.JedisPubSub
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -85,9 +84,8 @@ class Tournaments : Listener, KoinComponent {
 
     private val serverId = System.getenv("BRADY_SERVER") ?: "unknown"
 
-    private val natsClient = runCatching {
-        Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
-    }.getOrNull()
+    private val redisUrl = valkeyUrlOrNull()
+    private val redisClient = runCatching { newValkeyPooledClient(redisUrl) }.getOrNull()
 
     private var matchLoadDeferred: CompletableDeferred<Match>? = null
     private val gson = Gson()
@@ -124,13 +122,13 @@ class Tournaments : Listener, KoinComponent {
     private fun pushBack(state: TournamentState) {
         state.time = System.currentTimeMillis()
         plugin.launch(Dispatchers.IO) {
-            natsClient?.publish("tournament.state", gson.toJson(state).toByteArray())
+            redisClient?.publish("tournament.state", gson.toJson(state))
         }
     }
 
     private fun broadcast(message: Component) {
         plugin.launch(Dispatchers.IO) {
-            natsClient?.publish("tournament.broadcast", ("&c⚔ ".cc() + message).coloredText().toByteArray())
+            redisClient?.publish("tournament.broadcast", ("&c⚔ ".cc() + message).coloredText())
         }
     }
 
@@ -355,7 +353,7 @@ class Tournaments : Listener, KoinComponent {
                     okay.play(sender)
 
                     plugin.launch(Dispatchers.IO) {
-                        natsClient?.publish("tournament.match", gson.toJson(matchState).toByteArray())
+                        redisClient?.publish("tournament.match", gson.toJson(matchState))
                     }
 
                     broadcast(
@@ -387,52 +385,55 @@ class Tournaments : Listener, KoinComponent {
 
         plugin.registerEvents(this)
 
-        plugin.launch(Dispatchers.IO) {
-            val matchSub = natsClient?.subscribe("tournament.match") ?: return@launch
-            val pushSub = natsClient.subscribe("tournament.state")
-            val requestSub = natsClient.subscribe("tournament.request")
-            val playersSub = natsClient.subscribe("tournament.players")
-
-            natsClient.flush(Duration.ofSeconds(5))
-
+        redisUrl?.let { url ->
             plugin.launch(Dispatchers.IO) {
                 while (true) {
-                    val msg = matchSub.nextMessage(0).data.toString(Charsets.UTF_8)
-                    val state = gson.fromJson(msg, TournamentMatch::class.java)
-                    plugin.launch { handleMatch(state) }
-                }
-            }
+                    runCatching {
+                        val jedis = newValkeyClient(url) ?: return@runCatching
+                        jedis.use {
+                            it.subscribe(object : JedisPubSub() {
+                                override fun onMessage(channel: String?, message: String?) {
+                                    if (channel == null || message == null) return
 
-            plugin.launch(Dispatchers.IO) {
-                while (true) {
-                    val msg = pushSub.nextMessage(0).data.toString(Charsets.UTF_8)
-                    val state = gson.fromJson(msg, TournamentState::class.java)
-                    val oldState = currentState
-                    if (oldState != null) {
-                        if (oldState.time <= state.time) currentState = state
-                    } else currentState = state
-                }
-            }
+                                    when (channel) {
+                                        "tournament.match" -> {
+                                            val state = gson.fromJson(message, TournamentMatch::class.java)
+                                            plugin.launch { handleMatch(state) }
+                                        }
 
-            plugin.launch(Dispatchers.IO) {
-                while (true) {
-                    requestSub.nextMessage(0).data.toString(Charsets.UTF_8)
-                    val currentState = currentState ?: continue
-                    plugin.launch(Dispatchers.IO) {
-                        natsClient.publish("tournament.state", gson.toJson(currentState).toByteArray())
+                                        "tournament.state" -> {
+                                            val state = gson.fromJson(message, TournamentState::class.java)
+                                            val oldState = currentState
+                                            if (oldState != null) {
+                                                if (oldState.time <= state.time) currentState = state
+                                            } else currentState = state
+                                        }
+
+                                        "tournament.request" -> {
+                                            val state = currentState ?: return
+                                            plugin.launch(Dispatchers.IO) {
+                                                redisClient?.publish("tournament.state", gson.toJson(state))
+                                            }
+                                        }
+
+                                        "tournament.players" -> {
+                                            val state = gson.fromJson(message, PeopleList::class.java)
+                                            currentPlayers = state.players
+                                        }
+                                    }
+                                }
+                            }, "tournament.match", "tournament.state", "tournament.request", "tournament.players")
+                        }
+                    }.onFailure {
+                        it.printStackTrace()
+                        delay(1000L)
                     }
                 }
             }
+        }
 
-            plugin.launch(Dispatchers.IO) {
-                while (true) {
-                    val msg = playersSub.nextMessage(0).data.toString(Charsets.UTF_8)
-                    val state = gson.fromJson(msg, PeopleList::class.java)
-                    currentPlayers = state.players
-                }
-            }
-
-            natsClient.publish("tournament.request", serverId.toByteArray())
+        plugin.launch(Dispatchers.IO) {
+            redisClient?.publish("tournament.request", serverId)
         }
     }
 

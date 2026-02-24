@@ -1,12 +1,11 @@
 package me.fireballs.brady.bot.listener
 
-import io.nats.client.Nats
-import io.nats.client.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.bot.Bot
 import me.fireballs.brady.corepgm.generateInGameInfoBoard
 import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.core.newValkeyPooledClient
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -17,13 +16,12 @@ import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchPhaseChangeEvent
 import tc.oc.pgm.events.PlayerJoinMatchEvent
 import tc.oc.pgm.events.PlayerLeaveMatchEvent
-import java.time.Duration
 
 class StatusPush : Listener, KoinComponent {
     private val bot by inject<Bot>()
 
-    private val natsClient = runCatching {
-        Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
+    private val redisClient = runCatching {
+        newValkeyPooledClient()
     }.getOrNull()
 
     init {
@@ -33,11 +31,10 @@ class StatusPush : Listener, KoinComponent {
     private suspend fun publishStatus() {
         withContext(Dispatchers.IO) {
             runCatching {
-                natsClient?.publish(
+                redisClient?.publish(
                     "status.${System.getenv("BRADY_SERVER") ?: "unknown"}",
-                    generateInGameInfoBoard().encodeToByteArray()
+                    generateInGameInfoBoard()
                 )
-                natsClient?.flush(Duration.ofSeconds(5L))
             }
         }
     }

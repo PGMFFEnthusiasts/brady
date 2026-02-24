@@ -2,8 +2,6 @@ package me.fireballs.brady.bot.listener
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
-import io.nats.client.Nats
-import io.nats.client.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -23,7 +21,6 @@ import tc.oc.pgm.api.event.ChannelMessageEvent
 import tc.oc.pgm.channels.AdminChannel
 import tc.oc.pgm.channels.GlobalChannel
 import tc.oc.pgm.channels.TeamChannel
-import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class Loggy : Listener, KoinComponent {
@@ -31,8 +28,8 @@ class Loggy : Listener, KoinComponent {
 
     private val queue = ConcurrentLinkedQueue<String>()
     private val prefix = ansify("&8(${System.getenv("BRADY_SERVER")}) ".cc())
-    private val natsClient = runCatching {
-        Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
+    private val redisClient = runCatching {
+        newValkeyPooledClient()
     }.getOrNull()
 
     init {
@@ -55,8 +52,7 @@ class Loggy : Listener, KoinComponent {
 
         withContext(Dispatchers.IO) {
             runCatching {
-                natsClient?.publish("loggy", linesToFlush.joinToString("\n").encodeToByteArray())
-                natsClient?.flush(Duration.ofSeconds(5L))
+                redisClient?.publish("loggy", linesToFlush.joinToString("\n"))
             }
         }
     }

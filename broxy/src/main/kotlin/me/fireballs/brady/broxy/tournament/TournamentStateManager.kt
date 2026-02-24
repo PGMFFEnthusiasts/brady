@@ -4,14 +4,15 @@ import com.github.shynixn.mccoroutine.velocity.launch
 import com.google.gson.Gson
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
-import io.nats.client.Nats
-import io.nats.client.Options
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import io.valkey.JedisPubSub
 import me.fireballs.brady.broxy.Broxy
-import me.fireballs.brady.broxy.utils.c
 import me.fireballs.brady.broxy.utils.cc
+import me.fireballs.brady.broxy.utils.newValkeyClient
+import me.fireballs.brady.broxy.utils.newValkeyPooledClient
+import me.fireballs.brady.broxy.utils.valkeyUrlOrLocalDefault
 import net.kyori.adventure.text.Component
-import java.time.Duration
 import java.util.UUID
 
 // <-- not shared via deps; copy-paste changes
@@ -47,8 +48,9 @@ class PeopleList(
 class TournamentStateManager(
     private val plugin: Broxy,
 ) {
-    private val natsClient = runCatching {
-        Nats.connect(System.getenv("BRADY_NATS") ?: Options.DEFAULT_URL)
+    private val redisUrl = valkeyUrlOrLocalDefault()
+    private val redisClient = runCatching {
+        newValkeyPooledClient(redisUrl)
     }.getOrNull()
 
     private val truePersonLookaside = mutableMapOf<UUID, Person>()
@@ -68,63 +70,60 @@ class TournamentStateManager(
 
     init {
         plugin.pluginContainer.launch(Dispatchers.IO) {
-            val broadcasts = natsClient?.subscribe("tournament.broadcast") ?: return@launch
-            val dataRequests = natsClient.subscribe("tournament.request")
-            val pushSub = natsClient.subscribe("tournament.state")
-            val matchSub = natsClient.subscribe("tournament.match")
-            natsClient.flush(Duration.ofSeconds(5L))
+            while (true) {
+                runCatching {
+                    newValkeyClient(redisUrl).use { jedis ->
+                        jedis.subscribe(object : JedisPubSub() {
+                            override fun onMessage(channel: String?, message: String?) {
+                                if (channel == null || message == null) return
 
-            plugin.pluginContainer.launch(Dispatchers.IO) {
-                while (true) {
-                    val msg = broadcasts.nextMessage(0).data.toString(Charsets.UTF_8)
-                    b(msg.cc(false))
-                }
-            }
+                                when (channel) {
+                                    "tournament.broadcast" -> b(message.cc(false))
 
-            plugin.pluginContainer.launch(Dispatchers.IO) {
-                while (true) {
-                    dataRequests.nextMessage(0).data.toString(Charsets.UTF_8)
-                    plugin.pluginContainer.launch(Dispatchers.IO) {
-                        natsClient.publish("tournament.players", gson.toJson(peopleList).toByteArray())
-                        natsClient.publish("tournament.state", gson.toJson(trueState).toByteArray())
+                                    "tournament.request" -> plugin.pluginContainer.launch(Dispatchers.IO) {
+                                        redisClient?.publish("tournament.players", gson.toJson(peopleList))
+                                        redisClient?.publish("tournament.state", gson.toJson(trueState))
+                                    }
+
+                                    "tournament.state" -> {
+                                        val state = gson.fromJson(message, TournamentState::class.java)
+                                        val oldState = trueState
+                                        if (oldState.time <= state.time) trueState = state
+                                    }
+
+                                    "tournament.match" -> plugin.pluginContainer.launch(Dispatchers.IO) {
+                                        val state = gson.fromJson(message, TournamentMatch::class.java)
+
+                                        val targetServer = plugin.server.getServer(state.server).orElse(null)
+                                        if (targetServer == null) {
+                                            b("&c⚔ &fServer &c${state.server}&f not found!".cc())
+                                            return@launch
+                                        }
+
+                                        b("&c⚔ &fPulling players into &c${state.server}&f...".cc())
+
+                                        state.teams
+                                            .flatMap { it.players }
+                                            .map { it.uuid }
+                                            .forEach { uuid ->
+                                                plugin.server.getPlayer(UUID.fromString(uuid)).ifPresent { player ->
+                                                    player.createConnectionRequest(targetServer).fireAndForget()
+                                                }
+                                            }
+                                    }
+                                }
+                            }
+                        }, "tournament.broadcast", "tournament.request", "tournament.state", "tournament.match")
                     }
+                }.onFailure {
+                    it.printStackTrace()
+                    delay(1000L)
                 }
             }
+        }
 
-            plugin.pluginContainer.launch(Dispatchers.IO) {
-                while (true) {
-                    val msg = pushSub.nextMessage(0).data.toString(Charsets.UTF_8)
-                    val state = gson.fromJson(msg, TournamentState::class.java)
-                    val oldState = trueState
-                    if (oldState.time <= state.time) trueState = state
-                }
-            }
-
-            plugin.pluginContainer.launch(Dispatchers.IO) {
-                while (true) {
-                    val msg = matchSub.nextMessage(0).data.toString(Charsets.UTF_8)
-                    val state = gson.fromJson(msg, TournamentMatch::class.java)
-
-                    val targetServer = plugin.server.getServer(state.server).orElse(null)
-                    if (targetServer == null) {
-                        b("&c⚔ &fServer &c${state.server}&f not found!".cc())
-                        continue
-                    }
-
-                    b("&c⚔ &fPulling players into &c${state.server}&f...".cc())
-
-                    state.teams
-                        .flatMap { it.players }
-                        .map { it.uuid }
-                        .forEach { uuid ->
-                        plugin.server.getPlayer(UUID.fromString(uuid)).ifPresent { player ->
-                            player.createConnectionRequest(targetServer).fireAndForget()
-                        }
-                    }
-                }
-            }
-
-            natsClient.publish("tournament.request", "broxy".toByteArray())
+        plugin.pluginContainer.launch(Dispatchers.IO) {
+            redisClient?.publish("tournament.request", "broxy")
         }
     }
 
@@ -143,7 +142,7 @@ class TournamentStateManager(
         truePersonLookaside[event.player.uniqueId] = person
 
         plugin.pluginContainer.launch(Dispatchers.IO) {
-            natsClient?.publish("tournament.players", gson.toJson(peopleList).toByteArray())
+            redisClient?.publish("tournament.players", gson.toJson(peopleList))
         }
     }
 }
