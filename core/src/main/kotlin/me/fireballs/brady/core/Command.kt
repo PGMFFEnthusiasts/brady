@@ -32,7 +32,7 @@ class CommandExecution(
         try {
             return block()
         } catch (e: Exception) {
-            err(error ?: e.message ?: "Unknown error")
+            err(error ?: e.message ?: "Unknown error.")
         }
     }
 }
@@ -57,7 +57,7 @@ class CommandBuilder(
             .sortedWith(String.CASE_INSENSITIVE_ORDER)
     }
 
-    var executor: CommandExecutor = { error("&c⚠ This command doesn't do anything".cc()) }
+    var executor: CommandExecutor = { error("&c⚠ This command doesn't do anything.".cc()) }
     var tabCompleter: CommandCompleter = { listOf() }
 
     fun executor(block: CommandExecutor) {
@@ -83,7 +83,7 @@ class CommandBuilder(
 
 fun command(
     name: String,
-    description: String = "This command has no description",
+    description: String = "This command has no description.",
     permission: String? = null,
     usageMessage: String = "/$name",
     vararg aliases: String = arrayOf(),
@@ -140,7 +140,7 @@ private class CommandHandler(val javaPlugin: SuspendingJavaPlugin, val commandBu
                 }
             } catch (exception: Exception) {
                 exception.printStackTrace()
-                sender.send("&c⚠ A fatal error has occurred in the course of executing this command".cc())
+                sender.send("&c⚠ A fatal error has occurred in the course of executing this command.".cc())
                 soundbox()
                     .add(0, Sound.EXPLODE)
                     .play(sender)
