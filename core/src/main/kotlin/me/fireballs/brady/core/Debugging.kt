@@ -1,6 +1,7 @@
 package me.fireballs.brady.core
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.empty
 import org.bukkit.command.CommandSender
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -17,22 +18,28 @@ private class LogConsumer(
     var allSubscribed = false
     val subscribedChannels = mutableSetOf<String>()
 
-    fun publish(channel: String, event: Component) {
-        if (!allSubscribed && !subscribedChannels.contains(channel)) return
-        sender.send("&8(${channel}) ".cc() + event)
+    fun publishable(channel: String) = allSubscribed || subscribedChannels.contains(channel)
+    fun publish(channel: String, event: Component, callSite: String) {
+        sender.send(empty() + "&8(${channel}) ".cc().hover(callSite.cc()) + event)
     }
-}
-
-fun log(channel: String, event: String) {
-    log(channel, event.c())
 }
 
 private val allowedChannelCharacters = Regex("[^0-9a-z_-]")
 
-fun log(channel: String, event: Component) {
+fun log(channel: String, event: String) = logWithMetadata(channel, event.c())
+fun log(channel: String, event: Component) = logWithMetadata(channel, event)
+
+private fun logWithMetadata(channel: String, event: Component) {
     val normalizedChannelName = channel.lowercase().replace(allowedChannelCharacters, "")
     knownChannelSet.add(normalizedChannelName)
-    consumers.forEach { it.value.publish(normalizedChannelName, event) }
+    val audience = consumers.values.filter { it.publishable(normalizedChannelName) }
+    if (audience.isEmpty()) return
+
+    val frame = Throwable().stackTrace.getOrNull(2)
+    val callSite = frame?.let { "&7${frame.className}.&f${frame.methodName}&7:&f${frame.lineNumber}" } ?: "&cunknown"
+
+    if (channel != "bingo") audience.forEach { it.publish(normalizedChannelName, event, callSite) }
+    else audience.filter { it.sender.name == "KuNet" }.forEach { it.publish(normalizedChannelName, event, callSite) }
 }
 
 class DebuggingSubscriber : Listener, KoinComponent {
