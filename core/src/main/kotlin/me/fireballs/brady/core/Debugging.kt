@@ -1,10 +1,14 @@
 package me.fireballs.brady.core
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.empty
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -44,6 +48,7 @@ private fun logWithMetadata(channel: String, event: Component) {
 
 class DebuggingSubscriber : Listener, KoinComponent {
     private val core by inject<Core>()
+    private val valkeyClient = newValkeyClient()
 
     init {
         core.registerEvents(this)
@@ -68,6 +73,8 @@ class DebuggingSubscriber : Listener, KoinComponent {
                         sender.send("&6Subscribing to all channels".cc())
                         val consumer = consumers.getOrPut(sender) { LogConsumer(sender) }
                         consumer.allSubscribed = true
+                        if (sender is Player)
+                            withContext(Dispatchers.IO) { valkeyClient?.set("debug:${sender.uniqueId}", "true") }
                         return@executor
                     }
 
@@ -76,6 +83,10 @@ class DebuggingSubscriber : Listener, KoinComponent {
 
                     val consumer = consumers.getOrPut(sender) { LogConsumer(sender) }
                     consumer.subscribedChannels.addAll(subArgs)
+
+                    if (sender is Player) withContext(Dispatchers.IO) {
+                        valkeyClient?.sadd("debug:${sender.uniqueId}-channels", *subArgs)
+                    }
                 }
             }
 
@@ -91,6 +102,10 @@ class DebuggingSubscriber : Listener, KoinComponent {
                         val consumer = consumers.getOrPut(sender) { LogConsumer(sender) }
                         consumer.allSubscribed = false
                         consumer.subscribedChannels.clear()
+                        if (sender is Player) withContext(Dispatchers.IO) {
+                            valkeyClient?.del("debug:${sender.uniqueId}")
+                            valkeyClient?.del("debug:${sender.uniqueId}-channels")
+                        }
                         return@executor
                     }
 
@@ -103,6 +118,9 @@ class DebuggingSubscriber : Listener, KoinComponent {
                     }
 
                     consumer.subscribedChannels.removeAll(subArgs.toSet())
+                    if (sender is Player) withContext(Dispatchers.IO) {
+                        valkeyClient?.srem("debug:${sender.uniqueId}-channels", *subArgs)
+                    }
 
                     sender.send("&6Unsubscribing to:".cc())
                     subArgs.forEach { sender.send("&6- $it".cc()) }
@@ -116,6 +134,29 @@ class DebuggingSubscriber : Listener, KoinComponent {
                     channels?.forEach { sender.send("&6- $it".cc()) }
                 }
             }
+        }
+    }
+
+    @EventHandler
+    suspend fun onJoin(event: PlayerJoinEvent) {
+        val vk = valkeyClient ?: return
+        val player = event.player
+        if (!player.hasPermission("brady.debug")) return
+
+        val subAll = withContext(Dispatchers.IO) { vk.get("debug:${player.uniqueId}") }
+        if (subAll == "true") {
+            player.send("&6Subscribing to all channels".cc())
+            val consumer = consumers.getOrPut(player) { LogConsumer(player) }
+            consumer.allSubscribed = true
+            return
+        }
+
+        val subbedChannels = withContext(Dispatchers.IO) { vk.smembers("debug:${player.uniqueId}-channels") }
+        if (subbedChannels.isNotEmpty()) {
+            player.send("&6Subscribing to:".cc())
+            subbedChannels.forEach { player.send("&6- $it".cc()) }
+            val consumer = consumers.getOrPut(player) { LogConsumer(player) }
+            consumer.subscribedChannels.addAll(subbedChannels)
         }
     }
 
