@@ -14,7 +14,6 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import tc.oc.pgm.api.match.Match
 import tc.oc.pgm.api.match.MatchManager
 import java.util.*
 
