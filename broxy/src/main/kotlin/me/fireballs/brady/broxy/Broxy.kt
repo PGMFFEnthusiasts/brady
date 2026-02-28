@@ -16,6 +16,7 @@ import me.fireballs.brady.broxy.listeners.BetterMOTD
 import me.fireballs.brady.broxy.listeners.Router
 import me.fireballs.brady.broxy.listeners.Status
 import me.fireballs.brady.broxy.listeners.StatusPull
+import me.fireballs.brady.broxy.listeners.TransferMessages
 import me.fireballs.brady.broxy.loggy.Loggy
 import me.fireballs.brady.broxy.tournament.TournamentStateManager
 import net.dv8tion.jda.internal.utils.JDALogger
@@ -46,6 +47,7 @@ class Broxy {
         server.eventManager.register(this, BetterMOTD(this))
         server.eventManager.register(this, Router(this))
         server.eventManager.register(this, ApolloChatLength)
+        server.eventManager.register(this, TransferMessages())
 
         val status = StatusPull(this)
         server.eventManager.register(this, status)

@@ -37,6 +37,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::ProjectileSkin)
             serviceOf(::Dayvision)
             serviceOf(::HitSounds)
+            serviceOf(::TransferMessages)
         }
 
         loadModule(toolModule)
