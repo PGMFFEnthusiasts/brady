@@ -39,6 +39,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::HitSounds)
             serviceOf(::TransferMessages)
             serviceOf(::InteractFixer)
+            serviceOf(::BouncyBall)
         }
 
         loadModule(toolModule)
