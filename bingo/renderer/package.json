@@ -1,0 +1,12 @@
+{
+  "name": "bingo-renderer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "bun run render-bingo.ts"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.80",
+    "ioredis": "^5.6.1"
+  }
+}

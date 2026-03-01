@@ -1,0 +1,6 @@
+name: Bingo
+softdepend:
+  - CorePGM
+  - Tools
+main: me.fireballs.brady.bingo.Bingo
+version: 1.0.0

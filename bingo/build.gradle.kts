@@ -1,0 +1,8 @@
+plugins {
+    id("gradleBuild.shadow")
+}
+
+dependencies {
+    compileOnlyApi(project(":core-pgm"))
+    compileOnlyApi(project(":tools"))
+}
