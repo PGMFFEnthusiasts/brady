@@ -38,6 +38,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::Dayvision)
             serviceOf(::HitSounds)
             serviceOf(::TransferMessages)
+            serviceOf(::InteractFixer)
         }
 
         loadModule(toolModule)
