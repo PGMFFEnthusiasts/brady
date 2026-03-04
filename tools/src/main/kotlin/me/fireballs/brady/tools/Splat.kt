@@ -1,6 +1,8 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.*
+import me.fireballs.brady.core.log
+import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.core.soundbox
 import me.fireballs.brady.corepgm.FeatureFlagBool
 import org.bukkit.Sound
 import org.bukkit.entity.EntityType
@@ -23,9 +25,9 @@ class Splat : Listener, KoinComponent {
     }
 
     private val thud = soundbox()
-        .add(Sound.DIG_GRASS, 1.75f)
-        .add(Sound.DIG_SNOW, 1.75f)
-        .add(Sound.NOTE_BASS, 0.5f)
+        .add(Sound.DIG_GRASS, 1.75f, 10f)
+        .add(Sound.DIG_SNOW, 1.75f, 10f)
+        .add(Sound.NOTE_BASS, 0.5f, 10f)
 
     private var ignoreNextHit = false
 
@@ -41,7 +43,7 @@ class Splat : Listener, KoinComponent {
         log("snowball-hits", "ignoreNextHit = $ignoreNextHit")
         if (!ignoreNextHit) {
             for (player in event.world.players) {
-                if (settings.splatSetting.retrieveValue(player)) thud.play(player)
+                if (settings.splatSetting.retrieveValue(player)) thud.play(player, event.entity.location.toVector())
             }
         }
         ignoreNextHit = false
