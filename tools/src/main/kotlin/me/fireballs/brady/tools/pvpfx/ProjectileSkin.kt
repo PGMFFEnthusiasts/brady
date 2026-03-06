@@ -17,7 +17,6 @@ import org.bukkit.event.entity.ProjectileLaunchEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
-import kotlin.getValue
 
 enum class ProjectileSkins {
     SNOWBALL,

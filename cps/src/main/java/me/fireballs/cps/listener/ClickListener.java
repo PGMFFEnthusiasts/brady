@@ -1,6 +1,7 @@
 package me.fireballs.cps.listener;
 
-import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import me.fireballs.cps.profile.Profile;

@@ -5,7 +5,6 @@ import me.fireballs.brady.core.loadModule
 import me.fireballs.brady.deps.PluginAnnotation
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import tc.oc.pgm.api.PGM
 import tc.oc.pgm.api.map.MapOrder

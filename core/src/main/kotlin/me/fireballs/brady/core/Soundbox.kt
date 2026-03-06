@@ -77,6 +77,7 @@ class Soundbox(
                     continue
                 }
 
+                val sl = sender.eyeLocation
                 when (soundMode) {
                     SoundMode.PERVASIVELY -> {
                         val modifiedSound = Sound.sound(
@@ -85,10 +86,9 @@ class Soundbox(
                             computeVolume(info.sound.volume()),
                             info.sound.pitch(),
                         )
-                        val sl = sender.location
                         adventure.playSound(modifiedSound, sl.x, sl.y + k.toDouble(), sl.z)
                     }
-                    SoundMode.AT_AUDIENCE -> adventure.playSound(info.sound)
+                    SoundMode.AT_AUDIENCE -> adventure.playSound(info.sound, sl.x, sl.y, sl.z)
                 }
             }
         }

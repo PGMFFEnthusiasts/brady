@@ -35,7 +35,7 @@ import tc.oc.pgm.timelimit.TimeLimit
 import tc.oc.pgm.timelimit.TimeLimitMatchModule
 import tc.oc.pgm.util.StringUtils
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 

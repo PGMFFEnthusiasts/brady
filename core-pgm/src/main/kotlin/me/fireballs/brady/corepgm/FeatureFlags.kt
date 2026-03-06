@@ -1,13 +1,7 @@
 package me.fireballs.brady.corepgm
 
-import me.fireballs.brady.core.c
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.command
-import me.fireballs.brady.core.fill
-import me.fireballs.brady.core.hover
-import me.fireballs.brady.core.plus
-import me.fireballs.brady.core.send
 import com.google.common.collect.MapMaker
+import me.fireballs.brady.core.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import org.bukkit.Bukkit

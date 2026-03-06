@@ -1,6 +1,5 @@
 package me.fireballs.brady.corepgm
 
-import me.fireballs.brady.corepgm.ansify
 import me.fireballs.brady.core.c
 import me.fireballs.brady.core.cc
 import me.fireballs.brady.core.coloredText

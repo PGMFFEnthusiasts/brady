@@ -12,7 +12,8 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import me.fireballs.cps.profile.Profile;
 import me.fireballs.cps.profile.ProfileManager;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public record TagListener(ProfileManager profileManager) implements PacketListener {
 

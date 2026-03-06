@@ -3,10 +3,10 @@ package me.fireballs.brady.tools
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.delay
-import me.fireballs.brady.corepgm.FeatureFlagBool
-import me.fireballs.brady.corepgm.currentMatch
 import me.fireballs.brady.core.lerp
 import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.corepgm.FeatureFlagBool
+import me.fireballs.brady.corepgm.currentMatch
 import net.minecraft.server.v1_8_R3.EnumParticle
 import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles
 import org.bukkit.Location

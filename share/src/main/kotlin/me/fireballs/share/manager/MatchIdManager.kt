@@ -7,7 +7,6 @@ import me.fireballs.share.storage.Database
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
 import tc.oc.pgm.api.match.event.MatchStartEvent
 import tc.oc.pgm.api.match.event.MatchUnloadEvent
 import java.util.concurrent.ConcurrentHashMap

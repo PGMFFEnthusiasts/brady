@@ -3,9 +3,9 @@ package me.fireballs.brady.bot.listener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.bot.Bot
-import me.fireballs.brady.corepgm.generateInGameInfoBoard
-import me.fireballs.brady.core.registerEvents
 import me.fireballs.brady.core.newValkeyPooledClient
+import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.corepgm.generateInGameInfoBoard
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener

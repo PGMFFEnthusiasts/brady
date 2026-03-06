@@ -11,12 +11,7 @@ import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.minn.jda.ktx.jdabuilder.default
-import me.fireballs.brady.broxy.listeners.ApolloChatLength
-import me.fireballs.brady.broxy.listeners.BetterMOTD
-import me.fireballs.brady.broxy.listeners.Router
-import me.fireballs.brady.broxy.listeners.Status
-import me.fireballs.brady.broxy.listeners.StatusPull
-import me.fireballs.brady.broxy.listeners.TransferMessages
+import me.fireballs.brady.broxy.listeners.*
 import me.fireballs.brady.broxy.loggy.Loggy
 import me.fireballs.brady.broxy.tournament.TournamentStateManager
 import net.dv8tion.jda.internal.utils.JDALogger

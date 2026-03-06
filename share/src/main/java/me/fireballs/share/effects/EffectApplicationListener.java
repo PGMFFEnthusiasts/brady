@@ -15,11 +15,7 @@ import tc.oc.pgm.api.match.event.MatchFinishEvent;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.spawns.events.ParticipantSpawnEvent;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class EffectApplicationListener implements Listener, PersistentEffectRegistrationSubscriber {

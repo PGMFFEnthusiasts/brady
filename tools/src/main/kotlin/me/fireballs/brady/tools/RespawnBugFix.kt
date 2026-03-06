@@ -1,6 +1,8 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.*
+import me.fireballs.brady.core.cc
+import me.fireballs.brady.core.plus
+import me.fireballs.brady.core.registerEvents
 import me.fireballs.brady.corepgm.FeatureFlagBool
 import me.fireballs.brady.corepgm.component
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer

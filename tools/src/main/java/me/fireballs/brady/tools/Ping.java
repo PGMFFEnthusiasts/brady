@@ -12,7 +12,6 @@ import me.fireballs.brady.core.CommandExecution;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -21,7 +20,6 @@ import org.jctools.maps.NonBlockingHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.koin.java.KoinJavaComponent;
 import tc.oc.pgm.api.PGM;
-import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.util.named.NameStyle;
 
 import java.util.ArrayDeque;
@@ -32,7 +30,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static me.fireballs.brady.core.CommandKt.command;
 import static me.fireballs.brady.core.PluginExtensionsKt.registerPacketEvents;
-import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 public class Ping extends PacketListenerAbstract {

@@ -19,7 +19,6 @@ import me.fireballs.brady.tools.ToolsSettings
 import org.bukkit.Material
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.getValue
 
 @Suppress("DEPRECATION")
 class HideArmor : PacketListenerAbstract(), KoinComponent {

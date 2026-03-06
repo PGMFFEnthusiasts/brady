@@ -1,6 +1,8 @@
 package me.fireballs.brady.tools
 
-import me.fireballs.brady.core.*
+import me.fireballs.brady.core.command
+import me.fireballs.brady.core.itembox
+import me.fireballs.brady.core.menubox
 import me.fireballs.brady.corepgm.currentMatch
 import me.fireballs.brady.corepgm.forWhom
 import org.bukkit.Material

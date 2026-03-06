@@ -10,7 +10,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.EnumSet
+import java.util.*
 
 // i would love to contribute back to pgm
 // but im not sure if there is a true universal
