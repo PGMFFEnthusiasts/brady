@@ -1,7 +1,9 @@
 package me.fireballs.brady.tools
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
+import com.google.common.collect.MapMaker
 import kotlinx.coroutines.delay
 import me.fireballs.brady.core.log
 import me.fireballs.brady.core.registerEvents
@@ -28,14 +30,15 @@ import tc.oc.pgm.api.match.MatchManager
 import kotlin.math.*
 
 private const val bounceCoefficient = 0.8
-private const val kineticFriction = 0.7
-
-private const val rightRad = 90.0 * (Math.PI / 180.0)
+private const val kineticFriction = 0.6
 
 class BouncyBall : Listener, KoinComponent {
     private val tools by inject<Tools>()
     private val matchManager by inject<MatchManager>()
     private val enabled = FeatureFlagBool("bouncy")
+    private val rollingTickMap = MapMaker()
+        .weakKeys()
+        .makeMap<Snowball, Int>()
 
     init {
         tools.registerEvents(this)
@@ -136,26 +139,26 @@ class BouncyBall : Listener, KoinComponent {
             }
 
             if (ty) {
-                val vyLoss = vy.absoluteValue * (1.0 - bounceCoefficient)
                 vy = -vy * bounceCoefficient
-                val horizontalVelocity = sqrt(vx * vx + vz * vz)
-                val attackAngle = atan(abs(vy) / horizontalVelocity)
-                var gradient = (rightRad - attackAngle) / rightRad
-                gradient *= 2
-                vx += vx.sign * vyLoss * gradient
-                vz += vz.sign * vyLoss * gradient
                 ny = y
 
                 if (vy * vy < 0.03) {
                     vx *= kineticFriction
                     vy *= kineticFriction
                     vz *= kineticFriction
-                }
+                    rollingTickMap[snowball] = (rollingTickMap[snowball] ?: 0) + 1
+                } else rollingTickMap[snowball] = 0
             }
 
             if (tz) {
                 vz = -vz * bounceCoefficient
                 nz = z
+            }
+
+            if (vx * vx + vy * vy + vz * vz < 0.03 && (rollingTickMap[snowball] ?: 0) > 5) {
+                log("bouncy", "at rest")
+                snowball.remove()
+                return false
             }
 
             playBounce(
@@ -178,8 +181,6 @@ class BouncyBall : Listener, KoinComponent {
             || !genericBounce(tx = false, ty = true, tz = true)
             || !genericBounce(tx = true, ty = true, tz = true)
         ) return
-
-        log("bounce", "i reflected!")
 
         han.motX = vx
         han.motY = vy
@@ -208,5 +209,11 @@ class BouncyBall : Listener, KoinComponent {
         val snowball = event.entity
         if (snowball !is Snowball) return
         snowball.velocity = snowball.velocity.multiply(0.85)
+    }
+
+    @EventHandler
+    private fun onEntityDeath(event: EntityRemoveFromWorldEvent) {
+        log("bouncy", "snowball dead")
+        rollingTickMap.remove(event.entity)
     }
 }
