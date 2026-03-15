@@ -5,11 +5,15 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.google.common.collect.MapMaker
 import kotlinx.coroutines.delay
+import me.fireballs.brady.core.cc
+import me.fireballs.brady.core.data.SoundKeys
 import me.fireballs.brady.core.log
 import me.fireballs.brady.core.registerEvents
 import me.fireballs.brady.core.sendPacket
+import me.fireballs.brady.core.soundbox
 import me.fireballs.brady.corepgm.FeatureFlagBool
 import me.fireballs.brady.corepgm.currentMatch
+import net.kyori.adventure.text.Component.empty
 import net.minecraft.server.v1_8_R3.*
 import org.bukkit.Material
 import org.bukkit.World
@@ -17,8 +21,9 @@ import org.bukkit.block.Block
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld
 import org.bukkit.craftbukkit.v1_8_R3.block.CraftBlock
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftSnowball
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity
 import org.bukkit.craftbukkit.v1_8_R3.util.CraftMagicNumbers
+import org.bukkit.entity.Projectile
 import org.bukkit.entity.Snowball
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -27,6 +32,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.event.ActionNodeTriggerEvent
 import tc.oc.pgm.api.match.MatchManager
+import tc.oc.pgm.api.match.event.MatchStartEvent
 import kotlin.math.*
 
 private const val bounceCoefficient = 0.8
@@ -35,10 +41,10 @@ private const val kineticFriction = 0.6
 class BouncyBall : Listener, KoinComponent {
     private val tools by inject<Tools>()
     private val matchManager by inject<MatchManager>()
-    private val enabled = FeatureFlagBool("bouncy")
+    val enabled = FeatureFlagBool("bouncy")
     private val rollingTickMap = MapMaker()
         .weakKeys()
-        .makeMap<Snowball, Int>()
+        .makeMap<Projectile, Int>()
 
     init {
         tools.registerEvents(this)
@@ -106,12 +112,12 @@ class BouncyBall : Listener, KoinComponent {
 
     private fun tick() {
         matchManager.currentMatch()?.world?.entities?.forEach {
-            if (it is Snowball) tickBall(it)
+            if (it is Projectile) tickBall(it)
         }
     }
 
-    private fun tickBall(snowball: Snowball) {
-        val csb = snowball as CraftSnowball
+    private fun tickBall(snowball: Projectile) {
+        val csb = snowball as CraftEntity
         val han = csb.handle
         val x = han.locX
         val y = han.locY
@@ -204,10 +210,10 @@ class BouncyBall : Listener, KoinComponent {
     }
 
     @EventHandler
-    private fun onLaucnh(event: ProjectileLaunchEvent) {
+    private fun onLaunch(event: ProjectileLaunchEvent) {
         if (!enabled.state) return
         val snowball = event.entity
-        if (snowball !is Snowball) return
+        if (snowball !is Projectile) return
         snowball.velocity = snowball.velocity.multiply(0.85)
     }
 
@@ -215,5 +221,21 @@ class BouncyBall : Listener, KoinComponent {
     private fun onEntityDeath(event: EntityRemoveFromWorldEvent) {
         log("bouncy", "snowball dead")
         rollingTickMap.remove(event.entity)
+    }
+
+    private val bounceAnnounceSound = soundbox()
+        .add(SoundKeys.NOTE_BASS, 0.8f)
+        .add(1, SoundKeys.NOTE_BASS, 0.8f)
+
+    @EventHandler
+    private suspend fun onMatchStart(event: MatchStartEvent) {
+        if (!enabled.state) return
+        delay(10.ticks)
+        val match = event.match
+        match.sendMessage(empty())
+        match.sendMessage("&e&l ⎲ &6＊ &6&lＢＯＵＮＣＹ&6 ＊".cc())
+        match.sendMessage("&e&l ⎳ &7&oThe balls have elastic properties".cc())
+        match.sendMessage(empty())
+        bounceAnnounceSound.broadcast(event.world)
     }
 }
