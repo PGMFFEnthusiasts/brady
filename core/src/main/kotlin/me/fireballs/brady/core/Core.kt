@@ -34,7 +34,12 @@ class Core : SuspendingJavaPlugin() {
 
     companion object : KoinComponent {
         val instance by inject<Core>()
-        val adventure by inject<BukkitAudiences>()
         val kavyManager by inject<KavyManager>()
+
+        private val coreAdventure by inject<BukkitAudiences>()
+        var injectedAdventure: BukkitAudiences? = null
+
+        val adventure: BukkitAudiences
+            get() = injectedAdventure ?: coreAdventure
     }
 }
