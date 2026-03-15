@@ -2,13 +2,17 @@ package me.fireballs.brady.tools
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
+import com.google.common.collect.MapMaker
 import kotlinx.coroutines.delay
 import me.fireballs.brady.core.ItemBox
+import me.fireballs.brady.core.boxed
 import me.fireballs.brady.core.cc
 import me.fireballs.brady.core.command
 import me.fireballs.brady.core.registerEvents
+import me.fireballs.brady.core.specialData
 import me.fireballs.brady.corepgm.FeatureFlagBool
 import net.minecraft.server.v1_8_R3.Items
+import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItem
@@ -25,11 +29,12 @@ import org.bukkit.map.MapView
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
+import java.awt.image.BufferedImage
+import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 
-class HTMR : MapRenderer() {
-    private val image = ImageIO.read(this::class.java.classLoader.getResource("map_norm.bin"))
-
+class HTMR(val image: BufferedImage) : MapRenderer() {
     private var previousView: MapView? = null
     override fun render(p0: MapView, p1: MapCanvas, p2: Player) {
         if (previousView == p0) return
@@ -39,34 +44,49 @@ class HTMR : MapRenderer() {
 }
 
 class HT : Listener, KoinComponent {
+    private val imageList = mutableListOf<BufferedImage>()
+
+    init {
+        val inputStream = this::class.java.classLoader.getResourceAsStream("map_norm.bin")
+        if (inputStream != null) {
+            val zip = ZipInputStream(inputStream)
+            var entry = zip.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory) {
+                    val bytes = zip.readBytes()
+                    imageList += ImageIO.read(bytes.inputStream())
+                }
+
+                zip.closeEntry()
+                entry = zip.nextEntry
+            }
+        }
+    }
+
     private val tools by inject<Tools>()
-    private val renderer = HTMR()
 
-    private data class MemoizedMap(
-        val world: World,
-        val stack: ItemStack,
-    )
+    private val memoizedMaps = MapMaker()
+        .makeMap<Int, ItemStack>()
 
-    private var memoized: MemoizedMap? = null
-
-    private fun retrieveStack(world: World): ItemStack {
-        val m = memoized
-        if (m != null && m.world == world) return m.stack
-        memoized = null
+    private fun retrieveStack(world: World, n: Int): ItemStack {
+        if (!imageList.indices.contains(n)) return ItemStack(Material.AIR)
+        val memoized = memoizedMaps[n]
+        if (memoized != null) return memoized
 
         val stack = net.minecraft.server.v1_8_R3.ItemStack(Items.FILLED_MAP, 1, -1)
         val map = Items.FILLED_MAP.getSavedMap(stack, (world as CraftWorld).handle)
         val view = map.mapView
         view.scale = MapView.Scale.FARTHEST
         view.renderers.forEach { view.removeRenderer(it) }
-        view.addRenderer(renderer)
+        view.addRenderer(HTMR(imageList[n]))
         val finalStack = ItemBox(stack.asBukkitMirror())
-            .name("&cMotivation".cc())
+            .name("&cMotivation #$n".cc())
             .lore("&cHu Tao&7 is the 77th director".cc(), "&7of the Wangsheng funeral parlor".cc())
             .shiny()
             .itemMeta { addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS) }
+            .specialData("ht")
             .build()
-        memoized = MemoizedMap(world, finalStack)
+        memoizedMaps[n] = finalStack
 
         return finalStack
     }
@@ -77,7 +97,7 @@ class HT : Listener, KoinComponent {
         command("wife") {
             executor {
                 val p = player()
-                if (enabled.state) p.inventory.addItem(retrieveStack(p.world).clone())
+                if (enabled.state) p.inventory.addItem(retrieveStack(p.world, imageList.indices.random()).clone())
                 else err("This feature is disabled")
             }
         }
@@ -87,13 +107,12 @@ class HT : Listener, KoinComponent {
 
     @EventHandler
     private fun onCycle(event: MatchAfterLoadEvent) {
-        memoized = null
+        memoizedMaps.clear()
     }
 
     @EventHandler
     private fun onDrop(event: PlayerDropItemEvent) {
-        val memo = memoized?.stack ?: return
-        if (!event.itemDrop.itemStack.isSimilar(memo)) return
+        if (event.itemDrop.itemStack.specialData() != "ht") return
         val item = event.itemDrop
         item.velocity = item.velocity.multiply(4.0)
         item.fireTicks = 9999
@@ -107,8 +126,7 @@ class HT : Listener, KoinComponent {
 
     @EventHandler
     private fun onPickup(event: PlayerPickupItemEvent) {
-        val memo = memoized?.stack ?: return
-        if (!event.item.itemStack.isSimilar(memo)) return
+        if (event.item.itemStack.specialData() != "ht") return
         event.isCancelled = true
     }
 }
