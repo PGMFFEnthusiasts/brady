@@ -35,14 +35,12 @@ import static net.kyori.adventure.text.Component.text;
 public class Ping extends PacketListenerAbstract {
 
     private final Tools plugin;
-    private final BukkitAudiences bukkitAudiences;
 
     private final Map<User, PingStats> pings = new NonBlockingHashMap<>();
     private final Map<Long, PendingPing> callbacks = new NonBlockingHashMap<>();
 
     public Ping() {
         this.plugin = KoinJavaComponent.get(Tools.class);
-        this.bukkitAudiences = KoinJavaComponent.get(BukkitAudiences.class);
 
         registerPacketEvents(plugin, this);
 
@@ -258,7 +256,7 @@ public class Ping extends PacketListenerAbstract {
             var bars = new Component[responses.length];
             Arrays.fill(bars, EMPTY_BAR);
             if (count != 0) {
-                for (var i = 0; i < responses.length; i++) {
+                for (var i = 0; i < count; i++) {
                     var ping = responses[Math.floorMod(index - count + i, responses.length)];
                     var color = getPingColor(ping);
                     bars[i] = text("┃", color).hoverEvent(text(ping + "ms", color));
@@ -281,6 +279,7 @@ public class Ping extends PacketListenerAbstract {
     }
 
     private static NamedTextColor getPingColor(int ping) {
+        if (ping == 0) return NamedTextColor.GRAY;
         if (ping < 50) return NamedTextColor.GREEN;
         if (ping < 100) return NamedTextColor.DARK_GREEN;
         if (ping < 150) return NamedTextColor.YELLOW;
