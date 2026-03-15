@@ -18,6 +18,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.event.ActionNodeTriggerEvent
+import tc.oc.pgm.api.match.Match
 import tc.oc.pgm.api.match.MatchManager
 import tc.oc.pgm.api.match.event.MatchStartEvent
 
@@ -34,6 +35,10 @@ class BouncyBall : Listener, KoinComponent {
                 delay(1.ticks)
                 if (enabled.state) bouncer.tick()
             }
+        }
+
+        enabled.changeHandlers += { enabled ->
+            if (enabled) matchManager.currentMatch()?.let { playBouncy(it) }
         }
     }
 
@@ -55,17 +60,20 @@ class BouncyBall : Listener, KoinComponent {
 
     private val bounceAnnounceSound = soundbox()
         .add(SoundKeys.NOTE_BASS, 0.8f)
-        .add(1, SoundKeys.NOTE_BASS, 0.8f)
+        .add(2, SoundKeys.NOTE_BASS, 0.8f)
 
     @EventHandler
     private suspend fun onMatchStart(event: MatchStartEvent) {
         if (!enabled.state) return
         delay(10.ticks)
-        val match = event.match
+        playBouncy(event.match)
+    }
+
+    private fun playBouncy(match: Match) {
         match.sendMessage(empty())
         match.sendMessage("&e&l ⎲ &6＊ &6&lＢＯＵＮＣＹ&6 ＊".cc())
         match.sendMessage("&e&l ⎳ &7&oThe balls have elastic properties".cc())
         match.sendMessage(empty())
-        bounceAnnounceSound.broadcast(event.world)
+        bounceAnnounceSound.broadcast(match.world)
     }
 }

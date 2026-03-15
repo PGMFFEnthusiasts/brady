@@ -18,8 +18,16 @@ fun attemptToSetFlag(key: String, value: String): Boolean {
 
 abstract class FeatureFlag<T>(
     val key: String,
-    var state: T,
+    state: T,
 ) {
+    var state: T = state
+        set(value) {
+            onSet(value)
+            field = value
+        }
+
+    val changeHandlers = mutableListOf<(T) -> Unit>()
+
     init {
         flagMap[key.lowercase()] = this
     }
@@ -28,6 +36,10 @@ abstract class FeatureFlag<T>(
     abstract fun set(value: String): Component?
     abstract fun suggest(): List<String>
     abstract fun type(): String
+
+    open fun onSet(value: T) {
+        changeHandlers.forEach { it(value) }
+    }
 }
 
 class FeatureFlagBool(key: String, initial: Boolean = false) : FeatureFlag<Boolean>(key, initial) {
