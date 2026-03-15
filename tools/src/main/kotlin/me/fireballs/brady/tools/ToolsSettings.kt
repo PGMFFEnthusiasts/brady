@@ -27,7 +27,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.splat",
         true,
         "&aSplat".cc(),
-        listOf("&7Makes a thump sound on ball land.".cc()),
+        listOf("&7Makes a thump sound on ball land".cc()),
         itembox(Material.SLIME_BALL),
     )
 
@@ -35,14 +35,14 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.hidearmor",
         false,
         "&aHide Armor".cc(),
-        listOf("&7Hide the armor on everyone.".cc()),
+        listOf("&7Hide the armor on everyone".cc()),
         itembox(Material.LEATHER_CHESTPLATE),
     )
 
     val projectileSkin = createEnumSetting<ProjectileSkins>(
         "settings.projectileskin",
         "&bProjectile Skin".cc(),
-        listOf("&7Cosmetically change your projectile.".cc()),
+        listOf("&7Cosmetically change your projectile".cc()),
         itembox(Material.ENDER_PEARL),
     )
 
@@ -50,7 +50,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.ballprojection",
         true,
         "&dBall Projection".cc(),
-        listOf("&7Shows where a projectile may land".cc(), "&7only while observing.".cc()),
+        listOf("&7Shows where a projectile may land".cc(), "&7only while observing".cc()),
         itembox(Material.EYE_OF_ENDER),
     )
 
@@ -58,7 +58,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.jumpreset",
         true,
         "&5Jump Reset Particles".cc(),
-        listOf("&7Plays purple jump reset particles".cc(), "&7when a player does a jump reset.".cc()),
+        listOf("&7Plays purple jump reset particles".cc(), "&7when a player does a jump reset".cc()),
         itembox(Material.ENCHANTMENT_TABLE),
     )
 
@@ -66,7 +66,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.dayvision",
         false,
         "&bDayvision".cc(),
-        listOf("&7Blocks all nightvision.".cc()),
+        listOf("&7Blocks all nightvision".cc()),
         itembox(Material.DAYLIGHT_DETECTOR),
     )
 
@@ -94,6 +94,15 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.PRISMARINE_CRYSTALS),
     )
 
+    val ballCam = BooleanSettingValue(
+        // migration from kavy using the raw key
+        "ballcam",
+        false,
+        "&fBall Cam".cc(),
+        listOf("&7POV: You are the ball".cc()),
+        itembox(Material.SNOW_BALL),
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -105,6 +114,7 @@ class ToolsSettings : Listener, KoinComponent {
             mineplexSounds,
             flagSounds,
             comboSounds,
+            ballCam,
         )
 
         tools.registerEvents(this)
@@ -112,7 +122,7 @@ class ToolsSettings : Listener, KoinComponent {
 
     @EventHandler
     private fun giveKit(event: ObserverKitApplyEvent) {
-        event.player.bukkit.inventory.setItem(6, preferencesItem.build())
+        event.player.bukkit.inventory.setItem(7, preferencesItem.build())
     }
 
     @EventHandler

@@ -12,42 +12,23 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWi
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.google.common.collect.MapMaker;
 import kotlin.Lazy;
-import me.fireballs.brady.core.KavyKt;
-import me.fireballs.brady.core.Retrieval;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import kotlin.Unit;
+import me.fireballs.brady.core.BooleanSettingValue;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.koin.java.KoinJavaComponent;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.spawns.events.ObserverKitApplyEvent;
 
 import java.util.Map;
 
 import static me.fireballs.brady.core.PluginExtensionsKt.registerEvents;
 import static me.fireballs.brady.core.PluginExtensionsKt.registerPacketEvents;
-import static me.fireballs.brady.tools.BallCamKt.getToggleBall;
-import static me.fireballs.brady.tools.BallCamKt.isToggleBall;
 import static net.kyori.adventure.text.Component.text;
 
 public class BallCam extends PacketListenerAbstract implements Listener {
-    private static final Component PREFIX = text("» ", NamedTextColor.AQUA)
-            .append(text("Ball", NamedTextColor.WHITE).decorate(TextDecoration.BOLD))
-            .append(text(" ", NamedTextColor.WHITE))
-            .append(text("Cam", NamedTextColor.WHITE, TextDecoration.BOLD))
-            .append(text(" toggled ", NamedTextColor.GRAY));
-
-    private static final Component ON = PREFIX.append(text("ON", NamedTextColor.GREEN, TextDecoration.BOLD));
-    private static final Component OFF = PREFIX.append(text("OFF", NamedTextColor.RED, TextDecoration.BOLD));
-
-    private static final int SLOT = 7;
     private static final short TID = Short.MAX_VALUE * 5 / 6;
     private static final float MIN_PITCH = 20;
 
@@ -55,36 +36,34 @@ public class BallCam extends PacketListenerAbstract implements Listener {
             .concurrencyLevel(4)
             .makeMap();
 
+    private final BooleanSettingValue setting;
+
     public BallCam() {
         Lazy<Tools> plugin = KoinJavaComponent.inject(Tools.class);
+        Lazy<ToolsSettings> settings = KoinJavaComponent.inject(ToolsSettings.class);
+        setting = settings.getValue().getBallCam();
         registerEvents(plugin.getValue(), this);
         registerPacketEvents(plugin.getValue(), this);
+
+        setting.onSettingChange((player, newValue) -> {
+            handleBallSettingsChange(player, newValue);
+            return Unit.INSTANCE;
+        });
     }
 
     private enum Status {
         DISMOUNTED, RIDING, DISMOUNTING
     }
 
-    private static final String key = "ballcam";
-
     private static class Rider {
-        private boolean enabled;
         private Status status = Status.DISMOUNTED;
         private int snowballId;
         private Location location;
 
-        private void toggle(User user) {
-            enabled = !enabled;
-            KavyKt.boolSet(user.getUUID(), key, enabled);
-
-            if (enabled) {
-                user.sendMessage(ON);
-            } else {
-                user.sendMessage(OFF);
-                if (status == Status.RIDING) {
-                    this.beginDismount(user);
-                }
-            }
+        private void setEnabled(User user, boolean enabled) {
+            if (enabled) return;
+            if (status != Status.RIDING) return;
+            this.beginDismount(user);
         }
 
         private boolean startRide(int snowballId) {
@@ -124,10 +103,6 @@ public class BallCam extends PacketListenerAbstract implements Listener {
         private void finishDismount() {
             this.status = Status.DISMOUNTED;
         }
-
-        Rider(boolean onByDefault) {
-            enabled = onByDefault;
-        }
     }
 
     @Override
@@ -143,7 +118,7 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
         switch (type) {
             case PacketType.Play.Server.SPAWN_ENTITY -> {
-                if (!rider.enabled) return;
+                if (!setting.retrieveValue(player)) return;
                 if (rider.status != Status.DISMOUNTED) return;
 
                 MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
@@ -238,8 +213,7 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
     @Override
     public void onUserLogin(UserLoginEvent event) {
-        KavyKt.boolGet(event.getUser().getUUID(), key, false, Retrieval.CACHE_THEN_FRESH)
-                .thenAccept(v -> riders.put(event.getUser(), new Rider(v)));
+        riders.put(event.getUser(), new Rider());
     }
 
     @Override
@@ -247,22 +221,11 @@ public class BallCam extends PacketListenerAbstract implements Listener {
         riders.remove(event.getUser());
     }
 
-    @EventHandler
-    private void giveKit(ObserverKitApplyEvent event) {
-        Player player = event.getPlayer().getBukkit();
-        player.getInventory().setItem(SLOT, getToggleBall().build());
-    }
-
-    @EventHandler
-    private void handleBallToggle(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (!isToggleBall(event.getItem())) return;
-
-        Player player = event.getPlayer();
+    private void handleBallSettingsChange(Player player, boolean enabled) {
         MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
         if (matchPlayer == null || !matchPlayer.isObserving()) return;
 
-        var user = PacketEvents.getAPI().getPlayerManager().getUser(event.getPlayer());
+        var user = PacketEvents.getAPI().getPlayerManager().getUser(player);
         //noinspection ConstantValue
         if (user == null) return;
 
@@ -274,6 +237,6 @@ public class BallCam extends PacketListenerAbstract implements Listener {
 
         player.playSound(player.getLocation(), Sound.CLICK, 1f, 1.7f);
 
-        rider.toggle(user);
+        rider.setEnabled(user, enabled);
     }
 }
