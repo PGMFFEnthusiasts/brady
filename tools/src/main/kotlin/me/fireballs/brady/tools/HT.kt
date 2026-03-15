@@ -102,13 +102,17 @@ class HT : Listener, KoinComponent {
         return finalStack
     }
 
+    fun gift(p: Player) {
+        p.inventory.addItem(retrieveStack(p.world, imageList.indices.random()).clone())
+    }
+
     private val enabled = FeatureFlagBool("wifeEnabled", true)
 
     init {
         command("wife") {
             executor {
                 val p = player()
-                if (enabled.state) p.inventory.addItem(retrieveStack(p.world, imageList.indices.random()).clone())
+                if (enabled.state) gift(p)
                 else err("This feature is disabled")
             }
         }

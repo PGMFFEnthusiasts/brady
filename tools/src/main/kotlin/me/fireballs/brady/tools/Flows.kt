@@ -2,15 +2,7 @@ package me.fireballs.brady.tools
 
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import kotlinx.coroutines.delay
-import me.fireballs.brady.core.CommandBuilder
-import me.fireballs.brady.core.CommandExecution
-import me.fireballs.brady.core.CommandExecutor
-import me.fireballs.brady.core.CommandInterrupt
-import me.fireballs.brady.core.c
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.command
-import me.fireballs.brady.core.plus
-import me.fireballs.brady.core.send
+import me.fireballs.brady.core.*
 import me.fireballs.brady.corepgm.match
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -25,6 +17,7 @@ import kotlin.system.measureTimeMillis
 class Flows : KoinComponent {
     private val tools by inject<Tools>()
     private val bouncy by inject<BouncyBall>()
+    private val ht by inject<HT>()
 
     private val prefix = "&d⧗&7 ".cc()
 
@@ -77,6 +70,16 @@ class Flows : KoinComponent {
                 val match = match()
                 for (player in match.world.players) joinPlayer(player)
                 match.start()
+            }
+
+            // i don't need to explain this one
+            defineFlow("wife") {
+                val match = match()
+                joinPlayer()
+                match.start()
+                delay(5.ticks)
+                player().inventory.clear()
+                repeat(100) { ht.gift(player()) }
             }
         }
     }
