@@ -4,18 +4,15 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.google.common.collect.MapMaker
 import kotlinx.coroutines.delay
-import me.fireballs.brady.core.ItemBox
-import me.fireballs.brady.core.boxed
-import me.fireballs.brady.core.cc
-import me.fireballs.brady.core.command
-import me.fireballs.brady.core.registerEvents
-import me.fireballs.brady.core.specialData
+import me.fireballs.brady.core.*
 import me.fireballs.brady.corepgm.FeatureFlagBool
 import net.minecraft.server.v1_8_R3.Items
 import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItem
+import org.bukkit.entity.Entity
+import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -30,7 +27,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
 import java.awt.image.BufferedImage
-import java.util.zip.ZipFile
+import java.util.UUID
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 
@@ -44,7 +41,20 @@ class HTMR(val image: BufferedImage) : MapRenderer() {
 }
 
 class HT : Listener, KoinComponent {
+    private val tools by inject<Tools>()
+
+    private val memoizedMaps = MapMaker()
+        .makeMap<Int, ItemStack>()
+    private val currentlyViewing = MapMaker()
+        .weakKeys()
+        .weakValues()
+        .makeMap<UUID, Player>()
+
     private val imageList = mutableListOf<BufferedImage>()
+    private val bouncer = Bouncer(
+        { e -> e is Item && e.itemStack.specialData() == "ht" },
+        { e -> currentlyViewing[e.uniqueId]?.let { listOf(it) } ?: listOf() }
+    )
 
     init {
         val inputStream = this::class.java.classLoader.getResourceAsStream("map_norm.bin")
@@ -61,12 +71,14 @@ class HT : Listener, KoinComponent {
                 entry = zip.nextEntry
             }
         }
+
+        tools.launch {
+            while (tools.isEnabled) {
+                delay(1.ticks)
+                if (enabled.state) bouncer.tick()
+            }
+        }
     }
-
-    private val tools by inject<Tools>()
-
-    private val memoizedMaps = MapMaker()
-        .makeMap<Int, ItemStack>()
 
     private fun retrieveStack(world: World, n: Int): ItemStack {
         if (!imageList.indices.contains(n)) return ItemStack(Material.AIR)
@@ -108,25 +120,29 @@ class HT : Listener, KoinComponent {
     @EventHandler
     private fun onCycle(event: MatchAfterLoadEvent) {
         memoizedMaps.clear()
+        currentlyViewing.clear()
     }
 
     @EventHandler
     private fun onDrop(event: PlayerDropItemEvent) {
         if (event.itemDrop.itemStack.specialData() != "ht") return
         val item = event.itemDrop
-        item.velocity = item.velocity.multiply(4.0)
+        currentlyViewing[item.uniqueId] = event.player
+        item.velocity = item.velocity.multiply(3.0)
         item.fireTicks = 9999
         (item as CraftItem).handle.noDamageTicks = 9999
 
         tools.launch {
-            delay(40.ticks)
+            delay(80.ticks)
             item.remove()
+            currentlyViewing.remove(item.uniqueId, event.player)
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     private fun onPickup(event: PlayerPickupItemEvent) {
         if (event.item.itemStack.specialData() != "ht") return
         event.isCancelled = true
+        event.item.remove()
     }
 }
