@@ -88,8 +88,8 @@ class ItemBox(
     fun build() = stack
 }
 
-fun ItemStack.specialData(): String? {
-    if (type == Material.AIR) return null
+fun ItemStack?.specialData(): String? {
+    if (this == null || type == Material.AIR) return null
     val readNbt = NBT.readNbt(this)
     if (!readNbt.keys.contains("special")) return null
     return readNbt.getString("special")

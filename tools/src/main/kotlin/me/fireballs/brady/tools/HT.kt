@@ -1,10 +1,14 @@
 package me.fireballs.brady.tools
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.google.common.collect.MapMaker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import me.fireballs.brady.core.*
+import me.fireballs.brady.core.data.SoundKeys
 import me.fireballs.brady.corepgm.FeatureFlagBool
 import net.minecraft.server.v1_8_R3.Items
 import org.bukkit.Material
@@ -26,7 +30,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
 import java.awt.image.BufferedImage
-import java.util.UUID
+import java.util.*
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 
@@ -54,6 +58,8 @@ class HT : Listener, KoinComponent {
         { e -> e is Item && e.itemStack.specialData() == "ht" },
         { e -> currentlyViewing[e.uniqueId]?.let { listOf(it) } ?: listOf() }
     )
+
+    val valkey = newValkeyPooledClient()
 
     init {
         val inputStream = this::class.java.classLoader.getResourceAsStream("map_norm.bin")
@@ -102,8 +108,49 @@ class HT : Listener, KoinComponent {
         return finalStack
     }
 
+    private val newlyFoundSound = soundbox()
+        .add(SoundKeys.RANDOM_LEVELUP, 0.8f)
+        .add(SoundKeys.LIQUID_LAVAPOP, 0.8f)
+        .add(2, SoundKeys.RANDOM_LEVELUP, 1.0f)
+        .add(SoundKeys.LIQUID_LAVAPOP, 1.0f)
+        .add(2, SoundKeys.RANDOM_LEVELUP, 1.2f)
+        .add(SoundKeys.LIQUID_LAVAPOP, 1.2f)
+
+    private val foundSound = soundbox()
+        .add(SoundKeys.LIQUID_LAVAPOP, 1.2f)
+
     fun gift(p: Player) {
-        p.inventory.addItem(retrieveStack(p.world, imageList.indices.random()).clone())
+        val which = imageList.indices.random()
+        if (valkey != null) tools.launch(Dispatchers.IO) {
+            val playerKey = "wives:${p.uniqueId}"
+            val unlockedKey = "$playerKey-unlocked"
+            val key = "ht-$which"
+            if (valkey.hget(unlockedKey, key) == null)
+                valkey.hset(unlockedKey, key, System.currentTimeMillis().toString())
+            val totalTimes = valkey.hincrBy(playerKey, key, 1)
+            val totalUnlocked = valkey.hlen(playerKey)
+
+            withContext(tools.minecraftDispatcher) {
+                if (totalTimes == 1L) {
+                    newlyFoundSound.play(p)
+                    p.send("&e&lNEW! &7This is the first time you've discovered &c#$which&7. &o($totalUnlocked/${imageList.size})".cc())
+                    return@withContext
+                }
+
+                foundSound.play(p)
+                p.send("&7You've now seen &c#$which&7 a total of &c$totalTimes&7 times. &o($totalUnlocked/${imageList.size})".cc())
+            }
+        }
+
+        val stack = retrieveStack(p.world, which).clone()
+
+        for ((index, item) in p.inventory.contents.withIndex()) {
+            if (item.specialData() != "ht") continue
+            p.inventory.setItem(index, stack)
+            return
+        }
+
+        p.inventory.addItem(stack)
     }
 
     private val enabled = FeatureFlagBool("wifeEnabled", true)
