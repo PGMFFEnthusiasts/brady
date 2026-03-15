@@ -112,6 +112,7 @@ public class BallCam extends PacketListenerAbstract implements Listener {
         if (!(type instanceof PacketType.Play.Server)) return;
 
         Player player = event.getPlayer();
+        if (player == null) return;
         User user = event.getUser();
         Rider rider = riders.get(user);
         if (rider == null) return;
