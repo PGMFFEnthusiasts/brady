@@ -11,7 +11,9 @@ import org.bukkit.inventory.ItemStack
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.party.Competitor
+import tc.oc.pgm.flag.FlagMatchModule
 import tc.oc.pgm.teams.TeamMatchModule
+import kotlin.jvm.optionals.getOrNull
 import kotlin.system.measureTimeMillis
 
 class Flows : KoinComponent {
@@ -80,6 +82,18 @@ class Flows : KoinComponent {
                 delay(5.ticks)
                 player().inventory.clear()
                 repeat(100) { ht.gift(player()) }
+            }
+
+            // teleports the executor of the flow to the flag
+            defineFlow("tpflag") {
+                val match = match()
+                joinPlayer()
+                match.start()
+                delay(5.ticks)
+                val flags = match.getModule(FlagMatchModule::class.java) ?: err("no flagmod")
+                val flag = flags.flags.firstOrNull() ?: err("no flag")
+                val flagLoc = flag.location.getOrNull() ?: err("no flagloc")
+                player().teleport(flagLoc)
             }
         }
     }
