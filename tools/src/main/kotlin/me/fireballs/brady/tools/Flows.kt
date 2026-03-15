@@ -59,6 +59,7 @@ class Flows : KoinComponent {
 
     init {
         command("flow", permission = "brady.admin") {
+            // give a chance to try out the "bouncy arrows"
             defineFlow("bouncyarrows") {
                 bouncy.enabled.set("true")
                 val match = match()
@@ -69,6 +70,13 @@ class Flows : KoinComponent {
                     player.bukkit.inventory.addItem(ItemStack(Material.BOW))
                     player.bukkit.inventory.addItem(ItemStack(Material.ARROW, 64))
                 }
+            }
+
+            // get all the players in and START TS!!!
+            defineFlow("start") {
+                val match = match()
+                for (player in match.world.players) joinPlayer(player)
+                match.start()
             }
         }
     }
