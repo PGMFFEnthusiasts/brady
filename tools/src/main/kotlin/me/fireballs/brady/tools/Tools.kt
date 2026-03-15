@@ -40,6 +40,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::TransferMessages)
             serviceOf(::InteractFixer)
             serviceOf(::BouncyBall)
+            serviceOf(::Flows)
         }
 
         loadModule(toolModule)
