@@ -41,6 +41,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::InteractFixer)
             serviceOf(::BouncyBall)
             serviceOf(::Flows)
+            serviceOf(::VersionIntercept)
         }
 
         loadModule(toolModule)

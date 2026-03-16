@@ -2,6 +2,7 @@
 
 [versions]
 com-gradleup-shadow-gradle-shadow-plugin = "8.3.0"
+com-palantir-git-version-plugin = "5.0.0"
 org-jetbrains-kotlin-jvm-plugin = "2.1.20"
 
 com-github-shynixn-mccoroutine = "2.22.0"
@@ -30,6 +31,7 @@ logback = "1.5.18"
 
 [libraries]
 shadow = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "com-gradleup-shadow-gradle-shadow-plugin" }
+gitversion = { module = "com.palantir.git-version:com.palantir.git-version.gradle.plugin", version.ref = "com-palantir-git-version-plugin" }
 kotlin = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "org-jetbrains-kotlin-jvm-plugin" }
 
 mccoroutine-bukkit-api = { module = "com.github.shynixn.mccoroutine:mccoroutine-bukkit-api", version.ref="com-github-shynixn-mccoroutine" }

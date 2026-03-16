@@ -2,4 +2,4 @@ name: Tools
 softdepend:
   - CorePGM
 main: me.fireballs.brady.tools.Tools
-version: 1.0.0
+version: '${fullVersion}'

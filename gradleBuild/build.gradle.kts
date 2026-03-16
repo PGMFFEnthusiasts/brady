@@ -10,5 +10,6 @@ repositories {
 
 dependencies {
     implementation(libs.shadow)
+    implementation(libs.gitversion)
     implementation(libs.kotlin)
 }

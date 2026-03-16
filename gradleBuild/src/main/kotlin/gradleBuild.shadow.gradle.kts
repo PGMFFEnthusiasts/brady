@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("gradleBuild.java")
     id("com.gradleup.shadow")
+    id("com.palantir.git-version")
     `maven-publish`
 }
 
