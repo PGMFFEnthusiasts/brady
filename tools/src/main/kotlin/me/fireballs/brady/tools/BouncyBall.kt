@@ -72,7 +72,7 @@ class BouncyBall : Listener, KoinComponent {
     private fun playBouncy(match: Match) {
         match.sendMessage(empty())
         match.sendMessage("&e&l ⎲ &6＊ &6&lＢＯＵＮＣＹ&6 ＊".cc())
-        match.sendMessage("&e&l ⎳ &7&oThe balls have elastic properties".cc())
+        match.sendMessage("&e&l ⎳ &f&oThe balls have elastic properties".cc())
         match.sendMessage(empty())
         bounceAnnounceSound.broadcast(match.world)
     }
