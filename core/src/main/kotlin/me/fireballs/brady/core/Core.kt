@@ -26,21 +26,53 @@ class Core : SuspendingJavaPlugin() {
 
         DebuggingSubscriber()
 
-        // anyone can do this command idc
-        command("breakthisintolines") {
+        val testComponent = "hello world! ".cc().hover("sup".c()) +
+                "&chow are you today? &7i'm sorry if this example is too complex " +
+                "&9&nbut that's okay!&f ".cc().fill("/helloworld").hover("click to fill".c()) +
+                "anyway, &ahow was your day&r? i hope it &dwent well&r. &6owo"
+
+        fun CommandExecution.widthAndComponent(): Pair<Int, Component> {
+            val width = capture("Provide a width") { subArgs[0].toInt() }
+            val remaining = subArgs.drop(1).joinToString(" ").replace("\\n", "\n")
+
+            var componentized = remaining.cc() as Component
+            if (remaining.isEmpty()) componentized = testComponent
+
+            return width to componentized
+        }
+
+        // anyone can do these commands idc
+        command("textutils") {
             executor {
-                val width = capture("Provide a width") { subArgs[0].toInt() }
-                val remaining = subArgs.drop(1).joinToString(" ").replace("\\n", "\n")
+                sender.send("see subcommands <tab>".c())
+            }
 
-                var componentized = remaining.cc() as Component
-                if (remaining.isEmpty()) componentized =
-                    "hello world! ".cc().hover("sup".c()) +
-                            "&c&lhow are you today? &7i'm sorry if this example is too complex " +
-                            "&9&nbut that's okay!&f ".cc().fill("/helloworld").hover("click to fill".c()) +
-                            "anyway, &ahow was your day&r? i hope it &dwent well&r. &6owo"
+            subcommand("wrap") {
+                executor {
+                    val (width, componentized) = widthAndComponent()
+                    for (component in breakIntoLines(componentized, width)) sender.send(component)
+                }
+            }
 
-                for (component in breakIntoLines(componentized, width)) {
-                    sender.send(component)
+            subcommand("center") {
+                executor {
+                    val (width, componentized) = widthAndComponent()
+                    for (component in justifyCenter(componentized, width)) sender.send(component)
+                }
+            }
+
+            subcommand("right") {
+                executor {
+                    val (width, componentized) = widthAndComponent()
+                    for (component in justifyRight(componentized, width)) sender.send(component)
+                }
+            }
+
+            subcommand("slideup") {
+                executor {
+                    repeat(20) {
+                        sender.send(computePaddingOfSize(it) + "hey")
+                    }
                 }
             }
         }
