@@ -33,6 +33,7 @@ class CorePGM : SuspendingJavaPlugin() {
             while (!Bukkit.getPluginManager().isPluginEnabled("PGM"))
                 delay(1.ticks)
             Core.injectedAdventure = Audience.PROVIDER
+            Core.componentRenderFn = { it.forWhom() }
             Core.adventure.console().sendMessage("&a[CorePGM] Successfully hooked PGM's BukkitAudiences".cc())
         }
 

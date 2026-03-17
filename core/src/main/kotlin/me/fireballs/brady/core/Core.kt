@@ -3,6 +3,7 @@ package me.fireballs.brady.core
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
 import me.fireballs.brady.deps.PluginAnnotation
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
+import net.kyori.adventure.text.Component
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
@@ -38,6 +39,7 @@ class Core : SuspendingJavaPlugin() {
 
         private val coreAdventure by inject<BukkitAudiences>()
         var injectedAdventure: BukkitAudiences? = null
+        var componentRenderFn: (Component) -> Component = { it }
 
         val adventure: BukkitAudiences
             get() = injectedAdventure ?: coreAdventure
