@@ -2,7 +2,7 @@ package me.fireballs.brady.core
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.*
-import net.kyori.adventure.text.JoinConfiguration
+import net.kyori.adventure.text.JoinConfiguration.noSeparators
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.flattener.ComponentFlattener
 import net.kyori.adventure.text.flattener.FlattenerListener
@@ -10,7 +10,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import java.text.BreakIterator
-import java.util.Locale
+import java.util.*
 
 private val glyphSizes: ByteArray by lazy {
     // note: this is NOT glyph_sizes.bin; this acts slightly differently
@@ -69,60 +69,20 @@ private fun internalCharWidth(char: Char, bold: Boolean): Int {
 private fun internalStringWidth(text: CharSequence, bold: Boolean) =
     text.map { internalCharWidth(it, bold) }.sum()
 
-// todo: make inserting newlines possible
-// todo: fix edge case of components not being flattened before broken (will require some hard work to fix)
 fun breakIntoLinesWithWidths(
     component: Component,
     width: Int,
     locale: Locale = Locale.ROOT
 ): Iterable<Pair<Component, Int>> {
-    val breakIterator = BreakIterator.getLineInstance(locale)
-
-    val totalLines = mutableListOf<Pair<Component, Int>>()
-    val currentLine = mutableListOf<TextComponent>()
-    var currentWidth = 0
-
-    fun combineLine() {
-        if (currentLine.isEmpty()) return
-        var deltaWidth = 0
-        val trimmed = currentLine.mapIndexed { index, component ->
-            if (index == currentLine.lastIndex) {
-                val oc = component.content()
-                val trimmedText = oc.trim()
-                if (trimmedText != oc) deltaWidth = -internalStringWidth(
-                    oc.removePrefix(trimmedText),
-                    component.style().hasDecoration(TextDecoration.BOLD)
-                )
-                text(trimmedText, component.style())
-            } else component
-        }
-        currentWidth += deltaWidth
-        totalLines += join(JoinConfiguration.noSeparators(), trimmed) to currentWidth
-        currentWidth = 0
-        currentLine.clear()
-    }
+    val styleList = mutableListOf<Style>()
+    val aggregateText = StringBuilder()
 
     val listener = object : FlattenerListener {
         var aggregateStyle = Style.empty()
 
         override fun component(text: String) {
-            val currentStyle = aggregateStyle
-            val bolded = currentStyle.hasDecoration(TextDecoration.BOLD)
-
-            breakIterator.setText(text)
-            var start = breakIterator.first()
-            var end = breakIterator.next()
-            while (end != BreakIterator.DONE) {
-                val chunk = text.substring(start, end)
-                val partWidth = internalStringWidth(chunk, bolded)
-                if (currentWidth + partWidth > width) combineLine()
-
-                currentWidth += partWidth
-                currentLine.add(text(chunk, currentStyle))
-
-                start = end
-                end = breakIterator.next()
-            }
+            aggregateText.append(text)
+            repeat(text.length) { styleList.add(aggregateStyle) }
         }
 
         override fun pushStyle(style: Style) {
@@ -140,7 +100,71 @@ fun breakIntoLinesWithWidths(
         .textOnly()
         .flatten(converted, listener)
 
-    combineLine()
+    val breakIterator = BreakIterator.getLineInstance(locale)
+    val fullText = aggregateText.toString()
+
+    // break "lines" into spans (including hiding newlines)
+    val spans = mutableListOf<Pair<Int, Int>>()
+    breakIterator.setText(fullText)
+    var start = breakIterator.first()
+    var end = breakIterator.next()
+    while (end != BreakIterator.DONE) {
+        var spanStart = start
+
+        for (i in start..<end) {
+            if (fullText[i] != '\n') continue
+            if (spanStart < i) spans += spanStart to i
+            spans += i to i
+            spanStart = i + 1
+        }
+
+        if (spanStart < end) spans += spanStart to end
+
+        start = end
+        end = breakIterator.next()
+    }
+
+    val totalLines = mutableListOf<Pair<Component, Int>>()
+    val currentLine = mutableListOf<TextComponent>()
+    var currentWidth = 0
+
+    fun pushLine() {
+        // hacky trim. acceptable though :)
+        while (currentLine.isNotEmpty()) {
+            val last = currentLine.last()
+            if (last.content() != " ") break
+            currentWidth -= internalCharWidth(' ', last.hasDecoration(TextDecoration.BOLD))
+            currentLine.removeLast()
+        }
+
+        totalLines += join(noSeparators(), currentLine).compact() to currentWidth
+        currentLine.clear()
+        currentWidth = 0
+    }
+
+    for ((start, end) in spans) {
+        // special case: made newline spans 0 to make this easier
+        if (start == end) {
+            pushLine()
+            continue
+        }
+
+        val currentWord = mutableListOf<TextComponent>()
+        var wordWidth = 0
+        for (i in start..<end) {
+            val character = fullText[i]
+            val style = styleList[i]
+            wordWidth += internalCharWidth(character, style.hasDecoration(TextDecoration.BOLD))
+            currentWord += text(character, style)
+        }
+
+        if (currentWidth + wordWidth > width) pushLine()
+
+        currentWidth += wordWidth
+        currentLine.addAll(currentWord)
+    }
+
+    if (currentLine.isNotEmpty()) pushLine()
 
     return totalLines
 }
