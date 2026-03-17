@@ -27,7 +27,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.splat",
         true,
         "&aSplat".cc(),
-        listOf("&7Makes a thump sound on ball land".cc()),
+        "&7Makes a thump sound on ball land".cc(),
         itembox(Material.SLIME_BALL),
     )
 
@@ -35,14 +35,14 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.hidearmor",
         false,
         "&aHide Armor".cc(),
-        listOf("&7Hide the armor on everyone".cc()),
+        "&7Hide the armor on everyone".cc(),
         itembox(Material.LEATHER_CHESTPLATE),
     )
 
     val projectileSkin = createEnumSetting<ProjectileSkins>(
         "settings.projectileskin",
         "&bProjectile Skin".cc(),
-        listOf("&7Cosmetically change your projectile".cc()),
+        "&7Cosmetically change your projectile".cc(),
         itembox(Material.ENDER_PEARL),
     )
 
@@ -50,7 +50,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.ballprojection",
         true,
         "&dBall Projection".cc(),
-        listOf("&7Shows where a projectile may land".cc(), "&7only while observing".cc()),
+        "&7Shows where a projectile may land only while observing".cc(),
         itembox(Material.EYE_OF_ENDER),
     )
 
@@ -58,7 +58,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.jumpreset",
         true,
         "&5Jump Reset Particles".cc(),
-        listOf("&7Plays purple jump reset particles".cc(), "&7when a player does a jump reset".cc()),
+        "&7Plays purple jump reset particles when a player does a jump reset".cc(),
         itembox(Material.ENCHANTMENT_TABLE),
     )
 
@@ -66,7 +66,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.dayvision",
         false,
         "&bDayvision".cc(),
-        listOf("&7Blocks all nightvision".cc()),
+        "&7Blocks all nightvision".cc(),
         itembox(Material.DAYLIGHT_DETECTOR),
     )
 
@@ -74,7 +74,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.mineplexsounds",
         false,
         "&6Mineplex Hit sounds".cc(),
-        listOf("&7Use damage sounds from Mineplex".cc()),
+        "&7Use damage sounds from Mineplex".cc(),
         itembox(Material.WOOL).setDamage(1),
     )
 
@@ -82,7 +82,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.flagsounds",
         true,
         "&fFlag Hit Sounds".cc(),
-        listOf("&7Plays an alternate damage sound".cc(), "&7for the flagholder".cc()),
+        "&7Plays an alternate damage sound for the flagholder".cc(),
         itembox(Material.BANNER).setDamage(15),
     )
 
@@ -90,7 +90,7 @@ class ToolsSettings : Listener, KoinComponent {
         "settings.combosounds",
         true,
         "&bCombo Sounds".cc(),
-        listOf("&7Makes combos sound crunchier".cc()),
+        "&7Makes combos sound crunchier".cc(),
         itembox(Material.PRISMARINE_CRYSTALS),
     )
 
@@ -99,7 +99,7 @@ class ToolsSettings : Listener, KoinComponent {
         "ballcam",
         false,
         "&fBall Cam".cc(),
-        listOf("&7POV: You are the ball".cc()),
+        "&7POV: You are the ball".cc(),
         itembox(Material.SNOW_BALL),
     )
 

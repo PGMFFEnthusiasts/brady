@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap
 abstract class SettingValue<V>(
     val key: String,
     val name: Component,
-    val description: List<Component>,
+    val description: Component,
     val baseItem: ItemBox,
 ) {
     val valueCache: ConcurrentMap<UUID, V> = MapMaker().makeMap<UUID, V>()
@@ -45,7 +45,7 @@ abstract class SettingValue<V>(
         val d = defaultValue()
         return baseItem
             .name(name)
-            .loreComponentLines(description + "".c() + allValues().map {
+            .loreComponentLines(breakIntoLines(description, 140) + "".c() + allValues().map {
                 (if (v == it) "&a» " else "&7» ").cc() + stringify(it) + (if (it == d) "&e ＊" else "")
             })
             .build()
@@ -69,7 +69,7 @@ class BooleanSettingValue(
     key: String,
     val defaultValue: Boolean,
     name: Component,
-    description: List<Component>,
+    description: Component,
     baseItem: ItemBox,
 ) : SettingValue<Boolean>(key, name, description, baseItem) {
     override fun allValues(): Iterable<Boolean> {
@@ -106,7 +106,7 @@ class EnumSettingsValue<E>(
     key: String,
     val enumValues: Array<E>,
     name: Component,
-    description: List<Component>,
+    description: Component,
     baseItem: ItemBox,
 ) : SettingValue<E>(key, name, description, baseItem) where E : Enum<E> {
     override fun allValues(): Iterable<E> = enumValues.toList()
@@ -134,7 +134,7 @@ class EnumSettingsValue<E>(
     }
 }
 
-inline fun <reified E> createEnumSetting(key: String, name: Component, description: List<Component>, baseItem: ItemBox)
+inline fun <reified E> createEnumSetting(key: String, name: Component, description: Component, baseItem: ItemBox)
         where E : Enum<E> = EnumSettingsValue(key, enumValues<E>(), name, description, baseItem)
 
 private val greyPane = itembox(Material.STAINED_GLASS_PANE)
