@@ -11,7 +11,6 @@ import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import java.text.BreakIterator
 import java.util.Locale
-import kotlin.collections.ArrayDeque
 
 private val glyphSizes: ByteArray by lazy {
     // note: this is NOT glyph_sizes.bin; this acts slightly differently
@@ -104,11 +103,10 @@ fun breakIntoLinesWithWidths(
     }
 
     val listener = object : FlattenerListener {
-        val styleStack = ArrayDeque<Style>()
+        var aggregateStyle = Style.empty()
 
         override fun component(text: String) {
-            var currentStyle = Style.empty()
-            for (style in styleStack) currentStyle = currentStyle.merge(style)
+            val currentStyle = aggregateStyle
             val bolded = currentStyle.hasDecoration(TextDecoration.BOLD)
 
             breakIterator.setText(text)
@@ -128,11 +126,11 @@ fun breakIntoLinesWithWidths(
         }
 
         override fun pushStyle(style: Style) {
-            styleStack.addLast(style)
+            aggregateStyle = aggregateStyle.merge(style)
         }
 
         override fun popStyle(style: Style) {
-            styleStack.removeLast()
+            aggregateStyle = aggregateStyle.unmerge(style)
         }
     }
 
