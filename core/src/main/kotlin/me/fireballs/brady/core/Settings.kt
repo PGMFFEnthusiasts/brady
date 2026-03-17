@@ -45,7 +45,7 @@ abstract class SettingValue<V>(
         val d = defaultValue()
         return baseItem
             .name(name)
-            .loreComponentLines(breakIntoLines(description, 140) + "".c() + allValues().map {
+            .loreComponentLines(breakIntoLines(description, 160) + "".c() + allValues().map {
                 (if (v == it) "&a» " else "&7» ").cc() + stringify(it) + (if (it == d) "&e ＊" else "")
             })
             .build()
