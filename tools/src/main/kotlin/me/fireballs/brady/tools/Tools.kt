@@ -42,6 +42,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::BouncyBall)
             serviceOf(::Flows)
             serviceOf(::VersionIntercept)
+            serviceOf(::AntiStop)
         }
 
         loadModule(toolModule)
