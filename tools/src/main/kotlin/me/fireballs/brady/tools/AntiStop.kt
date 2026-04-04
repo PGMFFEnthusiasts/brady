@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import me.fireballs.brady.core.cc
 import me.fireballs.brady.core.registerEvents
 import me.fireballs.brady.core.send
+import me.fireballs.brady.core.uhOh
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
@@ -21,13 +22,15 @@ class AntiStop : Listener, KoinComponent {
     }
 
     private val confirmingOperators = mutableSetOf<UUID>()
-    private val msg = "&c&lYou are requesting to shutdown the server, do it again to confirm.".cc()
+    private val msg = "&c&l!!! You are requesting to shutdown the server, re-run it to confirm. !!!".cc()
 
     @EventHandler
     private fun onCommand(event: PlayerCommandPreprocessEvent) {
         if (!event.message.startsWith("/stop", true)) return
         if (confirmingOperators.contains(event.player.uniqueId)) return
 
+        uhOh.play(event.player)
+        confirmingOperators.add(event.player.uniqueId)
         tools.launch {
             delay(200.ticks)
             confirmingOperators.remove(event.player.uniqueId)
