@@ -30,6 +30,13 @@ tasks {
         exclude("META-INF/LICENSE*", "META-INF/NOTICE*")
         exclude("META-INF/proguard/**", "META-INF/DEPENDENCIES")
         exclude("DebugProbesKt.bin")
+
+        if (project.name !in setOf("deps", "broxy")) {
+            dependencies {
+                exclude(dependency("org.jetbrains.kotlin:.*"))
+                exclude(dependency("org.jetbrains:annotations:.*"))
+            }
+        }
     }
 
     assemble {
