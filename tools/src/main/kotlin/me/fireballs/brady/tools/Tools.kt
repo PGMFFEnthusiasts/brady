@@ -43,6 +43,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::Flows)
             serviceOf(::VersionIntercept)
             serviceOf(::AntiStop)
+            serviceOf(::MitigationLB)
         }
 
         loadModule(toolModule)
