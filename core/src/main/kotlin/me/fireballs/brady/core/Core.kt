@@ -18,6 +18,7 @@ class Core : SuspendingJavaPlugin() {
             single<MenuManager> { MenuManager() }
             serviceOf(::KavyManager)
             serviceOf(::Settings)
+            serviceOf(::AutoGC)
         }
 
         startKoin {
