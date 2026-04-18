@@ -83,7 +83,7 @@ public class SharePlugin extends SuspendingJavaPlugin {
 
         final var trackedEffects = new HashMap<PotionEffectType, Integer>();
         this.effectApplicationListener = new EffectApplicationListener(
-            this, "remove-cages", Collections.unmodifiableMap(trackedEffects)
+            this, "remove-cages", trackedEffects
         );
         Bukkit.getPluginManager().registerEvents(this.effectApplicationListener, this);
         final PersistentEffectsCommand persistentEffectsCommand = new PersistentEffectsCommand(

@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -88,5 +89,11 @@ public class EffectApplicationListener implements Listener, PersistentEffectRegi
     @EventHandler
     public void onMatchEnd(final MatchFinishEvent event) {
         getEveryone(false).forEach(this::removeInactiveEffects);
+    }
+
+    @EventHandler
+    private void autoClear(final PlayerQuitEvent event) {
+        if (Bukkit.getServer().getOnlinePlayers().size() != 1) return;
+        activeEffects.clear();
     }
 }
