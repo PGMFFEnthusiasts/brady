@@ -43,6 +43,7 @@ class Broxy {
         server.eventManager.register(this, Router(this))
         server.eventManager.register(this, ApolloChatLength)
         server.eventManager.register(this, TransferMessages())
+        server.eventManager.register(this, NameCache(this))
 
         val status = StatusPull(this)
         server.eventManager.register(this, status)
