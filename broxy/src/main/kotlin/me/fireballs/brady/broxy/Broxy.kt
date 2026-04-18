@@ -41,7 +41,7 @@ class Broxy {
     fun onProxyInitialization(event: ProxyInitializeEvent) {
         server.eventManager.register(this, BetterMOTD(this))
         server.eventManager.register(this, Router(this))
-        server.eventManager.register(this, ApolloChatLength)
+        server.eventManager.register(this, ApolloChatLength())
         server.eventManager.register(this, TransferMessages())
         server.eventManager.register(this, NameCache(this))
 
