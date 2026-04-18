@@ -2,7 +2,10 @@ package me.fireballs.brady.core
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
+import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.title.Title
@@ -14,6 +17,31 @@ private val legacyAmpersand = LegacyComponentSerializer.legacyAmpersand()
 private val legacySection = LegacyComponentSerializer.legacySection()
 fun String.cc(useAmpersand: Boolean = true) = (if (useAmpersand) legacyAmpersand else legacySection).deserialize(this)
 fun String.c() = Component.text(this)
+
+// only color, not anything else
+fun String.c(color: Char): TextComponent {
+    val namedColor = when(color) {
+        '0' -> NamedTextColor.BLACK
+        '1' -> NamedTextColor.DARK_BLUE
+        '2' -> NamedTextColor.DARK_GREEN
+        '3' -> NamedTextColor.DARK_AQUA
+        '4' -> NamedTextColor.DARK_RED
+        '5' -> NamedTextColor.DARK_PURPLE
+        '6' -> NamedTextColor.GOLD
+        '7' -> NamedTextColor.GRAY
+        '8' -> NamedTextColor.DARK_GRAY
+        '9' -> NamedTextColor.BLUE
+        'a' -> NamedTextColor.GREEN
+        'b' -> NamedTextColor.AQUA
+        'c' -> NamedTextColor.RED
+        'd' -> NamedTextColor.LIGHT_PURPLE
+        'e' -> NamedTextColor.YELLOW
+        'f' -> NamedTextColor.WHITE
+        else -> return this.c()
+    }
+
+    return this.c().color(namedColor)
+}
 
 operator fun Component.plus(other: Component) =
     Component.join(JoinConfiguration.noSeparators(), this, other)
