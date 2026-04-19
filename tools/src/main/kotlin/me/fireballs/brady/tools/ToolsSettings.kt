@@ -103,6 +103,14 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.SNOW_BALL),
     )
 
+    val punchLaunch = BooleanSettingValue(
+        "settings.punchlaunch",
+        false,
+        "Punch Launch".c('6'),
+        "When launching a snowball, automatically punch the air.".c('7'),
+        itembox(Material.LOG),
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -115,6 +123,7 @@ class ToolsSettings : Listener, KoinComponent {
             flagSounds,
             comboSounds,
             ballCam,
+            punchLaunch,
         )
 
         tools.registerEvents(this)

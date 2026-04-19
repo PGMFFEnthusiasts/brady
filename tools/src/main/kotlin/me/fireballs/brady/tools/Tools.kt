@@ -8,6 +8,7 @@ import me.fireballs.brady.deps.PluginAnnotation
 import me.fireballs.brady.tools.pvpfx.Dayvision
 import me.fireballs.brady.tools.pvpfx.HideArmor
 import me.fireballs.brady.tools.pvpfx.ProjectileSkin
+import me.fireballs.brady.tools.pvpfx.PunchLaunch
 import org.koin.dsl.module
 
 @PluginAnnotation
@@ -45,6 +46,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::AntiStop)
             serviceOf(::MitigationLB)
             serviceOf(::CustomSounds)
+            serviceOf(::PunchLaunch)
         }
 
         loadModule(toolModule)
