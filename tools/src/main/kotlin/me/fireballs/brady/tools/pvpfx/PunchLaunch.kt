@@ -2,11 +2,10 @@ package me.fireballs.brady.tools.pvpfx
 
 import me.fireballs.brady.core.handle
 import me.fireballs.brady.core.registerEvents
-import me.fireballs.brady.core.sendPacket
+import me.fireballs.brady.core.sendTracked
 import me.fireballs.brady.tools.Tools
 import me.fireballs.brady.tools.ToolsSettings
 import net.minecraft.server.v1_8_R3.PacketPlayOutAnimation
-import org.bukkit.entity.Arrow
 import org.bukkit.entity.Player
 import org.bukkit.entity.Snowball
 import org.bukkit.event.EventHandler
@@ -33,6 +32,6 @@ class PunchLaunch : KoinComponent, Listener {
         if (player !is Player) return
         if (matchManager.getPlayer(player)?.isParticipating != true) return
         if (!settings.punchLaunch.retrieveValue(player)) return
-        player.sendPacket(PacketPlayOutAnimation(player.handle, 0))
+        player.sendTracked(PacketPlayOutAnimation(player.handle, 0))
     }
 }
