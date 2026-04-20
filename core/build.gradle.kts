@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     compileOnlyApi(project(":deps"))
+    testImplementation(kotlin("test"))
 }

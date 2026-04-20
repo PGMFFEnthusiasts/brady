@@ -5,8 +5,11 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper
 import net.kyori.adventure.text.Component
 import net.minecraft.server.v1_8_R3.EntityPlayer
 import net.minecraft.server.v1_8_R3.Packet
+import net.minecraft.server.v1_8_R3.WorldServer
 import org.bukkit.command.CommandSender
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer
+import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 
 fun Player.sendPacket(packetWrapper: PacketWrapper<*>) =
@@ -33,3 +36,9 @@ fun Player.actionBar(message: Component) {
 
 val Player.handle: EntityPlayer
     get() = (this as CraftPlayer).handle
+
+fun Entity.trackedPlayers(): Iterable<EntityPlayer> =
+    ((this as CraftEntity).handle.world as WorldServer).tracker.trackedEntities.get(handle.id)?.trackedPlayers
+        ?: emptySet()
+
+fun Entity.sendTracked(packet: Packet<*>) = trackedPlayers().forEach { it.playerConnection.sendPacket(packet) }

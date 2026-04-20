@@ -5,6 +5,7 @@ import com.google.common.collect.MapMaker
 import me.fireballs.brady.core.log
 import me.fireballs.brady.core.registerEvents
 import me.fireballs.brady.core.sendPacket
+import me.fireballs.brady.core.trackedPlayers
 import me.fireballs.brady.corepgm.currentMatch
 import net.minecraft.server.v1_8_R3.*
 import org.bukkit.Material
@@ -176,7 +177,7 @@ class Bouncer(
 
         val pos = PacketPlayOutEntityTeleport(han)
         val vel = PacketPlayOutEntityVelocity(han.id, vx, vy, vz)
-        (han.world as WorldServer).tracker.trackedEntities.get(han.id).trackedPlayers.forEach { p ->
+        entity.trackedPlayers().forEach { p ->
             p.playerConnection.sendPacket(pos)
             p.playerConnection.sendPacket(vel)
         }
