@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.MapMaker;
 import com.google.gson.stream.JsonReader;
 import me.fireballs.brady.core.ComponentKt;
+import me.fireballs.brady.corepgm.PGMExtensionsKt;
 import me.fireballs.share.SharePlugin;
 import me.fireballs.share.manager.MatchIdManager;
 import me.fireballs.share.manager.StatManager;
@@ -67,10 +68,7 @@ public final class MatchStatsListener implements Listener {
     private void onMatchEnd(MatchFinishEvent event) {
         Match match = event.getMatch();
         final var matchKey = match.getId();
-        final var gamemode = match.getMap().getGamemode();
-        if (gamemode == null) return;
-        final var gamemodeString = ComponentKt.plainText(gamemode);
-        if (!gamemodeString.equals("Flag Football") && !gamemodeString.equals("Touchdown")) return;
+        if (!PGMExtensionsKt.isTouchdown(match)) return;
 
         var statsModule = match.getModule(StatsMatchModule.class);
         if (statsModule == null) return;
