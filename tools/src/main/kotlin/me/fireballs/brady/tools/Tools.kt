@@ -48,6 +48,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::CustomSounds)
             serviceOf(::PunchLaunch)
             serviceOf(::DontDropSword)
+            serviceOf(::BuzzerBeater)
         }
 
         loadModule(toolModule)
