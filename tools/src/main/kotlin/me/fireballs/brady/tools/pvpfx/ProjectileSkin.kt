@@ -3,6 +3,8 @@ package me.fireballs.brady.tools.pvpfx
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketSendEvent
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
+import com.github.retrooper.packetevents.protocol.item.type.ItemType
+import com.github.retrooper.packetevents.protocol.item.type.ItemTypes
 import com.github.retrooper.packetevents.protocol.packettype.PacketType
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity
 import me.fireballs.brady.core.registerEvents
@@ -18,10 +20,10 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
 
-enum class ProjectileSkins {
-    SNOWBALL,
-    ENDER_PEARL,
-    EGG;
+enum class ProjectileSkins(val itemType: ItemType) {
+    SNOWBALL(ItemTypes.SNOWBALL),
+    ENDER_PEARL(ItemTypes.ENDER_PEARL),
+    EGG(ItemTypes.EGG);
 
     override fun toString() = name.replace('_', ' ')
 }

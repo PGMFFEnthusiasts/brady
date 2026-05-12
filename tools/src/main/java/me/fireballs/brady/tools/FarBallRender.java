@@ -5,12 +5,14 @@ import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
+import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.player.Equipment;
 import com.github.retrooper.packetevents.protocol.player.EquipmentSlot;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
+import me.fireballs.brady.corepgm.FeatureFlagBool;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -29,8 +31,12 @@ public class FarBallRender implements Listener {
     private static final double MAX_ARMOR_STAND_RENDER_DISTANCE = 256*256;
 
     private final List<ThrownSnowball> entities = new ArrayList<>();
+    private final ToolsSettings settings;
+    private final FeatureFlagBool enabled = new FeatureFlagBool("farBallRender", true);
 
     public FarBallRender() {
+        this.settings = KoinJavaComponent.get(ToolsSettings.class);
+
         Tools plugin = KoinJavaComponent.get(Tools.class);
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().runTaskTimer(plugin, () -> entities.removeIf(ThrownSnowball::update), 0L, 1L);
@@ -38,8 +44,14 @@ public class FarBallRender implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLaunch(ProjectileLaunchEvent event) {
+        if (!enabled.getState()) return;
+
         if (event.getEntity() instanceof Snowball snowball) {
-            entities.add(new ThrownSnowball(snowball));
+            ItemType itemType = (snowball.getShooter() instanceof Player player)
+                    ? settings.getProjectileSkin().retrieveValue(player.getUniqueId()).getItemType()
+                    : ItemTypes.SNOWBALL;
+
+            entities.add(new ThrownSnowball(snowball, itemType));
         }
     }
 
@@ -47,18 +59,18 @@ public class FarBallRender implements Listener {
 
         private record Orientation(Vector3d position, Vector3f armPose) {}
 
-        private static final Equipment SNOWBALL = new Equipment(EquipmentSlot.MAIN_HAND, new ItemStack.Builder()
-                .type(ItemTypes.SNOWBALL)
-                .build());
-
         private final Snowball entity;
         private final int entityId = Bukkit.allocateEntityId();
         private final Set<Player> viewers = new HashSet<>();
+        private final Equipment equipment;
 
         private Location loc;
 
-        public ThrownSnowball(Snowball entity) {
+        public ThrownSnowball(Snowball entity, ItemType itemType) {
             this.entity = entity;
+            this.equipment = new Equipment(EquipmentSlot.MAIN_HAND, new ItemStack.Builder()
+                    .type(itemType)
+                    .build());
         }
 
         public boolean update() {
@@ -160,7 +172,7 @@ public class FarBallRender implements Listener {
                     )
             );
 
-            var equip = new WrapperPlayServerEntityEquipment(entityId, List.of(SNOWBALL));
+            var equip = new WrapperPlayServerEntityEquipment(entityId, List.of(equipment));
 
             PacketEvents.getAPI().getPlayerManager().sendPacket(player, spawn);
             PacketEvents.getAPI().getPlayerManager().sendPacket(player, equip);
