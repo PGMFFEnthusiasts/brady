@@ -49,6 +49,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::PunchLaunch)
             serviceOf(::DontDropSword)
             serviceOf(::BuzzerBeater)
+            serviceOf(::FarBallRender)
         }
 
         loadModule(toolModule)
