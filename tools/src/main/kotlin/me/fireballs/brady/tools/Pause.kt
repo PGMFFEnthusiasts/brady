@@ -28,6 +28,7 @@ import tc.oc.pgm.score.ScoreCause
 import tc.oc.pgm.score.ScoreMatchModule
 import tc.oc.pgm.spawns.SpawnMatchModule
 import tc.oc.pgm.spawns.events.ParticipantDespawnEvent
+import tc.oc.pgm.spawns.events.ParticipantSpawnEvent
 import tc.oc.pgm.timelimit.TimeLimit
 import tc.oc.pgm.timelimit.TimeLimitMatchModule
 import tc.oc.pgm.util.bukkit.Sounds
@@ -222,6 +223,13 @@ class Pause : Listener, KoinComponent {
             event.player.isFrozen = false
             return
         }
+        event.player.isDead = true
+        event.player.isFrozen = true
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun onParticipantSpawn(event: ParticipantSpawnEvent) {
+        if (pauseState == null) return
         event.player.isDead = true
         event.player.isFrozen = true
     }
