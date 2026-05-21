@@ -83,6 +83,9 @@ class TournamentStateManager(
                                     "tournament.request" -> plugin.pluginContainer.launch(Dispatchers.IO) {
                                         redisClient?.publish("tournament.players", gson.toJson(peopleList))
                                         redisClient?.publish("tournament.state", gson.toJson(trueState))
+
+                                        val serverNames = plugin.server.allServers.map { it.serverInfo.name }
+                                        redisClient?.publish("tournament.servers", gson.toJson(serverNames))
                                     }
 
                                     "tournament.state" -> {

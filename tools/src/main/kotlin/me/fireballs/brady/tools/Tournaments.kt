@@ -98,6 +98,8 @@ class Tournaments : Listener, KoinComponent {
 
     private val usernameRegex = "[A-Za-z0-9_]{3,16}".toRegex()
 
+    private var serverNames = listOf("1", "2", "3", "4")
+
     private suspend fun findPlayer(query: String): Person? {
         val fromCache = currentPlayers.find {
             it.name.equals(query, true) || it.uuid == query || it.uuid.replace("-", "") == query
@@ -364,7 +366,7 @@ class Tournaments : Listener, KoinComponent {
 
                 tabCompleter = {
                     when (subArgs.size) {
-                        0, 1 -> listOf("1", "2", "3", "4")
+                        0, 1 -> serverNames
                         2 -> currentState?.teams?.map { it.name } ?: listOf()
                         3 -> currentState?.teams?.filter { !it.name.equals(subArgs[1], true) }?.map { it.name }
                             ?: listOf()
@@ -419,6 +421,11 @@ class Tournaments : Listener, KoinComponent {
                                         "tournament.players" -> {
                                             val state = gson.fromJson(message, PeopleList::class.java)
                                             currentPlayers = state.players
+                                        }
+
+                                        "tournament.servers" -> {
+                                            val servers = gson.fromJson(message, Array<String>::class.java)
+                                            serverNames = servers.toList()
                                         }
                                     }
                                 }
