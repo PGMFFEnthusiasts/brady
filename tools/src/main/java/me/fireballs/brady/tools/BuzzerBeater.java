@@ -24,7 +24,7 @@ public class BuzzerBeater implements Listener {
     @EventHandler
     public void onCountdownEnd(CountdownEndEvent event) {
         Match match = event.getMatch();
-        if (!PGMExtensionsKt.isTouchdown(match)) return;
+        if (!PGMExtensionsKt.isTouchdown(match.getMap())) return;
 
         TimeLimitMatchModule tlmm = match.getModule(TimeLimitMatchModule.class);
         if (tlmm == null) return;

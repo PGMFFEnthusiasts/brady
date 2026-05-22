@@ -68,7 +68,7 @@ public final class MatchStatsListener implements Listener {
     private void onMatchEnd(MatchFinishEvent event) {
         Match match = event.getMatch();
         final var matchKey = match.getId();
-        if (!PGMExtensionsKt.isTouchdown(match)) return;
+        if (!PGMExtensionsKt.isTouchdown(match.getMap())) return;
 
         var statsModule = match.getModule(StatsMatchModule.class);
         if (statsModule == null) return;

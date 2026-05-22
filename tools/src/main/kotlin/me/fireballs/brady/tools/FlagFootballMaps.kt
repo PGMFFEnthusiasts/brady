@@ -5,6 +5,7 @@ import me.fireballs.brady.core.itembox
 import me.fireballs.brady.core.menubox
 import me.fireballs.brady.corepgm.currentMatch
 import me.fireballs.brady.corepgm.forWhom
+import me.fireballs.brady.corepgm.isTouchdown
 import org.bukkit.Material
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -13,18 +14,19 @@ import tc.oc.pgm.api.map.MapOrder
 import tc.oc.pgm.cycle.CycleMatchModule
 import tc.oc.pgm.util.StringUtils
 import tc.oc.pgm.util.named.MapNameStyle
+import kotlin.math.ceil
 
 class FlagFootballMaps : KoinComponent {
     private val pgm by inject<PGM>()
     private val mapOrder by inject<MapOrder>()
 
     private fun ffMaps() = pgm.mapLibrary.maps.asSequence()
-        .filter { it.name.contains("Brady") || it.name.contains("Bowl") }
+        .filter { it.isTouchdown() }
         .sortedBy { it.name }
         .toList()
 
-    private val menu = menubox(9 * 3) {
-        title = "Flag Football Maps"
+    private val menu = menubox(9 * ceil(ffMaps().size / 9.toDouble()).toInt()) {
+        title = "Touchdown Maps"
         cancelClicks()
         ffMaps().forEachIndexed { index, map ->
             val item = itembox(if (map.name.contains("Bowl")) Material.BOWL else Material.PAPER)

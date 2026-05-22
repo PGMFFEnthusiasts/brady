@@ -32,7 +32,7 @@ public class DontDropSword implements Listener {
     public void onDrop(PlayerDropItemEvent event) {
         Match match = PGMExtensionsKt.currentMatch(PGM.get().getMatchManager());
         if (match == null) return;
-        if (!PGMExtensionsKt.isTouchdown(match)) return;
+        if (!PGMExtensionsKt.isTouchdown(match.getMap())) return;
 
         ItemStack item = event.getItemDrop().getItemStack();
         if (!isWeapon(item)) return;
