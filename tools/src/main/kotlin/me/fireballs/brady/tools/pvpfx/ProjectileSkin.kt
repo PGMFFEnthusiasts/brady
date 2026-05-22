@@ -2,6 +2,7 @@ package me.fireballs.brady.tools.pvpfx
 
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketSendEvent
+import com.github.retrooper.packetevents.protocol.entity.type.EntityType
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
 import com.github.retrooper.packetevents.protocol.item.type.ItemType
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes
@@ -20,10 +21,10 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent
 
-enum class ProjectileSkins(val itemType: ItemType) {
-    SNOWBALL(ItemTypes.SNOWBALL),
-    ENDER_PEARL(ItemTypes.ENDER_PEARL),
-    EGG(ItemTypes.EGG);
+enum class ProjectileSkins(val itemType: ItemType, val entityType: EntityType) {
+    SNOWBALL(ItemTypes.SNOWBALL, EntityTypes.SNOWBALL),
+    ENDER_PEARL(ItemTypes.ENDER_PEARL, EntityTypes.ENDER_PEARL),
+    EGG(ItemTypes.EGG, EntityTypes.EGG);
 
     override fun toString() = name.replace('_', ' ')
 }
@@ -58,8 +59,7 @@ class ProjectileSkin : PacketListenerAbstract(), Listener, KoinComponent {
         if (event.packetType != PacketType.Play.Server.SPAWN_ENTITY) return
         val p = WrapperPlayServerSpawnEntity(event)
         val skin = skinnedProjectileMap[p.entityId] ?: return
-        if (skin == ProjectileSkins.ENDER_PEARL) p.entityType = EntityTypes.ENDER_PEARL
-        if (skin == ProjectileSkins.EGG) p.entityType = EntityTypes.EGG
+        p.entityType = skin.entityType
         event.markForReEncode(true)
     }
 }

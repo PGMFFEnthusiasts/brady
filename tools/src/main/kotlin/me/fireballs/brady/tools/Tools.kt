@@ -51,6 +51,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::BuzzerBeater)
             serviceOf(::FarBallRender)
             serviceOf(::CoordinateOffset)
+            serviceOf(::PracticeBall)
         }
 
         loadModule(toolModule)
