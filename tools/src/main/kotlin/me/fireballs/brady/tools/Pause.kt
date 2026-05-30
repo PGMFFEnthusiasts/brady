@@ -183,7 +183,9 @@ class Pause : Listener, KoinComponent {
         val dt = match.getModule(DamageHistoryMatchModule::class.java)
         val spawnModule = match.moduleRequire(SpawnMatchModule::class.java)
         val flags = match.getModule(FlagMatchModule::class.java)
-        flags?.flags?.forEach { it.state.dropFlag() }
+        flags?.flags
+            ?.filter { flag -> match.players.any(flag::isCarrying) }
+            ?.forEach { it.state.dropFlag() }
 
         match.players
             .filter { it.isParticipating }
