@@ -102,9 +102,9 @@ public class PracticeBall implements Listener {
         boolean splat = settings.getSplatSetting().retrieveValue(shooter.getUniqueId());
 
         VirtualSnowball snowball = new VirtualSnowball(shooter, new ArrayList<>(viewers), entityType, splat);
+        takeBall(shooter);
         snowball.shoot(plugin);
 
-        takeBall(shooter);
         event.setCancelled(true);
     }
 
@@ -199,6 +199,17 @@ public class PracticeBall implements Listener {
 
         private boolean tick(double motionFactor) {
             ticksLived++;
+
+            Iterator<Player> it = viewers.iterator();
+            while (it.hasNext()) {
+                Player viewer = it.next();
+                MatchPlayer mp = PGM.get().getMatchManager().getPlayer(viewer);
+
+                if (mp != null && !mp.isObserving()) {
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(viewer, new WrapperPlayServerDestroyEntities(entityId));
+                    it.remove();
+                }
+            }
 
             Vec3D currentPos = new Vec3D(x, y, z);
             Vec3D nextPos = new Vec3D(x + vx * motionFactor, y + vy * motionFactor, z + vz * motionFactor);
