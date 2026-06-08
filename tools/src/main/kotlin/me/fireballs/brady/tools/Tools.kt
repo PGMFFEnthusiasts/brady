@@ -54,6 +54,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::PracticeBall)
             serviceOf(::IncludeToggles)
             serviceOf(::OvertimeEffects)
+            serviceOf(::AntiEndzoneStall)
         }
 
         loadModule(toolModule)

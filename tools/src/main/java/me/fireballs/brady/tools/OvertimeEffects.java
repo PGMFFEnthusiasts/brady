@@ -3,6 +3,7 @@ package me.fireballs.brady.tools;
 import me.fireballs.brady.core.ComponentKt;
 import me.fireballs.brady.core.PluginExtensionsKt;
 import me.fireballs.brady.corepgm.FeatureFlagEnum;
+import me.fireballs.brady.corepgm.PGMExtensionsKt;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -17,10 +18,7 @@ import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.features.FeatureDefinitionContext;
 import tc.oc.pgm.filters.FilterMatchModule;
-import tc.oc.pgm.flag.Flag;
-import tc.oc.pgm.flag.FlagMatchModule;
 import tc.oc.pgm.flag.event.FlagPickupEvent;
-import tc.oc.pgm.flag.state.Carried;
 import tc.oc.pgm.platform.sportpaper.material.SpMaterialUtils;
 import tc.oc.pgm.regions.CuboidRegion;
 import tc.oc.pgm.timelimit.TimeLimitMatchModule;
@@ -73,7 +71,7 @@ public class OvertimeEffects implements Listener {
                             String hearts = healthFormat.format(HEALTH_BUMP) + "&7 heart" + (HEALTH_BUMP != 1 ? "s" : "");
                             match.sendMessage(ComponentKt.cc(" &e⚠ &b&lOVERTIME!&7 Flag carrier health extended by &a" + hearts + ".", true));
                             match.getPlayers().stream()
-                                    .filter(OvertimeEffects::isFlagCarrier)
+                                    .filter(PGMExtensionsKt::isFlagCarrier)
                                     .forEach(p -> applyHealthBump(p, 1));
                         }
                         case STRETCH_ENDZONE -> {
@@ -97,17 +95,6 @@ public class OvertimeEffects implements Listener {
         if (overtimeSeconds < 0) return -1;
 
         return (int) (overtimeSeconds / 60);
-    }
-
-    private static boolean isFlagCarrier(MatchPlayer player) {
-        FlagMatchModule fmm = player.getMatch().getModule(FlagMatchModule.class);
-        if (fmm == null) return false;
-
-        return fmm.getFlags().stream()
-                .map(Flag::getState)
-                .filter(Carried.class::isInstance)
-                .map(Carried.class::cast)
-                .anyMatch(carried -> carried.getCarrier() == player);
     }
 
     @EventHandler
@@ -157,8 +144,8 @@ public class OvertimeEffects implements Listener {
         if (!(teamOneFeature instanceof CuboidRegion teamOnePortal)) return;
         if (!(teamTwoFeature instanceof CuboidRegion teamTwoPortal)) return;
 
-        Vector centerOne = getCenter(teamOnePortal);
-        Vector centerTwo = getCenter(teamTwoPortal);
+        Vector centerOne = PGMExtensionsKt.center(teamOnePortal);
+        Vector centerTwo = PGMExtensionsKt.center(teamTwoPortal);
 
         stretchTowards(match, teamOnePortal, centerTwo);
         stretchTowards(match, teamTwoPortal, centerOne);
@@ -167,7 +154,7 @@ public class OvertimeEffects implements Listener {
     private static void stretchTowards(Match match, CuboidRegion region, Vector targetCenter) {
         Vector min = region.getBounds().getMin().clone();
         Vector max = region.getBounds().getMax().clone();
-        Vector center = getCenter(region);
+        Vector center = PGMExtensionsKt.center(region);
         World world = match.getWorld();
 
         BlockMaterialData sample = null;
@@ -251,15 +238,5 @@ public class OvertimeEffects implements Listener {
             min.copy(newMin);
             max.copy(newMax);
         } catch (Exception _) {}
-    }
-
-    private static Vector getCenter(CuboidRegion region) {
-        Vector min = region.getBounds().getMin();
-        Vector max = region.getBounds().getMax();
-        return new Vector(
-                (min.getX() + max.getX()) / 2.0,
-                (min.getY() + max.getY()) / 2.0,
-                (min.getZ() + max.getZ()) / 2.0
-        );
     }
 }
