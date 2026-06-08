@@ -45,6 +45,7 @@ public class CoordinateOffset extends PacketListenerAbstract {
     private final Set<User> spoofedUsers = new NonBlockingHashSet<>();
 
     public CoordinateOffset() {
+        super(PacketListenerPriority.HIGHEST);
         Tools plugin = KoinJavaComponent.get(Tools.class);
         PluginExtensionsKt.registerPacketEvents(plugin, this);
     }

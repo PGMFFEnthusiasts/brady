@@ -22,7 +22,7 @@ public class CPSPlugin extends JavaPlugin {
 
         eventManager.registerListener(new LoginListener(profileManager), PacketListenerPriority.MONITOR);
         eventManager.registerListener(new ClickListener(profileManager), PacketListenerPriority.MONITOR);
-        eventManager.registerListener(new TagListener(profileManager), PacketListenerPriority.MONITOR);
+        eventManager.registerListener(new TagListener(profileManager), PacketListenerPriority.HIGH);
 
         pluginManager.registerEvents(new TeamListener(profileManager), this);
     }
