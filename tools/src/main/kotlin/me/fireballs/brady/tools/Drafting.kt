@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.fireballs.brady.core.*
 import me.fireballs.brady.corepgm.component
+import me.fireballs.brady.corepgm.getVariable
 import me.fireballs.brady.corepgm.match
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.title.Title
@@ -259,12 +260,9 @@ class Drafting : Listener, KoinComponent {
 
         match.getModule(TimeLimitMatchModule::class.java)?.timeLimit = null
 
-        val variableModule = match.needModule(VariablesMatchModule::class.java)
-        val variableMap = variableModule.variables.map { it.key to it.value }.toList().toMap()
-
-        val stateVariable = variableMap["player_state"] as DummyVariable<*>
-        val teamOneScore = variableMap["team_one_score"] as TeamVariableAdapter
-        val teamTwoScore = variableMap["team_two_score"] as TeamVariableAdapter
+        val stateVariable = match.getVariable<DummyVariable<*>>("player_state")!!
+        val teamOneScore = match.getVariable<TeamVariableAdapter>("team_one_score")!!
+        val teamTwoScore = match.getVariable<TeamVariableAdapter>("team_two_score")!!
 
         delay(5.seconds + 0.5.seconds)
 

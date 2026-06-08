@@ -67,6 +67,26 @@ class FeatureFlagBool(key: String, initial: Boolean = false) : FeatureFlag<Boole
     override fun type() = "bool"
 }
 
+class FeatureFlagEnum<E : Enum<E>>(key: String, initial: E, enumClass: Class<E>) : FeatureFlag<E>(key, initial) {
+    private val valueMap = enumClass.enumConstants.associateBy { it.name.lowercase() }
+    private val unparsable = "&cMust provide one of ${valueMap.keys.joinToString(", ")}".cc()
+
+    override fun render() = "&b${state.name.lowercase()}".cc()
+    override fun set(value: String): Component? {
+        val match = valueMap[value.lowercase()]
+
+        if (match != null) {
+            state = match
+            return null
+        }
+
+        return unparsable
+    }
+
+    override fun suggest() = valueMap.keys.toList()
+    override fun type() = "enum"
+}
+
 class FeatureFlagsSubscriber : KoinComponent {
     init {
         command("flag", permission = "brady.admin") {

@@ -52,6 +52,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::FarBallRender)
             serviceOf(::CoordinateOffset)
             serviceOf(::PracticeBall)
+            serviceOf(::IncludeToggles)
         }
 
         loadModule(toolModule)
