@@ -53,6 +53,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::CoordinateOffset)
             serviceOf(::PracticeBall)
             serviceOf(::IncludeToggles)
+            serviceOf(::OvertimeEffects)
         }
 
         loadModule(toolModule)
