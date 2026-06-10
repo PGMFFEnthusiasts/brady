@@ -11,8 +11,12 @@ import java.util.List;
 
 public class TagAPI {
 
-    public static final double HEIGHT_OFFSET = 2.065;
-    public static final double LAYER_SPACING = 0.3;
+    public static final double LAYER_SPACING = quantize(9 * 1.15 * 0.02666667); // from mcp RenderPlayer & RendererLivingEntity
+    public static final double HEIGHT_OFFSET = quantize(1.8 + LAYER_SPACING);
+
+    private static double quantize(double value) {
+        return Math.round(value * 32) / 32.0;
+    }
 
     private final List<TagLayer> layers = new ArrayList<>();
 
