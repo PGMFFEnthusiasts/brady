@@ -57,6 +57,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::AntiEndzoneStall)
             serviceOf(::CPSTags)
             serviceOf(::PingTags)
+            serviceOf(::HealthTags)
         }
 
         loadModule(toolModule)

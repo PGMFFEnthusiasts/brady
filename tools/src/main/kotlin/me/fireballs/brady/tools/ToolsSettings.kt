@@ -127,6 +127,14 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.WOOL).setDamage(5)
     )
 
+    val healthTags = BooleanSettingValue(
+        "settings.healthtags",
+        true,
+        "Health Tags".c('c'),
+        "&7See players' health above their usernames while observing".cc(),
+        itembox(Material.WOOL).setDamage(14)
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -142,6 +150,7 @@ class ToolsSettings : Listener, KoinComponent {
             punchLaunch,
             cpsTags,
             pingTags,
+            healthTags
         )
 
         tools.registerEvents(this)
