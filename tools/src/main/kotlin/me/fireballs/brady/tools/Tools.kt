@@ -55,6 +55,7 @@ class Tools : SuspendingJavaPlugin() {
             serviceOf(::IncludeToggles)
             serviceOf(::OvertimeEffects)
             serviceOf(::AntiEndzoneStall)
+            serviceOf(::CPSTags)
         }
 
         loadModule(toolModule)

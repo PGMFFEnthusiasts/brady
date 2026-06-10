@@ -111,6 +111,14 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.LOG),
     )
 
+    val cpsTags = BooleanSettingValue(
+        "settings.cpstags",
+        true,
+        "CPS Tags".c('b'),
+        "&7See players' CPS above their usernames".cc(),
+        itembox(Material.WOOL).setDamage(3)
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -124,6 +132,7 @@ class ToolsSettings : Listener, KoinComponent {
             comboSounds,
             ballCam,
             punchLaunch,
+            cpsTags,
         )
 
         tools.registerEvents(this)
