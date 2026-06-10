@@ -204,7 +204,7 @@ class Settings : Listener, KoinComponent {
 
     fun openSettingsPage(player: Player) {
         val settingCount = settingsList.size
-        val rows = settingCount / 7
+        val rows = (settingCount - 1) / 7
         menubox((4 + rows) * 9) {
             repeat(slots) { addItem(it, greyPane) }
             settingsList.forEachIndexed { index, value ->
