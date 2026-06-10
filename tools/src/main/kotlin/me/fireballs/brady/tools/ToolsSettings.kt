@@ -119,6 +119,14 @@ class ToolsSettings : Listener, KoinComponent {
         itembox(Material.WOOL).setDamage(3)
     )
 
+    val pingTags = BooleanSettingValue(
+        "settings.pingtags",
+        false,
+        "Ping Tags".c('a'),
+        "&7See players' ping above their usernames".cc(),
+        itembox(Material.WOOL).setDamage(5)
+    )
+
     init {
         settings.addAll(
             splatSetting,
@@ -133,6 +141,7 @@ class ToolsSettings : Listener, KoinComponent {
             ballCam,
             punchLaunch,
             cpsTags,
+            pingTags,
         )
 
         tools.registerEvents(this)
