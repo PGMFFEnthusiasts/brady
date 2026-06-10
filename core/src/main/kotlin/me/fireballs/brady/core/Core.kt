@@ -1,6 +1,7 @@
 package me.fireballs.brady.core
 
 import com.github.shynixn.mccoroutine.bukkit.SuspendingJavaPlugin
+import me.fireballs.brady.core.tag.TagAPI
 import me.fireballs.brady.deps.PluginAnnotation
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import net.kyori.adventure.text.Component
@@ -16,6 +17,7 @@ class Core : SuspendingJavaPlugin() {
             single<Core> { this@Core }
             single<BukkitAudiences> { BukkitAudiences.create(this@Core) }
             single<MenuManager> { MenuManager() }
+            single<TagAPI> { TagAPI(this@Core) }
             serviceOf(::KavyManager)
             serviceOf(::Settings)
             serviceOf(::AutoGC)
