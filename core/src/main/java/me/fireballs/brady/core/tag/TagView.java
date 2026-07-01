@@ -32,6 +32,9 @@ public class TagView {
         List<TagLayer> visible = new ArrayList<>(layers.size());
         List<Integer> ids = new ArrayList<>(layers.size());
         for (TagLayer layer : layers) {
+            String text = texts.get(layer.id());
+            if (text == null || text.isEmpty()) continue;
+
             if (layer.visibleTo().test(target, viewer)) {
                 visible.add(layer);
                 ids.add(standId(layer));

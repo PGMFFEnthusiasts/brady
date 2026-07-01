@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class TagTracker {
@@ -16,20 +18,25 @@ public class TagTracker {
     private final List<TagLayer> layers;
     private final Map<ViewKey, TagView> views = new NonBlockingHashMap<>();
 
+    private final Queue<Runnable> actions = new ConcurrentLinkedQueue<>();
+
     public TagTracker(List<TagLayer> layers) {
         this.layers = layers;
     }
 
     public void startTracking(User viewer, int targetId) {
         if (viewer.getEntityId() == targetId) return;
-        views.putIfAbsent(new ViewKey(viewer.getEntityId(), targetId), new TagView(viewer));
+        ViewKey key = new ViewKey(viewer.getEntityId(), targetId);
+        actions.add(() -> views.putIfAbsent(key, new TagView(viewer)));
     }
 
     public void stopTracking(int viewerId, int[] targetIds) {
-        for (int targetId : targetIds) {
-            TagView view = views.remove(new ViewKey(viewerId, targetId));
-            if (view != null) view.destroy();
-        }
+        actions.add(() -> {
+            for (int targetId : targetIds) {
+                TagView view = views.remove(new ViewKey(viewerId, targetId));
+                if (view != null) view.destroy();
+            }
+        });
     }
 
     public Optional<TagView> getView(int viewerId, int targetId) {
@@ -37,6 +44,11 @@ public class TagTracker {
     }
 
     public void tick() {
+        Runnable action;
+        while ((action = actions.poll()) != null) {
+            action.run();
+        }
+
         Map<Integer, Player> onlinePlayers = Bukkit.getOnlinePlayers().stream()
                 .collect(Collectors.toMap(Player::getEntityId, player -> player));
 
@@ -66,7 +78,7 @@ public class TagTracker {
     }
 
     public void cleanup(int entityId) {
-        views.entrySet().removeIf(entry -> {
+        actions.add(() -> views.entrySet().removeIf(entry -> {
             ViewKey key = entry.getKey();
 
             if (key.targetId() == entityId) {
@@ -75,7 +87,7 @@ public class TagTracker {
             }
 
             return key.viewerId() == entityId;
-        });
+        }));
     }
 
     // todo: override hashcode and equals if map performance is poor, see https://github.com/jOOQ/jOOQ/issues/18935
