@@ -15,10 +15,10 @@ repositories {
 group = "me.fireballs.brady"
 version = "1.0"
 
-java.sourceCompatibility = JavaVersion.VERSION_23
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 tasks {

@@ -17,14 +17,10 @@
       devShells = eachSystem (pkgs: {
         default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            cargo
-            rustc
-            clippy
-            rustfmt
-
-            bun
-            nodejs
+            zulu21
+            gradle_8
           ];
+          JAVA_HOME = pkgs.zulu21.home;
         };
       });
     };

@@ -88,6 +88,6 @@ public class TagView {
     }
 
     private int standId(TagLayer layer) {
-        return standIds.computeIfAbsent(layer.id(), _ -> Bukkit.allocateEntityId());
+        return standIds.computeIfAbsent(layer.id(), ignored -> Bukkit.allocateEntityId());
     }
 }

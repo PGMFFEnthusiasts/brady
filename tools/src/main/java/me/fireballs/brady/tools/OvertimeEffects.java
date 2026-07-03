@@ -237,6 +237,6 @@ public class OvertimeEffects implements Listener {
 
             min.copy(newMin);
             max.copy(newMax);
-        } catch (Exception _) {}
+        } catch (Exception ignored) {}
     }
 }

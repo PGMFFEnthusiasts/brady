@@ -57,7 +57,7 @@ public class Ping extends PacketListenerAbstract {
     private Unit buildCommand(CommandBuilder builder) {
         builder.tabCompleter(builder.getPlayerCompleter());
 
-        builder.executor((ctx, _) -> {
+        builder.executor((ctx, ignored) -> {
             executeCommand(ctx);
             return Unit.INSTANCE;
         });

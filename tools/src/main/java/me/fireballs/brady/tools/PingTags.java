@@ -16,7 +16,7 @@ public class PingTags {
         this.setting = settings.getPingTags();
 
         TagAPI tagAPI = KoinJavaComponent.get(TagAPI.class);
-        tagAPI.register((new TagLayer("ping", 1, this::getPing, (_, viewer) -> setting.retrieveValue(viewer))));
+        tagAPI.register((new TagLayer("ping", 1, this::getPing, (ignored, viewer) -> setting.retrieveValue(viewer))));
     }
 
     private String getPing(Player target) {

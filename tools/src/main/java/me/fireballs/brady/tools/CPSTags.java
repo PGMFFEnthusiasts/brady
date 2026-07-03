@@ -39,7 +39,7 @@ public class CPSTags extends PacketListenerAbstract implements Listener {
         this.setting = settings.getCpsTags();
 
         TagAPI tagAPI = KoinJavaComponent.get(TagAPI.class);
-        tagAPI.register(new TagLayer("cps", 0, this::getCPS, (_, viewer) -> setting.retrieveValue(viewer)));
+        tagAPI.register(new TagLayer("cps", 0, this::getCPS, (ignored, viewer) -> setting.retrieveValue(viewer)));
     }
 
     private String getCPS(Player target) {

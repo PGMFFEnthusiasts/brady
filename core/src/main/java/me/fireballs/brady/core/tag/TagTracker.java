@@ -65,7 +65,7 @@ public class TagTracker {
                 return true;
             }
 
-            Map<String, String> targetTexts = texts.computeIfAbsent(target.getEntityId(), _ -> renderTexts(target));
+            Map<String, String> targetTexts = texts.computeIfAbsent(target.getEntityId(), ignored -> renderTexts(target));
             entry.getValue().update(target, viewer, layers, targetTexts);
             return false;
         });
